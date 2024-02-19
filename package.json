@@ -42,14 +42,14 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mendix/mendix-native.git.git"
+    "url": "git+https://github.com/mendix/mendix-native.git"
   },
   "author": "Selim Ustel <selim.ustel@mendix.com> (https://mendix.com)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/mendix/mendix-native.git/issues"
+    "url": "https://github.com/mendix/mendix-native/issues"
   },
-  "homepage": "https://github.com/mendix/mendix-native.git#readme",
+  "homepage": "https://github.com/mendix/mendix-native#readme",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },
