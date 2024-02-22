@@ -2588,6 +2588,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@react-native-community/async-storage@npm:1.12.0":
+  version: 1.12.0
+  resolution: "@react-native-community/async-storage@npm:1.12.0"
+  dependencies:
+    deep-assign: ^3.0.0
+  peerDependencies:
+    react: ^16.8
+    react-native: ">=0.59"
+  checksum: e21a622c946202958818222032f188b3c7ef62c707cfdae6ae79a182d5de60ac8b966b806c060a2b96a6c37ca1bef2d3055dcea5480055848d63e3dc42a51bde
+  languageName: node
+  linkType: hard
+
 "@react-native-community/cli-clean@npm:12.3.2":
   version: 12.3.2
   resolution: "@react-native-community/cli-clean@npm:12.3.2"
@@ -5178,6 +5190,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"deep-assign@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "deep-assign@npm:3.0.0"
+  dependencies:
+    is-obj: ^1.0.0
+  checksum: 9041ccc72ae1980f014d4b745d6135d8f0e71d60ac433397550789c27e6b4d14bc0de2af69777e09f97e1d0da3007a8d78de36f7bf9df931c9968b68fc9546ab
+  languageName: node
+  linkType: hard
+
 "deep-extend@npm:^0.6.0":
   version: 0.6.0
   resolution: "deep-extend@npm:0.6.0"
@@ -7591,6 +7612,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"is-obj@npm:^1.0.0":
+  version: 1.0.1
+  resolution: "is-obj@npm:1.0.1"
+  checksum: 3ccf0efdea12951e0b9c784e2b00e77e87b2f8bd30b42a498548a8afcc11b3287342a2030c308e473e93a7a19c9ea7854c99a8832a476591c727df2a9c79796c
+  languageName: node
+  linkType: hard
+
 "is-obj@npm:^2.0.0":
   version: 2.0.0
   resolution: "is-obj@npm:2.0.0"
@@ -9103,6 +9131,7 @@ __metadata:
   dependencies:
     "@commitlint/config-conventional": ^17.0.2
     "@evilmartians/lefthook": ^1.5.0
+    "@react-native-community/async-storage": 1.12.0
     "@react-native/eslint-config": ^0.73.1
     "@release-it/conventional-changelog": ^5.0.0
     "@types/jest": ^29.5.5
@@ -9117,6 +9146,7 @@ __metadata:
     react: 18.2.0
     react-native: 0.73.4
     react-native-builder-bob: ^0.20.0
+    react-native-splash-screen: 3.2.0
     release-it: ^15.0.0
     turbo: ^1.10.7
     typescript: ^5.2.2
@@ -10764,6 +10794,15 @@ __metadata:
   bin:
     bob: bin/bob
   checksum: 258da6ecd03be52cc05a3e3a7c481890c7c0b7b62ae9f263c5f3d6fafeae95bd9445ad2f6c2513f7f4e4569eee935a18ae94c7491f58d6916af515c88de9e0a1
+  languageName: node
+  linkType: hard
+
+"react-native-splash-screen@npm:3.2.0":
+  version: 3.2.0
+  resolution: "react-native-splash-screen@npm:3.2.0"
+  peerDependencies:
+    react-native: ">=0.57.0"
+  checksum: acce2f5616fadd1d6b895aa9450d62af1fde27fd0d92fa380e92cec666e8196044ff510ad86545e0668b4fa39108a03bfb7cb6be981a1a5814d24d698cc85b8c
   languageName: node
   linkType: hard
 

@@ -38,6 +38,11 @@ target 'MendixNativeExample' do
     # An absolute path to your application root.
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
+  # Required pods
+  pod 'SSZipArchive'
+  pod 'IQKeyboardManager'
+  pod 'RNCAsyncStorage', :path => '../../node_modules/@react-native-community/async-storage'
+  pod 'react-native-splash-screen', :path => '../../node_modules/react-native-splash-screen'
 
   target 'MendixNativeExampleTests' do
     inherit! :complete
