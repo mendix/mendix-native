@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="fastlane.lanes">
+    
+    
+    
+      
+      <testcase classname="fastlane.lanes" name="0: Verifying fastlane version" time="0.000239">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="1: default_platform" time="0.0001">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="2: cocoapods" time="12.13251">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="3: rm -rf /Users/selim.ustel/Desktop/mendix-native/ios/build/mendixnative &amp;&amp; mkdir -p /Users/selim.ustel/Desktop/mendix-native/ios/build/mendixnative" time="0.448913">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="4: xcodebuild" time="160.670839">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="5: xcodebuild" time="88.571556">
+        
+      </testcase>
+    
+  </testsuite>
+</testsuites>
