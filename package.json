@@ -54,9 +54,8 @@
   },
   "devDependencies": {
     "@commitlint/config-conventional": "^17.0.2",
-    "@react-native-community/async-storage": "1.12.0",
-    "react-native-splash-screen": "3.2.0",
     "@evilmartians/lefthook": "^1.5.0",
+    "@react-native-community/async-storage": "1.12.0",
     "@react-native/eslint-config": "^0.73.1",
     "@release-it/conventional-changelog": "^5.0.0",
     "@types/jest": "^29.5.5",
@@ -72,6 +71,7 @@
     "react": "18.2.0",
     "react-native": "0.72.7",
     "react-native-builder-bob": "^0.20.0",
+    "react-native-splash-screen": "3.2.0",
     "release-it": "^15.0.0",
     "turbo": "^1.10.7",
     "typescript": "^5.2.2"
@@ -81,9 +81,9 @@
   },
   "peerDependencies": {
     "@react-native-community/async-storage": "*",
-    "react-native-splash-screen": "*",
     "react": "*",
-    "react-native": "*"
+    "react-native": "*",
+    "react-native-splash-screen": "*"
   },
   "packageManager": "yarn@3.6.1",
   "jest": {
