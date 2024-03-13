@@ -1,0 +1,49 @@
+name: 'Build @mendix/native'
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+      branches:
+          - main
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build Android Library
+        uses: ./.github/actions/build_android
+
+  build-ios:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build iOS Library
+        uses: ./.github/actions/build_ios
+
+  create-release:
+    needs: [build-android, build-ios]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Zip Libraries
+        run: |
+          cd ${{ github.workspace }}/shared/libs
+          zip -r libraries.zip .
+
+      - name: Upload Libraries to Artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: mendixnative-archive
+          path: ${{ github.workspace }}/shared/libs/libraries.zip

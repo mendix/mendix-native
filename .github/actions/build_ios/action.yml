@@ -1,0 +1,23 @@
+name: 'Build iOS Library'
+description: 'Builds the iOS library using Fastlane'
+
+runs:
+  using: 'composite'
+
+  steps:
+    - name: Install Fastlane
+      run: gem install fastlane
+      shell: bash
+
+    - name: Setup Node
+      uses: actions/setup-node@v3
+      with:
+        node-version-file: .nvmrc
+
+    - name: Build iOS Library with Fastlane
+      run: cd ios && fastlane ios build_mendix_native
+      shell: bash
+
+    - name: Copy iOS Library to Shared Directory
+      run: mkdir -p ${{ github.workspace }}/shared/libs/ios && cp ./ios/build/mendixnative/mendixnative.xcframework ${{ github.workspace }}/shared/libs/ios/mendixnative.xcframework
+      shell: bash

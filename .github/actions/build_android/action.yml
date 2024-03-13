@@ -1,0 +1,34 @@
+name: 'Build Android Library'
+description: 'Builds the Android library using Fastlane'
+
+runs:
+  using: 'composite'
+
+  steps:
+    - name: Set up JDK
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: 11
+
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '2.7'
+
+    - name: Install Fastlane
+      run: gem install fastlane
+      shell: bash
+
+    - name: Setup Node
+      uses: actions/setup-node@v3
+      with:
+        node-version-file: .nvmrc
+
+    - name: Build Android Library with Fastlane
+      run: cd android && fastlane android build_mendix_native
+      shell: bash
+
+    - name: Copy Android Library to Shared Directory
+      run: mkdir -p ${{ github.workspace }}/shared/libs/android && cp ./artifacts/aar/mendixnative-release.aar ${{ github.workspace }}/shared/libs/android/mendixnative-release.aar
+      shell: bash
