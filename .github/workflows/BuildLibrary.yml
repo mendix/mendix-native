@@ -43,7 +43,7 @@ jobs:
           zip -r libraries.zip .
 
       - name: Upload Libraries to Artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: mendixnative-archive
           path: ${{ github.workspace }}/shared/libs/libraries.zip
