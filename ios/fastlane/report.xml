@@ -5,42 +5,42 @@
     
     
       
-      <testcase classname="fastlane.lanes" name="0: Verifying fastlane version" time="0.000427">
+      <testcase classname="fastlane.lanes" name="0: Verifying fastlane version" time="0.000295">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="1: default_platform" time="0.000149">
+      <testcase classname="fastlane.lanes" name="1: default_platform" time="0.0002">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="2: npm ci --legacy-peer-deps" time="26.323469">
+      <testcase classname="fastlane.lanes" name="2: npm ci --legacy-peer-deps" time="16.604516">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="3: cocoapods" time="19.00693">
+      <testcase classname="fastlane.lanes" name="3: cocoapods" time="6.773095">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="4: rm -rf /Users/selim.ustel/Desktop/work/mendix-native/ios/build/mendixnative &amp;&amp; mkdir -p /Users/selim.ustel/Desktop/work/mendix-native/ios/build/mendixnative" time="0.461376">
+      <testcase classname="fastlane.lanes" name="4: rm -rf /Users/uraz.akgultan/Mendix/mendix-native/ios/build/mendixnative &amp;&amp; mkdir -p /Users/uraz.akgultan/Mendix/mendix-native/ios/build/mendixnative" time="0.179887">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="5: xcodebuild" time="140.122547">
+      <testcase classname="fastlane.lanes" name="5: xcodebuild" time="131.271205">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="6: xcodebuild" time="39.591955">
+      <testcase classname="fastlane.lanes" name="6: xcodebuild" time="57.842574">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="7: create_xcframework" time="1.707279">
+      <testcase classname="fastlane.lanes" name="7: create_xcframework" time="0.652405">
         
       </testcase>
     
