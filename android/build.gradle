@@ -1,94 +1,87 @@
 buildscript {
-  // Buildscript is evaluated before everything else so we can't use getExtOrDefault
-  def kotlin_version = rootProject.ext.has("kotlinVersion") ? rootProject.ext.get("kotlinVersion") : project.properties["MendixNative_kotlinVersion"]
+    ext {
+        buildToolsVersion = "33.0.0"
+        minSdkVersion = 21
+        compileSdkVersion = 33
+        targetSdkVersion = 33
+        ndkVersion = "23.1.7779620"
+        kotlin_version = "1.8.21"
 
-  repositories {
-    google()
-    mavenCentral()
-  }
+        // needed by camera module
+        googlePlayServicesVersion = "17+"
+        supportLibVersion = "28.0.0"
+        lifecycleVersion = "2.0.0"
+        androidx_core_version = "1.6.0"
+        androidXBrowser = "1.2.0"
+        excludeAppGlideModule = true
+        androidx_lifecycle_version = "2.6.1"
+        constraint_layout_version = "2.0.4"
+        appcompat_version = "1.3.1"
+        excludeAppGlideModule = true
+        compose_ui_version = '1.2.0'
+        camerax_version = "1.3.0-alpha04"
 
-  dependencies {
-    classpath "com.android.tools.build:gradle:7.2.1"
-    // noinspection DifferentKotlinGradleVersion
-    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-  }
-}
-
-def isNewArchitectureEnabled() {
-  return rootProject.hasProperty("newArchEnabled") && rootProject.getProperty("newArchEnabled") == "true"
-}
-
-apply plugin: "com.android.library"
-apply plugin: "kotlin-android"
-
-if (isNewArchitectureEnabled()) {
-  apply plugin: "com.facebook.react"
-}
-
-def getExtOrDefault(name) {
-  return rootProject.ext.has(name) ? rootProject.ext.get(name) : project.properties["MendixNative_" + name]
-}
-
-def getExtOrIntegerDefault(name) {
-  return rootProject.ext.has(name) ? rootProject.ext.get(name) : (project.properties["MendixNative_" + name]).toInteger()
-}
-
-def supportsNamespace() {
-  def parsed = com.android.Version.ANDROID_GRADLE_PLUGIN_VERSION.tokenize('.')
-  def major = parsed[0].toInteger()
-  def minor = parsed[1].toInteger()
-
-  // Namespace support was added in 7.3.0
-  return (major == 7 && minor >= 3) || major >= 8
-}
-
-android {
-  if (supportsNamespace()) {
-    namespace "com.mendixnative"
-
-    sourceSets {
-      main {
-        manifest.srcFile "src/main/AndroidManifestNew.xml"
-      }
+        // Proxy repositories
+        bintray = "${System.getenv('GRADLE_BINTRAY_REPO') ?: project.findProperty('mendix.bintray')}"
+        jitpack = "${System.getenv('GRADLE_JITPACK_REPO') ?: project.findProperty('mendix.jitpack')}"
     }
-  }
 
-  compileSdkVersion getExtOrIntegerDefault("compileSdkVersion")
-
-  defaultConfig {
-    minSdkVersion getExtOrIntegerDefault("minSdkVersion")
-    targetSdkVersion getExtOrIntegerDefault("targetSdkVersion")
-
-  }
-
-  buildTypes {
-    release {
-      minifyEnabled false
+    repositories {
+        google()
+        mavenCentral()
+        maven {
+            url bintray
+        }
     }
-  }
 
-  lintOptions {
-    disable "GradleCompatible"
-  }
-
-  compileOptions {
-    sourceCompatibility JavaVersion.VERSION_1_8
-    targetCompatibility JavaVersion.VERSION_1_8
-  }
+    dependencies {
+        classpath "com.android.tools.build:gradle:7.2.2"
+        classpath "com.facebook.react:react-native-gradle-plugin"
+        classpath "com.google.gms:google-services:4.3.14"
+        classpath "de.undercouch:gradle-download-task:5.0.1"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
 }
 
-repositories {
-  mavenCentral()
-  google()
+plugins {
+    id 'com.android.library' version '8.1.2' apply false
+    id 'org.jetbrains.kotlin.android' version '1.9.0' apply false
 }
 
-def kotlin_version = getExtOrDefault("kotlinVersion")
+allprojects {
+    tasks.withType(JavaCompile) {
+        options.forkOptions.memoryMaximumSize = '512m'
+    }
 
-dependencies {
-  // For < 0.71, this will be from the local maven repo
-  // For > 0.71, this will be replaced by `com.facebook.react:react-android:$version` by react gradle plugin
-  //noinspection GradleDynamicVersion
-  implementation "com.facebook.react:react-native:+"
-  implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    tasks.withType(GroovyCompile) {
+        groovyOptions.forkOptions.memoryMaximumSize = '512m'
+    }
+
+    repositories {
+        all { ArtifactRepository repo ->
+            if (repo.url.toString().contains("jcenter.bintray.com") || repo.url.toString().contains("jitpack.io")) {
+                remove repo
+                mavenCentral()
+            }
+        }
+        google()
+        maven {
+            url bintray
+        }
+        maven {
+            url jitpack
+        }
+    }
 }
 
+subprojects {
+    afterEvaluate { project ->
+        if(project.hasProperty('android')) {
+            project.android {
+                if (namespace == null) {
+                    namespace project.group
+                }
+            }
+        }
+    }
+}

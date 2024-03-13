@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/dev_menu_root"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:animateLayoutChanges="true"
+    android:orientation="vertical">
+
+    <Button
+        android:id="@+id/advanced_settings_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/white"
+        android:contentDescription="advanced_settings_button"
+        android:gravity="start|center_vertical"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:text="@string/app_menu_advanced_settings"
+        android:textAlignment="textStart"
+        android:visibility="visible" />
+
+    <LinearLayout
+        android:id="@+id/advanced_settings_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:orientation="vertical"
+        android:visibility="visible">
+
+        <Button
+            android:id="@+id/advanced_clear_data"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/white"
+            android:contentDescription="advanced_clear_data"
+            android:gravity="start|center_vertical"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:text="@string/app_menu_clear_data"
+            android:textAlignment="textStart"
+            android:textColor="@android:color/holo_red_dark" />
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/remote_debugging_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/white"
+        android:contentDescription="remote_debugging_button"
+        android:gravity="start|center_vertical"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:text="@string/dev_menu_enable_remote_debugging"
+        android:textAlignment="textStart"
+        android:visibility="visible" />
+
+    <Button
+        android:id="@+id/element_inspector_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/white"
+        android:contentDescription="element_inspector_button"
+        android:gravity="start|center_vertical"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:text="@string/app_menu_toggle_element_inspector"
+        android:textAlignment="textStart"
+        android:visibility="visible" />
+
+    <Button
+        android:id="@+id/reload_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/white"
+        android:contentDescription="reload_button"
+        android:gravity="start|center_vertical"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:text="@string/app_menu_reload"
+        android:textAlignment="textStart" />
+
+    <Button
+        android:id="@+id/close_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/white"
+        android:contentDescription="close_button"
+        android:gravity="start|center_vertical"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:text="@string/app_menu_close"
+        android:textAlignment="textStart" />
+
+</LinearLayout>
