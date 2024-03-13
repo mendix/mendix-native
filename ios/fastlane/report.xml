@@ -5,32 +5,42 @@
     
     
       
-      <testcase classname="fastlane.lanes" name="0: Verifying fastlane version" time="0.000239">
+      <testcase classname="fastlane.lanes" name="0: Verifying fastlane version" time="0.000427">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="1: default_platform" time="0.0001">
+      <testcase classname="fastlane.lanes" name="1: default_platform" time="0.000149">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="2: cocoapods" time="12.13251">
+      <testcase classname="fastlane.lanes" name="2: npm ci --legacy-peer-deps" time="26.323469">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="3: rm -rf /Users/selim.ustel/Desktop/mendix-native/ios/build/mendixnative &amp;&amp; mkdir -p /Users/selim.ustel/Desktop/mendix-native/ios/build/mendixnative" time="0.448913">
+      <testcase classname="fastlane.lanes" name="3: cocoapods" time="19.00693">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="4: xcodebuild" time="160.670839">
+      <testcase classname="fastlane.lanes" name="4: rm -rf /Users/selim.ustel/Desktop/work/mendix-native/ios/build/mendixnative &amp;&amp; mkdir -p /Users/selim.ustel/Desktop/work/mendix-native/ios/build/mendixnative" time="0.461376">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="5: xcodebuild" time="88.571556">
+      <testcase classname="fastlane.lanes" name="5: xcodebuild" time="140.122547">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="6: xcodebuild" time="39.591955">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="7: create_xcframework" time="1.707279">
         
       </testcase>
     

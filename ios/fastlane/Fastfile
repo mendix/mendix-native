@@ -11,6 +11,7 @@ platform :ios do
   
     desc "Build a new version of MendixNative lib"
   lane :build_mendixnative do |options|
+    sh("npm", "ci", "--legacy-peer-deps")
     cocoapods
 
     build_folder = File.expand_path("../build/mendixnative")
