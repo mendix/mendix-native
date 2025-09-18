@@ -2,6 +2,7 @@ package com.mendix.mendixnative
 
 import android.app.Activity
 import android.view.MotionEvent
+import com.facebook.react.ReactHost
 import com.facebook.react.ReactInstanceEventListener
 import com.facebook.react.ReactNativeHost
 import com.facebook.react.bridge.ReactContext
@@ -24,6 +25,7 @@ import com.mendixnative.MendixNativeModule
 
 class MendixInitializer(
   private val context: Activity,
+  private val reactHost: ReactHost,
   private val reactNativeHost: ReactNativeHost,
   private val hasRNDeveloperSupport: Boolean = false,
 ) : ReactInstanceEventListener {
@@ -85,7 +87,7 @@ class MendixInitializer(
 
     if (hasRNDeveloperSupport) {
       AppPreferences(context.applicationContext).setElementInspector(false)
-      reactNativeHost.reactInstanceManager.removeReactInstanceEventListener(this)
+      reactHost.removeReactInstanceEventListener(this)
     }
 
     // We need to clear the host to allow for reinitialization of the Native Modules
@@ -119,8 +121,8 @@ class MendixInitializer(
       }
     }
 
-    (reactNativeHost.reactInstanceManager.devSupportManager as? DevSupportManagerBase)?.run {
-      attachMendixSupportManagerShakeDetector(shakeDetector!!, this)
+    (reactHost.devSupportManager as? DevSupportManagerBase)?.run {
+        attachMendixSupportManagerShakeDetector(shakeDetector!!, this)
     }
   }
 
@@ -135,8 +137,7 @@ class MendixInitializer(
     preferences.setDevMode((mendixApp.showExtendedDevMenu))
 
     clearCachedReactNativeDevBundle(context.application)
-    val reactInstanceManager = reactNativeHost.reactInstanceManager
-    reactInstanceManager.addReactInstanceEventListener(this)
+    reactHost.addReactInstanceEventListener(this)
   }
 }
 

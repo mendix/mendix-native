@@ -1,5 +1,7 @@
 #import <MendixNativeSpec/MendixNativeSpec.h>
-#import <React/RCTEventEmitter.h>
+#import <React/RCTReloadCommand.h>
+#import "RNCAsyncStorage.h"
 
-@interface MendixNative : RCTEventEmitter <NativeMendixNativeSpec>
+@interface MendixNative : NativeMendixNativeSpecBase <NativeMendixNativeSpec>
+- (void)reloadClientWithState;
 @end

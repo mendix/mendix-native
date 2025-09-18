@@ -1,65 +1,62 @@
-//
-//  AppPreferences.swift
-//  MendixNative
-//
-//  Created by Yogendra Shelke on 05/09/25.
-//  Copyright (c) Mendix, Inc. All rights reserved.
-//
-
 import Foundation
 
-@objc class AppPreferences: NSObject {
+public class AppPreferences: NSObject {
+    @UserDefault(key: "ApplicationUrl", defaultValue: nil)
+    static var _appUrl: String?
     
-    // MARK: - Constants
-    private static let appUrlKey = "ApplicationUrl"
-    private static let devModeEnabledKey = "DevModeEnabled"
-    private static let clearDataEnabledKey = "ClearData"
-    private static let remoteDebuggingEnabledKey = "RemoteDebuggingEnabled"
-    private static let remoteDebuggingPackagerPortKey = "RemoteDebuggingPackagerPort"
-    private static let elementInspectorDebugKey = "showInspector"
+    @UserDefault(key: "DevModeEnabled", defaultValue: false)
+    static var _devModeEnabled: Bool
     
-    // MARK: - App URL Methods
-    @objc static func getAppUrl() -> String? {
-        return UserDefaults.standard.string(forKey: appUrlKey)
+    @UserDefault(key: "RemoteDebuggingEnabled", defaultValue: false)
+    static var _remoteDebuggingEnabled: Bool
+    
+    @UserDefault(key: "showInspector", defaultValue: false)
+    static var _elementInspectorEnabled: Bool
+    
+    @UserDefault(key: "RemoteDebuggingPackagerPort", defaultValue: AppUrl.defaultPackagerPort)
+    private static var _packagerPort: Int
+    
+    public static var remoteDebuggingPackagerPort: Int {
+        get {
+            return AppUrl.ensurePort(_packagerPort)
+        }
+        set {
+            _packagerPort = newValue
+        }
     }
-    
-    @objc static func setAppUrl(_ url: String) {
-        UserDefaults.standard.set(url, forKey: appUrlKey)
+  
+    public static var appUrl = _appUrl
+    public static var devModeEnabled = _devModeEnabled
+    public static var remoteDebuggingEnabled = _remoteDebuggingEnabled
+    public static var elementInspectorEnabled = _elementInspectorEnabled
+  
+    public static var safeAppUrl: String {
+      return appUrl ?? ""
     }
-    
-    // MARK: - Dev Mode Methods
-    @objc static func devModeEnabled() -> Bool {
-        return UserDefaults.standard.bool(forKey: devModeEnabledKey)
+  
+}
+
+//TODO: Move to separate file
+@propertyWrapper
+struct UserDefault<T> {
+    let key: String
+    let defaultValue: T
+    let container: UserDefaults
+
+    init(key: String, defaultValue: T, container: UserDefaults = .standard) {
+        self.key = key
+        self.defaultValue = defaultValue
+        self.container = container
     }
-    
-    @objc static func devMode(_ enable: Bool) {
-        UserDefaults.standard.set(enable, forKey: devModeEnabledKey)
-    }
-    
-    // MARK: - Remote Debugging Methods
-    @objc static func remoteDebuggingEnabled() -> Bool {
-        return UserDefaults.standard.bool(forKey: remoteDebuggingEnabledKey)
-    }
-    
-    @objc static func remoteDebugging(_ enable: Bool) {
-        UserDefaults.standard.set(enable, forKey: remoteDebuggingEnabledKey)
-    }
-    
-    @objc static func getRemoteDebuggingPackagerPort() -> Int {
-        let port = UserDefaults.standard.integer(forKey: remoteDebuggingPackagerPortKey)
-        return port != 0 ? port : AppUrl.defaultPackagerPort()
-    }
-    
-    @objc static func setRemoteDebuggingPackagerPort(_ port: Int) {
-        UserDefaults.standard.set(port, forKey: remoteDebuggingPackagerPortKey)
-    }
-    
-    // MARK: - Element Inspector Methods
-    @objc static func isElementInspectorEnabled() -> Bool {
-        return UserDefaults.standard.bool(forKey: elementInspectorDebugKey)
-    }
-    
-    @objc static func setElementInspector(_ enable: Bool) {
-        UserDefaults.standard.set(enable, forKey: elementInspectorDebugKey)
+
+    var wrappedValue: T {
+        get {
+            return container.object(forKey: key) as? T ?? defaultValue
+        }
+        set {
+            container.set(newValue, forKey: key)
+        }
     }
 }
+
+//Checked

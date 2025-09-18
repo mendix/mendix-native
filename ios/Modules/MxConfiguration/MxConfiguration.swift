@@ -1,14 +1,7 @@
-//
-//  MxConfiguration.swift
-//  MendixNative
-//
-//  Copyright (c) Mendix, Inc. All rights reserved.
-//
-
 import Foundation
-import React
 
-@objc public class MxConfiguration: NSObject {
+@objcMembers
+public class MxConfiguration: NSObject {
     
     /**
      * Side note for 11: I've bumped the nativeBinaryVersion from 12 to 30,
@@ -31,48 +24,42 @@ import React
     
     // MARK: - Static Getters and Setters
     
-    @objc static var runtimeUrl: URL? {
+    static var runtimeUrl: URL? {
         get { return _runtimeUrl }
         set { _runtimeUrl = newValue }
     }
     
-    @objc static var appName: String? {
+    static var appName: String? {
         get { return _appName }
         set { _appName = newValue }
     }
     
-    @objc static var appSessionId: String? {
+    static var appSessionId: String? {
         get { return _appSessionId }
         set { _appSessionId = newValue }
     }
     
-    @objc static var isDeveloperApp: Bool {
+    static var isDeveloperApp: Bool {
         get { return _isDeveloperApp }
         set { _isDeveloperApp = newValue }
     }
     
-    @objc static var databaseName: String {
+    static var databaseName: String {
         get { return _databaseName ?? defaultDatabaseName }
         set { _databaseName = newValue }
     }
     
-    @objc static var filesDirectoryName: String {
+    static var filesDirectoryName: String {
         get { return _filesDirectoryName ?? defaultFilesDirectoryName }
         set { _filesDirectoryName = newValue }
     }
     
-    @objc static var warningsFilter: WarningsFilter {
+    static var warningsFilter: WarningsFilter {
         get { return _warningsFilter }
         set { _warningsFilter = newValue }
     }
     
-    // MARK: - React Native Module Setup
-    
-    @objc static func requiresMainQueueSetup() -> Bool {
-        return true
-    }
-    
-    @objc func constants() -> [String: Any] {
+    public func constants() -> [String: Any] {
         guard let runtimeUrl = MxConfiguration.runtimeUrl else {
             let exception = NSException(
                 name: NSExceptionName("RUNTIME_URL_MISSING"),
@@ -97,3 +84,5 @@ import React
         ]
     }
 }
+
+//Checked

@@ -1,6 +1,9 @@
-import Mx from './specs/NativeMendixNative';
+import Mx, {
+  type OtaDeployConfig,
+  type OtaDownloadConfig,
+} from './specs/NativeMendixNative';
 
 export const NativeOta = {
-  download: Mx.otaDownload,
-  deploy: Mx.otaDeploy,
+  download: (config: OtaDownloadConfig) => Mx.otaDownload(config),
+  deploy: (config: OtaDeployConfig) => Mx.otaDeploy(config),
 };

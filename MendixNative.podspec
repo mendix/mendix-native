@@ -14,10 +14,11 @@ Pod::Spec.new do |s|
   s.source       = { :git => "https://github.com/mendix/mendix-native.git", :tag => "#{s.version}" }
 
   s.source_files = "ios/**/*.{h,m,mm,cpp,swift}"
-  s.private_header_files = "ios/**/*.h"
   s.public_header_files = "ios/**/*.h"
+  s.private_header_files = "ios/**/*.h"
 
   s.dependency "SSZipArchive"
+  s.dependency "RNCAsyncStorage"
 
   install_modules_dependencies(s)
 end

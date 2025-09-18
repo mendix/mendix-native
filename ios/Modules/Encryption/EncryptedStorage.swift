@@ -2,99 +2,109 @@
 import Foundation
 import React
 
-@objc public class EncryptedStorage: NSObject {
-  
-  @objc public static let isEncrypted = true
-  
-  @objc public func setItem(key: String, value: String, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
-    guard let dataFromValue = value.data(using: .utf8) else {
-      rejectPromise("An error occured while saving value", errorCode: 0, reject: reject)
-      return
+//TODO: Move to separate file
+@objcMembers public class Promise: NSObject {
+    public let resolve: RCTPromiseResolveBlock
+    public let reject: RCTPromiseRejectBlock
+    
+    public init(resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+        self.resolve = resolve
+        self.reject = reject
     }
     
-    let storeQuery: [String: Any] = [
-      kSecClass as String: kSecClassGenericPassword,
-      kSecAttrAccount as String: key,
-      kSecValueData as String: dataFromValue
-    ]
-    
-    SecItemDelete(storeQuery as CFDictionary)
-    
-    let status = SecItemAdd(storeQuery as CFDictionary, nil)
-    
-    if status == noErr {
-      resolve(value)
-    } else {
-      rejectPromise("An error occured while saving value", errorCode: Int(status), reject: reject)
+    public func reject(_ message: String, errorCode: Int) {
+        let domain = Bundle.main.bundleIdentifier ?? "EncryptedStorage"
+        let error = NSError(domain: domain, code: errorCode, userInfo: nil)
+        let errorCode = "\(error.code)"
+        let errorMessage = "RNEncryptedStorageError: \(message)"
+        reject(errorCode, errorMessage, error)
     }
-  }
-  
-  @objc public func clear() {
-    let secureItems: [CFString] = [
-      kSecClassGenericPassword,
-      kSecClassInternetPassword,
-      kSecClassCertificate,
-      kSecClassKey,
-      kSecClassIdentity
-    ]
     
-    for item in secureItems {
-      let query: [String: Any] = [
-        kSecClass as String: item
-      ]
-      SecItemDelete(query as CFDictionary)
+    public static func instance(_ resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) -> Promise {
+        return Promise(resolve: resolve, reject: reject)
     }
-  }
-  
-  @objc public func getItem(key: String, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
-    let query: [String: Any] = [
-      kSecClass as String: kSecClassGenericPassword,
-      kSecAttrAccount as String: key,
-      kSecReturnData as String: kCFBooleanTrue as Any,
-      kSecMatchLimit as String: kSecMatchLimitOne
-    ]
-    var dataRef: CFTypeRef?
-    let status = SecItemCopyMatching(query as CFDictionary, &dataRef)
-    if status == errSecSuccess {
-      guard let data = dataRef as? Data, let value = String(data: data, encoding: .utf8) else {
-        rejectPromise("An error occured while retrieving value", errorCode: Int(status), reject: reject)
-        return
-      }
-      resolve(value)
-    } else if status == errSecItemNotFound {
-      resolve(nil)
-    } else {
-      rejectPromise("An error occured while retrieving value", errorCode: Int(status), reject: reject)
-    }
-  }
-  
-  @objc public func removeItem(key: String, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
-    
-    let query: [String: Any] = [
-      kSecClass as String: kSecClassGenericPassword,
-      kSecAttrAccount as String: key,
-      kSecReturnData as String: kCFBooleanTrue as Any
-    ]
-    
-    let status = SecItemDelete(query as CFDictionary)
-    
-    if status == noErr || status == errSecItemNotFound {
-      resolve(key)
-    } else {
-      rejectPromise("An error occured while removing value", errorCode: Int(status), reject: reject)
-    }
-  }
-  
-  func rejectPromise(_ message: String, errorCode: Int, reject: RCTPromiseRejectBlock) {
-    let error = mapError(code: errorCode)
-    let errorCode = "\(error.code)"
-    let errorMessage = "RNEncryptedStorageError: \(message)"
-    reject(errorCode, errorMessage, error)
-  }
-  
-  func mapError(code: Int) -> NSError {
-    return NSError(domain: Bundle.main.bundleIdentifier ?? "EncryptedStorage", code: code, userInfo: nil)
-  }
 }
 
+@objcMembers public class EncryptedStorage: NSObject {
+    
+    public static let isEncrypted = true
+    
+    public func setItem(key: String, value: String, promise: Promise) {
+        guard let dataFromValue = value.data(using: .utf8) else {
+            promise.reject("An error occured while saving value", errorCode: 0)
+            return
+        }
+        
+        let storeQuery = [
+            kSecClass: kSecClassGenericPassword,
+            kSecAttrAccount: key,
+            kSecValueData: dataFromValue
+        ] as CFDictionary
+        
+        SecItemDelete(storeQuery)
+        
+        let status = SecItemAdd(storeQuery, nil)
+        
+        if status == noErr {
+            promise.resolve(value)
+        } else {
+            promise.reject("An error occured while saving value", errorCode: Int(status))
+        }
+    }
+    
+    public func getItem(key: String, promise: Promise) {
+        let query = [
+            kSecClass: kSecClassGenericPassword,
+            kSecAttrAccount: key,
+            kSecReturnData: kCFBooleanTrue as Any,
+            kSecMatchLimit: kSecMatchLimitOne
+        ] as CFDictionary
+        var dataRef: CFTypeRef?
+        let status = SecItemCopyMatching(query, &dataRef)
+        if status == errSecSuccess {
+            guard let data = dataRef as? Data, let value = String(data: data, encoding: .utf8) else {
+                promise.reject("An error occured while retrieving value", errorCode: Int(status))
+                return
+            }
+            promise.resolve(value)
+        } else if status == errSecItemNotFound {
+            promise.resolve(nil)
+        } else {
+            promise.reject("An error occured while retrieving value", errorCode: Int(status))
+        }
+    }
+    
+    public func removeItem(key: String, promise: Promise) {
+        
+        let query = [
+            kSecClass: kSecClassGenericPassword,
+            kSecAttrAccount: key,
+            kSecReturnData: kCFBooleanTrue as Any
+        ] as CFDictionary
+        
+        let status = SecItemDelete(query)
+        
+        if status == noErr || status == errSecItemNotFound {
+            promise.resolve(key)
+        } else {
+            promise.reject("An error occured while removing value", errorCode: Int(status))
+        }
+    }
+    
+    public func clear(resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
+        let secureItems: [CFString] = [
+            kSecClassGenericPassword,
+            kSecClassInternetPassword,
+            kSecClassCertificate,
+            kSecClassKey,
+            kSecClassIdentity
+        ]
+        
+        for item in secureItems {
+            SecItemDelete([kSecClass: item] as CFDictionary)
+        }
+        resolve(nil)
+    }
+}
 
+//Checked

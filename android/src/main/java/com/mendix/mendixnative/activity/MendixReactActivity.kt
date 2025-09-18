@@ -31,7 +31,7 @@ open class MendixReactActivity : ReactActivity(), DevAppMenuHandler, LaunchScree
       ?: throw ClassCastException("Application needs to implement MendixApplication")
 
     mendixInitializer =
-      MendixInitializer(this, reactNativeHost, mendixApplication.useDeveloperSupport)
+      MendixInitializer(this, reactHost, reactNativeHost, mendixApplication.useDeveloperSupport)
     mendixInitializer.onCreate(mendixApp!!, this, intent.getBooleanExtra(CLEAR_DATA, false))
 
     super.onCreate(null)
@@ -60,7 +60,7 @@ open class MendixReactActivity : ReactActivity(), DevAppMenuHandler, LaunchScree
     get() = if (reactNativeHost.hasInstance()) reactInstanceManager.currentReactContext else null
 
   val currentDevSupportManager: DevSupportManager?
-    get() = if (reactNativeHost.hasInstance()) reactNativeHost.reactInstanceManager.devSupportManager else null
+    get() = reactHost.devSupportManager
 
   override fun createReactActivityDelegate(): ReactActivityDelegate {
     return object : ReactActivityDelegate(this, mainComponentName) {

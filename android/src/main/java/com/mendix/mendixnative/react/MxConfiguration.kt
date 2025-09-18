@@ -11,16 +11,16 @@ import com.mendix.mendixnative.react.ota.getOtaManifestFilepath
 class MxConfiguration(val reactContext: ReactApplicationContext) {
 
   fun getConstants(): WritableMap? {
-//    val application = (reactContext.applicationContext as MendixApplication)
+    val application = (reactContext.applicationContext as MendixApplication)
     if (runtimeUrl == null) {
       if (warningsFilter != WarningsFilter.none) {
-//        application.reactNativeHost
-//          .reactInstanceManager
-//          .devSupportManager
-//          .showNewJavaError(
-//            "Runtime URL not specified.",
-//            Throwable("Without the runtime URL, the app cannot retrieve any data.\n\nPlease redeploy the app.")
-//          )
+        application.reactNativeHost
+          .reactInstanceManager
+          .devSupportManager
+          .showNewJavaError(
+            "Runtime URL not specified.",
+            Throwable("Without the runtime URL, the app cannot retrieve any data.\n\nPlease redeploy the app.")
+          )
 
         return WritableNativeMap()
       }
@@ -38,9 +38,9 @@ class MxConfiguration(val reactContext: ReactApplicationContext) {
     ) // Not to be removed as it is required for backwards compatibility.
     constants.putString("WARNINGS_FILTER_LEVEL", warningsFilter.toString())
     constants.putString("OTA_MANIFEST_PATH", getOtaManifestFilepath(reactContext))
-//    constants.putBoolean("IS_DEVELOPER_APP", application.getUseDeveloperSupport())
+    constants.putBoolean("IS_DEVELOPER_APP", application.getUseDeveloperSupport())
     constants.putInt("NATIVE_BINARY_VERSION", NATIVE_BINARY_VERSION)
-//    constants.putString("APP_SESSION_ID", application.getAppSessionId())
+    constants.putString("APP_SESSION_ID", application.getAppSessionId())
 
     val dependencies = WritableNativeMap()
     getNativeDependencies(reactContext).forEach {

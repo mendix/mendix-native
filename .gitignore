@@ -30,6 +30,9 @@ DerivedData
 project.xcworkspace
 *.env.local
 ios/Pods
+example/ios/Pods
+ios/build
+example/vendor
 
 # Android/IJ
 #

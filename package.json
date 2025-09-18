@@ -38,7 +38,8 @@
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib",
     "prepare": "bob build",
-    "release": "release-it --only-version"
+    "release": "release-it --only-version",
+    "dev:ios": "yarn prepare && (cd example && yarn pod && xed ios && watchman watch-del-all && yarn start)"
   },
   "keywords": [
     "react-native",
@@ -49,7 +50,7 @@
     "type": "git",
     "url": "git+https://github.com/mendix/mendix-native.git"
   },
-  "author": "Yogendra Shelke <yogendra.shelke@mendix.com> (https://gitlab.rnd.mendix.com/Yogendra.Shelke)",
+  "author": "",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/mendix/mendix-native/issues"

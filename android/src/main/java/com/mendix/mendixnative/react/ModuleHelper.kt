@@ -2,6 +2,7 @@ package com.mendix.mendixnative.react
 
 import android.annotation.SuppressLint
 import android.util.Log
+import com.facebook.react.ReactApplication
 import com.facebook.react.ReactNativeHost
 import com.facebook.react.bridge.NativeModule
 import com.facebook.react.bridge.ReactApplicationContext

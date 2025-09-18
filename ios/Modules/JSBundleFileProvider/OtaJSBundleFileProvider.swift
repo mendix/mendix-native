@@ -1,18 +1,13 @@
-//
-//  OtaJSBundleFileProvider.swift
-//  MendixNative
-//
-//  Copyright (c) Mendix, Inc. All rights reserved.
-//
-
 import Foundation
 
-@objc class OtaJSBundleFileProvider: NSObject, JSBundleFileProviderProtocol {
+public class OtaJSBundleFileProvider: NSObject {
     
     static func formatMessage(_ message: String) -> String {
         return "\(String(describing: OtaJSBundleFileProvider.self)): \(message)"
     }
-    
+}
+
+extension OtaJSBundleFileProvider: JSBundleFileProviderProtocol {
     /*
      * Returns the OTA bundle's location URL if an OTA bundle has been downloaded and deployed.
      * It:
@@ -21,7 +16,7 @@ import Foundation
      *     - Verifies a bundle exists in the location expected
      *   - Returns the absolute path to the OTA bundle if it succeeds
      */
-    @objc static func getBundleUrl() -> URL? {
+    public static func getBundleUrl() -> URL? {
         let manifestPath = OtaHelpers.getOtaManifestFilepath()
         
         guard FileManager.default.fileExists(atPath: manifestPath) else {
@@ -66,3 +61,5 @@ import Foundation
         return URL(string: encodedPath)
     }
 }
+
+//Checked

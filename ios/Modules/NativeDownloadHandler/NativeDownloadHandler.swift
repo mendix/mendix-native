@@ -1,46 +1,38 @@
-//
-//  NativeDownloadHandler.swift
-//  MendixNative
-//
-//  Copyright (c) Mendix, Inc. All rights reserved.
-//
-
 import Foundation
 import React
 
-@objc class NativeDownloadHandler: NSObject {
+fileprivate func formatMessage(_ message: String) -> String {
+    return "\(String(describing: NativeDownloadHandler.self)): \(message)"
+}
+
+class NativeDownloadHandler: NSObject {
     
-    @objc var mimeType: String?
-    @objc var connectionTimeout: Int = 10
-    @objc var doneCallback: (() -> Void)?
-    @objc var progressCallback: ((Int64, Int64) -> Void)?
-    @objc var failCallback: ((Error) -> Void)?
-    @objc var downloadPath: String = ""
+    let mimeType: String?
+    let connectionTimeout: Int
+    let doneCallback: (() -> Void)?
+    let progressCallback: ((Int64, Int64) -> Void)?
+    let failCallback: ((Error) -> Void)?
+    var downloadPath: String = ""
     
-    static func formatMessage(_ message: String) -> String {
-        return "\(String(describing: NativeDownloadHandler.self)): \(message)"
-    }
-    
-    @objc init(_ config: [String: Any]?,
-              doneCallback: @escaping () -> Void,
-              progressCallback: ((Int64, Int64) -> Void)?,
-              failCallback: @escaping (Error) -> Void) {
-        super.init()
-        
-        self.mimeType = config?["mimeType"] as? String
-        
-        if let timeoutValue = config?["connectionTimeout"] as? NSNumber {
+    init(_
+         config: [String: Any],
+         doneCallback: @escaping () -> Void,
+         progressCallback: ((Int64, Int64) -> Void)?,
+         failCallback: @escaping (Error) -> Void
+    ) {
+        if let timeoutValue = config["connectionTimeout"] as? NSNumber {
             self.connectionTimeout = timeoutValue.intValue / 1000
         } else {
             self.connectionTimeout = 10
         }
-        
+        self.mimeType = config["mimeType"] as? String
         self.doneCallback = doneCallback
         self.progressCallback = progressCallback
         self.failCallback = failCallback
+        super.init()
     }
     
-    @objc func download(_ urlString: String, downloadPath: String) {
+    func download(_ urlString: String, downloadPath: String) {
         self.downloadPath = downloadPath
         
         let configuration = URLSessionConfiguration.default
@@ -69,7 +61,7 @@ extension NativeDownloadHandler: URLSessionDownloadDelegate {
         if let expectedMimeType = mimeType,
            let responseMimeType = downloadTask.response?.mimeType,
            responseMimeType != expectedMimeType {
-          let error = NSError(domain: UserDefaults.argumentDomain, code: -1, userInfo: [NSLocalizedDescriptionKey: "MIME type not expected."])
+            let error = NSError(domain: UserDefaults.argumentDomain, code: -1, userInfo: [NSLocalizedDescriptionKey: "MIME type not expected."])
             failCallback?(error)
             return
         }
@@ -84,9 +76,13 @@ extension NativeDownloadHandler: URLSessionDownloadDelegate {
         // Create directory if needed
         let directoryUrl = URL(fileURLWithPath: (downloadPath as NSString).deletingLastPathComponent)
         do {
-            try fileManager.createDirectory(at: directoryUrl, withIntermediateDirectories: true, attributes: nil)
+            try fileManager.createDirectory(
+                at: directoryUrl,
+                withIntermediateDirectories: true,
+                attributes: nil
+            )
         } catch {
-            NSLog("%@", Self.formatMessage("Could not create path: \(error)"))
+            NSLog("%@", formatMessage("Could not create path: \(error)"))
             failCallback?(error)
             return
         }
@@ -96,22 +92,24 @@ extension NativeDownloadHandler: URLSessionDownloadDelegate {
         let backupName = "\((downloadPath as NSString).lastPathComponent)_backup"
         
         do {
-            _ = try fileManager.replaceItem(at: destinationUrl, 
-                                          withItemAt: location, 
-                                          backupItemName: backupName, 
-                                          options: .usingNewMetadataOnly, 
-                                          resultingItemURL: nil)
-            NSLog("%@", Self.formatMessage("File saved successfully"))
+            _ = try fileManager.replaceItem(
+                at: destinationUrl,
+                withItemAt: location,
+                backupItemName: backupName,
+                options: .usingNewMetadataOnly,
+                resultingItemURL: nil
+            )
+            NSLog("%@", formatMessage("File saved successfully"))
             doneCallback?()
         } catch {
             try? fileManager.removeItem(at: destinationUrl)
-            NSLog("%@", Self.formatMessage("Could not copy path: \(error)"))
+            NSLog("%@", formatMessage("Could not copy path: \(error)"))
             failCallback?(error)
         }
     }
     
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didWriteData bytesWritten: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
-        NSLog("%@", Self.formatMessage("Bytes written \(totalBytesWritten)"))
+        NSLog("%@", formatMessage("Bytes written \(totalBytesWritten)"))
         progressCallback?(totalBytesWritten, totalBytesExpectedToWrite)
     }
 }
@@ -121,44 +119,40 @@ extension NativeDownloadHandler: URLSessionTaskDelegate {
     
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         guard let error = error else { return }
-        
-        NSLog("%@", Self.formatMessage("Could not download: \(error)"))
+        NSLog("%@", formatMessage("Could not download: \(error)"))
         failCallback?(error)
     }
 }
 
 // MARK: - React Native Bridge Module
-@objc public class NativeDownloadModule: RCTEventEmitter {
+@objcMembers
+public class NativeDownloadModule: NSObject {
     
     private static let ERROR_DOWNLOAD_FAILED = "ERROR_DOWNLOAD_FAILED"
-    private static let DOWNLOAD_PROGRESS_EVENT = "NativeDownloadModuleDownloadProgress"
     
-  @objc public func download(_ url: String,
-                       downloadPath: String,
-                       config: [String: Any],
-                       resolver resolve: @escaping RCTPromiseResolveBlock,
-                       rejecter reject: @escaping RCTPromiseRejectBlock) {
+    public func download(
+        _ url: String,
+        downloadPath: String,
+        config: [String: Any],
+        onProgress: @escaping ([String: Int64]) -> Void,
+        promise: Promise
+    ) {
         
         let handler = NativeDownloadHandler(
             config,
             doneCallback: {
-                resolve(nil)
+                promise.resolve(nil)
             },
-            progressCallback: { [weak self] received, total in
-                self?.sendEvent(withName: Self.DOWNLOAD_PROGRESS_EVENT, body: [
-                    "receivedBytes": NSNumber(value: received),
-                    "totalBytes": NSNumber(value: total)
-                ])
+            progressCallback: { received, total in
+                onProgress(["receivedBytes": received, "totalBytes": total])
             },
             failCallback: { error in
-                reject(Self.ERROR_DOWNLOAD_FAILED, NativeDownloadHandler.formatMessage(error.localizedDescription), error)
+                promise.reject(NativeDownloadModule.ERROR_DOWNLOAD_FAILED, formatMessage(error.localizedDescription), error)
             }
         )
         
         handler.download(url, downloadPath: downloadPath)
     }
-    
-    public override func supportedEvents() -> [String] {
-        return [Self.DOWNLOAD_PROGRESS_EVENT]
-    }
 }
+
+//Checked

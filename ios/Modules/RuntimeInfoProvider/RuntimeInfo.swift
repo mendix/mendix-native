@@ -1,27 +1,34 @@
-//
-//  RuntimeInfo.swift
-//  MendixNative
-//
-//  Created by Yogendra Shelke on 05/09/25.
-//  Copyright (c) Mendix, Inc. All rights reserved.
-//
-
 import Foundation
 
-@objc class RuntimeInfo: NSObject {
+public class RuntimeInfo: NSObject {
     
     // MARK: - Properties
-    @objc let cacheburst: String
-    @objc let nativeBinaryVersion: Int
-    @objc let packagerPort: Int
-    @objc let version: String
+    public let cacheburst: String
+    public let nativeBinaryVersion: Int
+    public let packagerPort: Int
+    public let version: String
     
     // MARK: - Initialization
-    @objc init(version: String, cacheburst: String, nativeBinaryVersion: Int, packagerPort: Int) {
+    public init(version: String, cacheburst: String, nativeBinaryVersion: Int, packagerPort: Int) {
         self.version = version
         self.cacheburst = cacheburst
         self.nativeBinaryVersion = nativeBinaryVersion
         self.packagerPort = packagerPort
         super.init()
     }
+    
+    convenience init(_ dictionary: [String: Any]) {
+        let version = dictionary["version"] as? String ?? ""
+        let cacheburst = dictionary["cachebust"] as? String ?? ""
+        let nativeBinaryVersion = dictionary["nativeBinaryVersion"] as? Int ?? 0
+        let packagerPort = dictionary["packagerPort"] as? Int ?? 0
+        self.init(
+            version: version,
+            cacheburst: cacheburst,
+            nativeBinaryVersion: nativeBinaryVersion,
+            packagerPort: packagerPort
+        )
+    }
 }
+
+//Checked

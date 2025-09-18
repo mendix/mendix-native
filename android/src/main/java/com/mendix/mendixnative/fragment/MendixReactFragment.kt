@@ -21,7 +21,7 @@ open class MendixReactFragment : ReactFragment(), MendixReactFragmentView {
   private var doubleTapReloadRecognizer = MendixDoubleTapRecognizer()
 
   val currentDevSupportManager: DevSupportManager?
-    get() = if (reactNativeHost.hasInstance()) reactNativeHost.reactInstanceManager.devSupportManager else null
+    get() = reactHost?.devSupportManager
 
   companion object {
     const val ARG_MENDIX_APP = "arg_mendix_app"
@@ -59,11 +59,15 @@ open class MendixReactFragment : ReactFragment(), MendixReactFragmentView {
         ?: throw IllegalArgumentException("Mendix app is required")
     }
 
+    if (reactHost == null) {
+        throw IllegalStateException("ReactHost is not set. Make sure that the activity extends MendixReactActivity or that you set the reactHost manually")
+    }
+
     val clearData = requireArguments().getBoolean(ARG_CLEAR_DATA, false)
     val hasRNDeveloperSupport = requireArguments().getBoolean(ARG_USE_DEVELOPER_SUPPORT, false)
 
     mendixInitializer =
-      MendixInitializer(requireActivity(), reactNativeHost, hasRNDeveloperSupport).also {
+      MendixInitializer(requireActivity(), reactHost!!, reactNativeHost, hasRNDeveloperSupport).also {
         it.onCreate(mendixApp!!, this, clearData)
       }
 

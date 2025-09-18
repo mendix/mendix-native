@@ -1,39 +1,34 @@
-import { Text, View, StyleSheet, Button } from 'react-native';
+import { Text, View, StyleSheet, Button, Alert } from 'react-native';
 import {
-  RNMendixEncryptedStorage,
   NativeReloadHandler,
   NativeCookie,
-  MxConfiguration,
+  onReloadWithStateEvent,
 } from 'mendix-native';
+import { useEffect } from 'react';
 
 export default function App() {
+  useEffect(() => {
+    const subscription = onReloadWithStateEvent(() =>
+      Alert.alert('Reload event received on JS end')
+    );
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+
+  const runtime = (global as any).nativeFabricUIManager
+    ? 'New Architecture'
+    : 'Legacy Architecture';
+
   return (
     <View style={styles.container}>
-      <Text>
-        Running on:{' '}
-        <Text style={styles.text}>
-          {(global as any).nativeFabricUIManager
-            ? 'New Architecture'
-            : 'Legacy Architecture'}
-        </Text>
-      </Text>
-      <Text>
-        Encryption status:{' '}
-        <Text style={styles.text}>
-          {RNMendixEncryptedStorage.IS_ENCRYPTED
-            ? 'Encrypted'
-            : 'Not Encrypted'}
-        </Text>
-      </Text>
+      <View style={styles.archContainer}>
+        <Text style={styles.text}>{runtime}</Text>
+      </View>
       <Button title="Exit App" onPress={() => NativeReloadHandler.exitApp()} />
       <Button title="Reload App" onPress={() => NativeReloadHandler.reload()} />
       <Button title="Clear Cookies" onPress={() => NativeCookie.clearAll()} />
-      <Button
-        title="Get Constants"
-        onPress={() => {
-          console.log('MxConfiguration Event:', MxConfiguration);
-        }}
-      />
     </View>
   );
 }
@@ -43,6 +38,14 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  archContainer: {
+    position: 'absolute',
+    top: 65,
+    right: 20,
+    padding: 10,
+    borderRadius: 8,
+    backgroundColor: '#eee',
   },
   text: {
     fontWeight: 'bold',

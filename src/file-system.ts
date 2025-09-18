@@ -18,7 +18,6 @@ const initFs = () => {
     read: Mx.fsRead,
     list: Mx.fsList,
     readAsDataURL: Mx.fsReadAsDataURL,
-    readAsText: Mx.fsReadAsText,
     fileExists: Mx.fsFileExists,
     move: Mx.fsMove,
     remove: Mx.fsRemove,

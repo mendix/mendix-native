@@ -1,36 +1,40 @@
-//
-//  OtaHelpers.swift
-//  MendixNative
-//
-//  Copyright (c) Mendix, Inc. All rights reserved.
-//
-
 import Foundation
 
-@objc class OtaHelpers: NSObject {
+class OtaHelpers: NSObject {
     
-    @objc static func resolveAppVersion() -> String {
+    private static func version() -> String {
         let info = Bundle.main.infoDictionary
-        let shortVersion = info?["CFBundleShortVersionString"] as? String ?? ""
-        let bundleVersion = info?["CFBundleVersion"] as? String ?? ""
-        return "\(shortVersion)-\(bundleVersion)"
+        return info?["CFBundleVersion"] as? String ?? ""
     }
     
-    @objc static func getOtaDir() -> String {
+    private static func shortVersion() -> String {
+        let info = Bundle.main.infoDictionary
+        return info?["CFBundleShortVersionString"] as? String ?? ""
+    }
+    
+    private static func identifier() -> String {
+        let info = Bundle.main.infoDictionary
+        return info?["CFBundleIdentifier"] as? String ?? ""
+    }
+    
+    static func resolveAppVersion() -> String {
+        return "\(shortVersion())-\(version())"
+    }
+    
+    static func getOtaDir() -> String {
         let supportDirectory = NSSearchPathForDirectoriesInDomains(.applicationSupportDirectory, .userDomainMask, true).first ?? ""
-        let bundleIdentifier = Bundle.main.object(forInfoDictionaryKey: "CFBundleIdentifier") as? String ?? ""
-        return "\(supportDirectory)/\(bundleIdentifier)/\(OTA_DIR_NAME)"
+        return "\(supportDirectory)/\(identifier())/\(OTA_DIR_NAME)"
     }
     
-    @objc static func getOtaManifestFilepath() -> String {
+    static func getOtaManifestFilepath() -> String {
         return resolveAbsolutePathRelativeToOtaDir("/\(MANIFEST_FILE_NAME)")
     }
     
-    @objc static func resolveAbsolutePathRelativeToOtaDir(_ path: String) -> String {
+    static func resolveAbsolutePathRelativeToOtaDir(_ path: String) -> String {
         return "\(getOtaDir())\(path)"
     }
     
-    @objc static func readManifestAsDictionary() -> [String: Any]? {
+    static func readManifestAsDictionary() -> [String: Any]? {
         let manifestPath = getOtaManifestFilepath()
         
         guard let contents = NSData(contentsOfFile: manifestPath) else {
@@ -45,11 +49,13 @@ import Foundation
         }
     }
     
-    @objc static func getNativeDependencies() -> [String: Any] {
+    static func getNativeDependencies() -> [String: Any] {
         guard let path = Bundle.main.path(forResource: "native_dependencies", ofType: "json") else {
             return [:]
         }
         
-        return NativeFsModule.readJson(path, error: nil) as? [String: Any] ?? [:]
+        return NativeFsModule.readJson(path, error: nil) ?? [:]
     }
 }
+
+//Checked

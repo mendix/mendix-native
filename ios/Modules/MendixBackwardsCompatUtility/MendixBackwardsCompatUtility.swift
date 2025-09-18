@@ -1,15 +1,8 @@
-//
-//  MendixBackwardsCompatUtility.swift
-//  MendixNative
-//
-//  Copyright (c) Mendix, Inc. All rights reserved.
-//
-
 import Foundation
 
-@objc class MendixBackwardsCompatUtility: NSObject {
+public class MendixBackwardsCompatUtility: NSObject {
     
-    static let versionDictionary: [String: UnsupportedFeatures] = [
+    private static let versionDictionary: [String: UnsupportedFeatures] = [
         "8.9": UnsupportedFeatures(reloadInClient: true, hideSplashScreenInClient: true),
         "8.10": UnsupportedFeatures(reloadInClient: false, hideSplashScreenInClient: true),
         "8.11": UnsupportedFeatures(reloadInClient: false, hideSplashScreenInClient: true),
@@ -17,16 +10,16 @@ import Foundation
         "DEFAULT": UnsupportedFeatures(reloadInClient: false, hideSplashScreenInClient: false)
     ]
     
-    private static var _unsupportedFeatures: UnsupportedFeatures?
+    private static var _unsupportedFeatures: UnsupportedFeatures? = versionDictionary["DEFAULT"]
     private static let lock = NSLock()
     
-    @objc static func unsupportedFeatures() -> UnsupportedFeatures? {
+    public static func unsupportedFeatures() -> UnsupportedFeatures? {
         lock.lock()
         defer { lock.unlock() }
         return _unsupportedFeatures
     }
     
-    @objc static func update(_ forVersion: String) {
+    public static func update(_ forVersion: String) {
         let versionParts = forVersion.components(separatedBy: ".")
         let versionDict = versionDictionary
         
@@ -63,3 +56,5 @@ import Foundation
         _unsupportedFeatures = versionDict["DEFAULT"]
     }
 }
+
+//Checked

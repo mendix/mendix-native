@@ -1,89 +1,61 @@
-//
-//  RuntimeInfoProvider.swift
-//  MendixNative
-//
-//  Created by Yogendra Shelke on 05/09/25.
-//  Copyright (c) Mendix, Inc. All rights reserved.
-//
-
 import Foundation
 
-@objc class RuntimeInfoProvider: NSObject {
+public class RuntimeInfoProvider: NSObject {
     
     // MARK: - Public Methods
-    @objc static func getRuntimeInfo(_ runtimeURL: URL?, completionHandler: @escaping (RuntimeInfoResponse) -> Void) {
+    public static func getRuntimeInfo(_ runtimeURL: URL?, completionHandler: @escaping (RuntimeInfoResponse) -> Void) {
         guard let runtimeURL = runtimeURL else {
-            return runCallBackInMainThread(makeInaccessibleResponse(), completionHandler: completionHandler)
+            return onMainQueue(.inaccessible, handler: completionHandler)
         }
-        
-        var request = URLRequest(url: runtimeURL)
-        request.httpMethod = "POST"
-        request.timeoutInterval = 10
-        request.addValue("application/json", forHTTPHeaderField: "Content-type")
-        request.httpBody = "{\"action\": \"info\"}".data(using: .utf8)
-        
-        URLSession.shared.dataTask(with: request) { data, response, error in
+        URLSession.shared.dataTask(with: createRequest(runtimeURL)) { data, response, error in
             if error != nil {
-                return runCallBackInMainThread(makeInaccessibleResponse(), completionHandler: completionHandler)
+                return onMainQueue(.inaccessible, handler: completionHandler)
             }
             
             guard let httpResponse = response as? HTTPURLResponse else {
-                return runCallBackInMainThread(makeFailedResponse(), completionHandler: completionHandler)
+                return onMainQueue(.failed, handler: completionHandler)
             }
             
             if !isSuccessStatusCode(httpResponse.statusCode) {
-                return runCallBackInMainThread(makeFailedResponse(), completionHandler: completionHandler)
+                return onMainQueue(.failed, handler: completionHandler)
             }
             
             guard let data = data else {
-                return runCallBackInMainThread(makeFailedResponse(), completionHandler: completionHandler)
+                return onMainQueue(.failed, handler: completionHandler)
             }
             
             do {
                 guard let jsonDictionary = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] else {
-                    return runCallBackInMainThread(makeFailedResponse(), completionHandler: completionHandler)
+                    return onMainQueue(.failed, handler: completionHandler)
                 }
                 
-                let runtimeInfo = runtimeInfoFromJSONDictionary(jsonDictionary)
-                return runCallBackInMainThread(makeSuccessResponse(runtimeInfo), completionHandler: completionHandler)
+                let runtimeInfo = RuntimeInfo(jsonDictionary)
+                return onMainQueue(.success(runtimeInfo), handler: completionHandler)
             } catch {
-                return runCallBackInMainThread(makeFailedResponse(), completionHandler: completionHandler)
+                return onMainQueue(.failed, handler: completionHandler)
             }
         }.resume()
     }
     
     // MARK: - Private Helper Methods
-    private static func runCallBackInMainThread(_ response: RuntimeInfoResponse, completionHandler: @escaping (RuntimeInfoResponse) -> Void) {
+    private static func onMainQueue(_ status: RuntimeInfoResponseStatus, handler: @escaping (RuntimeInfoResponse) -> Void) {
         DispatchQueue.main.async {
-            completionHandler(response)
+            handler(status.response)
         }
-    }
-    
-    private static func makeInaccessibleResponse() -> RuntimeInfoResponse {
-        return RuntimeInfoResponse(status: "INACCESSIBLE", runtimeInfo: nil)
-    }
-    
-    private static func makeFailedResponse() -> RuntimeInfoResponse {
-        return RuntimeInfoResponse(status: "FAILED", runtimeInfo: nil)
-    }
-    
-    private static func makeSuccessResponse(_ runtimeInfo: RuntimeInfo) -> RuntimeInfoResponse {
-        return RuntimeInfoResponse(status: "SUCCESS", runtimeInfo: runtimeInfo)
     }
     
     private static func isSuccessStatusCode(_ statusCode: Int) -> Bool {
         return statusCode >= 200 && statusCode <= 299
     }
     
-    private static func runtimeInfoFromJSONDictionary(_ dictionary: [String: Any]) -> RuntimeInfo {
-        let version = dictionary["version"] as? String ?? ""
-        let cacheburst = dictionary["cachebust"] as? String ?? ""
-        let nativeBinaryVersion = dictionary["nativeBinaryVersion"] as? Int ?? 0
-        let packagerPort = dictionary["packagerPort"] as? Int ?? 0
-        
-        return RuntimeInfo(version: version, 
-                          cacheburst: cacheburst, 
-                          nativeBinaryVersion: nativeBinaryVersion, 
-                          packagerPort: packagerPort)
+    private static func createRequest(_ url: URL) -> URLRequest {
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.timeoutInterval = 10
+        request.addValue("application/json", forHTTPHeaderField: "Content-type")
+        request.httpBody = "{\"action\": \"info\"}".data(using: .utf8)
+        return request
     }
 }
+
+//Checked

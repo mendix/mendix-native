@@ -4,6 +4,7 @@ import type { StackFrame } from 'stacktrace-parser';
 import {
   type EventEmitter,
   type Int32,
+  type Double,
 } from 'react-native/Libraries/Types/CodegenTypes';
 
 export interface Spec extends TurboModule {
@@ -24,16 +25,16 @@ export interface Spec extends TurboModule {
   downloadHandlerDownload(
     url: string,
     downloadPath: string,
-    config: DownloadConfig
+    config: GenericMap
   ): Promise<void>;
 
   mxConfigurationGetConfig(): Configuration;
 
-  otaDownload(config: OtaDownloadConfig): Promise<OtaDownloadResponse>;
-  otaDeploy(config: OtaDeployConfig): Promise<void>;
+  otaDownload(config: GenericMap): Promise<OtaDownloadResponse>;
+  otaDeploy(config: GenericMap): Promise<void>;
 
   fsConstants(): GenericMap;
-  fsSave(blob: BlobData, filePath: string): Promise<void>;
+  fsSave(blob: GenericMap, filePath: string): Promise<void>;
   fsRead(filePath: string): Promise<BlobData>;
   fsMove(filePath: string, newPath: string): Promise<void>;
   fsRemove(filePath: string): Promise<void>;
@@ -42,12 +43,12 @@ export interface Spec extends TurboModule {
   fsFileExists(filePath: string): Promise<boolean>;
   fsWriteJson(data: GenericMap, filepath: string): Promise<void>;
   fsReadJson(filepath: string): Promise<GenericMap | GenericArray>;
-  fsReadAsText(filePath: string): Promise<string>;
   fsSetEncryptionEnabled(enabled: boolean): void;
 
   errorHandlerHandle(message: string, stackTrace: StackFrame[]): void;
 
   readonly onReloadWithState: EventEmitter<void>;
+  readonly onDownloadProgress: EventEmitter<DownloadProgress>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('MendixNative');
@@ -116,6 +117,11 @@ type OtaDownloadResponse = {
   otaPackage: string;
 };
 
+type DownloadProgress = {
+  receivedBytes: Double;
+  totalBytes: Double;
+};
+
 export type {
   BlobData,
   GenericMap,
@@ -125,4 +131,5 @@ export type {
   OtaDownloadConfig,
   OtaDeployConfig,
   OtaDownloadResponse,
+  DownloadProgress,
 };

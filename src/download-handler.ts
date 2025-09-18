@@ -1,5 +1,6 @@
-import Mx from './specs/NativeMendixNative';
+import Mx, { type DownloadConfig } from './specs/NativeMendixNative';
 
 export const NativeDownloadHandler = {
-  download: Mx.downloadHandlerDownload,
+  download: (url: string, downloadPath: string, config: DownloadConfig) =>
+    Mx.downloadHandlerDownload(url, downloadPath, config),
 };

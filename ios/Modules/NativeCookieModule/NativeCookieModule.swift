@@ -1,16 +1,18 @@
-//
-//  NativeCookieModule.swift
-//  MendixNative
-//
-//  Created by Yogendra Shelke on 20/03/25.
-//  Copyright © 2025 Mendix. All rights reserved.
-//
-
 import Foundation
 
-@objc public class NativeCookieModule: NSObject {
+@objcMembers
+public class NativeCookieModule: NSObject {
+    public func clearAll(_ promise: Promise) {
+        NativeCookieModule.clearAll()
+        promise.resolve(nil)
+    }
     
-  @objc public func clearAll() {
-      ReactNative.instance.clearCookies()
+    static func clearAll() {
+        let storage = HTTPCookieStorage.shared
+        for cookie in (storage.cookies ?? []) {
+            storage.deleteCookie(cookie)
+        }
     }
 }
+
+//Checked

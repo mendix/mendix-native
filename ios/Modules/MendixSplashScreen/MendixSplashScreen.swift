@@ -1,20 +1,19 @@
-//
-//  MendixSplashScreen.swift
-//  MendixNative
-//
-//  Created by Yogendra Shelke on 05/09/25.
-//  Copyright (c) Mendix, Inc. All rights reserved.
-//
-
 import Foundation
 
-@objc public class MendixSplashScreen: NSObject {
+@objc public protocol SplashScreenPresenterProtocol: AnyObject {
+    @objc func show(_ rootView: UIView?)
+    @objc func hide()
+}
+
+@objcMembers public class MendixSplashScreen: NSObject {
   
-  @objc public func show() {
+  public func show() {
     ReactNative.instance.showSplashScreen()
   }
   
-  @objc public func hide() {
+  public func hide() {
     ReactNative.instance.hideSplashScreen()
   }
 }
+
+//Checked
