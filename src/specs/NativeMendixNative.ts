@@ -40,6 +40,7 @@ export interface Spec extends TurboModule {
   fsRemove(filePath: string): Promise<void>;
   fsList(dirPath: string): Promise<string[]>;
   fsReadAsDataURL(filePath: string): Promise<string>;
+  fsReadAsText(filePath: string): Promise<string>; //Android only
   fsFileExists(filePath: string): Promise<boolean>;
   fsWriteJson(data: GenericMap, filepath: string): Promise<void>;
   fsReadJson(filepath: string): Promise<GenericMap | GenericArray>;
