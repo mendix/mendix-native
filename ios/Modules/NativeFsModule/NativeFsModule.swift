@@ -1,6 +1,5 @@
 import Foundation
 import React
-import React_RCTAppDelegate
 
 @objcMembers
 public class NativeFsModule: NSObject {
@@ -26,18 +25,11 @@ public class NativeFsModule: NSObject {
     }
     
     private func readBlobRefAsData(_ blob: [String: Any]) -> Data? {
-        guard let blobManager = ReactNative.instance.bridge?.module(for: RCTBlobManager.self) as? RCTBlobManager else {
-            return nil
-        }
-        return blobManager.resolve(blob)
+        return RCTBlobManager().resolve(blob)
     }
     
     private func readDataAsBlobRef(_ data: Data) -> [String: Any]? {
-        guard let blobManager = ReactNative.instance.bridge?.module(for: RCTBlobManager.self) as? RCTBlobManager else {
-            return nil
-        }
-        
-        let blobId = blobManager.store(data)
+        let blobId = RCTBlobManager().store(data)
         return [
             "blobId": blobId as Any,
             "offset": 0,
@@ -166,7 +158,6 @@ public class NativeFsModule: NSObject {
     
     // MARK: - React Native Bridge Methods
     
-    
     public func setEncryptionEnabled(_ enabled: Bool) {
         NativeFsModule.setEncryptionEnabled(enabled)
     }
@@ -221,9 +212,9 @@ public class NativeFsModule: NSObject {
     }
     
     public func move(_ filepath: String,
-              newPath: String,
-              resolve: @escaping RCTPromiseResolveBlock,
-              reject: @escaping RCTPromiseRejectBlock) {
+                     newPath: String,
+                     resolve: @escaping RCTPromiseResolveBlock,
+                     reject: @escaping RCTPromiseRejectBlock) {
         
         var error: NSError?
         if !NativeFsModule.ensureWhiteListedPath([filepath, newPath], error: &error) {
@@ -256,8 +247,8 @@ public class NativeFsModule: NSObject {
     }
     
     public func list(_ dirPath: String,
-              resolve: @escaping RCTPromiseResolveBlock,
-              reject: @escaping RCTPromiseRejectBlock) {
+                     resolve: @escaping RCTPromiseResolveBlock,
+                     reject: @escaping RCTPromiseRejectBlock) {
         
         var error: NSError?
         if !NativeFsModule.ensureWhiteListedPath([dirPath], error: &error) {
@@ -269,8 +260,8 @@ public class NativeFsModule: NSObject {
     }
     
     public func readAsDataURL(_ filePath: String,
-                       resolve: @escaping RCTPromiseResolveBlock,
-                       reject: @escaping RCTPromiseRejectBlock) {
+                              resolve: @escaping RCTPromiseResolveBlock,
+                              reject: @escaping RCTPromiseRejectBlock) {
         
         var error: NSError?
         if !NativeFsModule.ensureWhiteListedPath([filePath], error: &error) {
@@ -289,8 +280,8 @@ public class NativeFsModule: NSObject {
     }
     
     public func fileExists(_ filepath: String,
-                    resolve: @escaping RCTPromiseResolveBlock,
-                    reject: @escaping RCTPromiseRejectBlock) {
+                           resolve: @escaping RCTPromiseResolveBlock,
+                           reject: @escaping RCTPromiseRejectBlock) {
         
         var error: NSError?
         if !NativeFsModule.ensureWhiteListedPath([filepath], error: &error) {
@@ -303,8 +294,8 @@ public class NativeFsModule: NSObject {
     }
     
     public func readJson(_ filepath: String,
-                  resolve: @escaping RCTPromiseResolveBlock,
-                  reject: @escaping RCTPromiseRejectBlock) {
+                         resolve: @escaping RCTPromiseResolveBlock,
+                         reject: @escaping RCTPromiseRejectBlock) {
         
         var error: NSError?
         if !NativeFsModule.ensureWhiteListedPath([filepath], error: &error) {
@@ -325,9 +316,9 @@ public class NativeFsModule: NSObject {
     }
     
     public func writeJson(_ data: [String: Any],
-                   filepath: String,
-                   resolve: @escaping RCTPromiseResolveBlock,
-                   reject: @escaping RCTPromiseRejectBlock) {
+                          filepath: String,
+                          resolve: @escaping RCTPromiseResolveBlock,
+                          reject: @escaping RCTPromiseRejectBlock) {
         
         var error: NSError?
         if !NativeFsModule.ensureWhiteListedPath([filepath], error: &error) {

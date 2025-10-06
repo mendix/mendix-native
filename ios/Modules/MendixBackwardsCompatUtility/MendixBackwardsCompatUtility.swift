@@ -55,6 +55,15 @@ public class MendixBackwardsCompatUtility: NSObject {
         // Default fallback
         _unsupportedFeatures = versionDict["DEFAULT"]
     }
+    
+    static func isHideSplashScreenInClientSupported() -> Bool {
+        
+        if let unsupportedFeatures = Self.unsupportedFeatures() {
+            return !unsupportedFeatures.hideSplashScreenInClient
+        }
+        
+        return true
+    }
 }
 
 //Checked

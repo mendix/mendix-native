@@ -27,7 +27,8 @@ RCT_EXPORT_MODULE()
 }
 
 - (void)encryptedStorageClear:(nonnull RCTPromiseResolveBlock)resolve reject:(nonnull RCTPromiseRejectBlock)reject {
-    [[[EncryptedStorage alloc] init] clearWithResolve:resolve reject:reject];
+    Promise *promise = [[Promise alloc] initWithResolve:resolve reject:reject];
+    [[[EncryptedStorage alloc] init] clearWithPromise:promise];
 }
 
 - (nonnull NSNumber *)encryptedStorageIsEncrypted {
@@ -134,5 +135,10 @@ RCT_EXPORT_MODULE()
 - (void)errorHandlerHandle:(nonnull NSString *)message stackTrace:(nonnull NSArray *)stackTrace {
     [[[NativeErrorHandler alloc] init] handleWithMessage:message stackTrace:stackTrace];
 }
+
+- (void)fsReadAsText:(nonnull NSString *)filePath resolve:(nonnull RCTPromiseResolveBlock)resolve reject:(nonnull RCTPromiseRejectBlock)reject {
+    reject(@"NOT_SPPORTED", @"Read as text is not supported on iOS", nil);
+}
+
 
 @end

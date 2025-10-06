@@ -83,6 +83,23 @@ public class MxConfiguration: NSObject {
             "APP_SESSION_ID": MxConfiguration.appSessionId ?? NSNull()
         ]
     }
+    
+    public static func update(from mendixApp: MendixApp) {
+        MxConfiguration.runtimeUrl = mendixApp.runtimeUrl
+        MxConfiguration.appName = mendixApp.identifier
+        MxConfiguration.isDeveloperApp = mendixApp.isDeveloperApp
+        
+        if let identifier = mendixApp.identifier {
+            MxConfiguration.databaseName = identifier
+            MxConfiguration.filesDirectoryName = "files/\(identifier)"
+        }
+        
+        MxConfiguration.warningsFilter = mendixApp.warningsFilter
+        
+        let timestamp = Int64(Date().timeIntervalSince1970 * 1000.0)
+        let randomValue = arc4random_uniform(1000)
+        MxConfiguration.appSessionId = "\(randomValue)\(timestamp)"
+    }
 }
 
 //Checked

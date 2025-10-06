@@ -2,28 +2,23 @@ import Foundation
 import UIKit
 import React
 import Security
-import RNCAsyncStorage
 import React_RCTAppDelegate
+import ReactAppDependencyProvider
 
 public protocol ReactNativeDelegate: AnyObject {
     func onAppClosed()
 }
 
-public class ReactNative: NSObject, RCTReloadListener {
+@objcMembers
+open class ReactNative: RCTAppDelegate, RCTReloadListener {
     // MARK: - Properties
-    private var rootWindow: UIWindow?
     private var mendixApp: MendixApp?
     private var bundleUrl: URL?
-    private var launchOptions: [AnyHashable: Any]?
     private var mendixOTAEnabled: Bool = false
-    private var tapGestureRecognizer: UITapGestureRecognizer?
-    private var longPressGestureRecognizer: UILongPressGestureRecognizer?
+    
+    private var tapGestureHelper: TapGestureRecognizerHelper?
     
     public weak var delegate: ReactNativeDelegate?
-    
-    var bridge: RCTBridge? {
-        return RCTBridge.current()
-    }
     
     // Static properties
     private static var sharedInstance: ReactNative?
@@ -42,15 +37,26 @@ public class ReactNative: NSObject, RCTReloadListener {
     // MARK: - Initialization
     override init() {
         super.init()
-        rootWindow = UIApplication.shared.connectedScenes
+        window = UIApplication.shared.connectedScenes
             .compactMap { $0 as? UIWindowScene }
             .first?
             .windows
-            .first { $0.isKeyWindow }
+            .first { $0.isKeyWindow } ?? UIWindow(frame: UIScreen.main.bounds)
+        
+        moduleName = "App"
+        automaticallyLoadReactNativeWindow = false
+        dependencyProvider = RCTAppDependencyProvider()
+        initialProps = [:]
+        tapGestureHelper = TapGestureRecognizerHelper(window: window)
     }
     
     private var rootViewController: UIViewController? {
-        rootWindow?.rootViewController
+        window.rootViewController
+    }
+    
+    public func changeRoot(to controller: UIViewController) {
+        window.rootViewController = controller
+        window.makeKeyAndVisible()
     }
     
     // MARK: - Public Static Methods
@@ -58,38 +64,11 @@ public class ReactNative: NSObject, RCTReloadListener {
         return warningsFilter.stringValue
     }
     
-    static func toAppScopeKey(_ key: String) -> String {
-        guard let appName = MxConfiguration.appName, !appName.isEmpty else {
-            return key
-        }
-        return "\(appName)_\(key)"
-    }
-    
-    public static func clearKeychain() {
-        let keys = [
-            ReactNative.toAppScopeKey("token"),
-            ReactNative.toAppScopeKey("session")
-        ]
-        
-        for key in keys {
-            deleteKeychainItem(withKey: key)
-        }
-    }
-    
-    private static func deleteKeychainItem(withKey key: String) {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrAccount as String: key,
-            kSecReturnData as String: kCFBooleanTrue!
-        ]
-        SecItemDelete(query as CFDictionary)
-    }
-    
     // MARK: - Setup Methods
     public func setup(_ mendixApp: MendixApp, launchOptions: [AnyHashable: Any]?) {
         self.mendixApp = mendixApp
         self.bundleUrl = mendixApp.bundleUrl
-        self.launchOptions = launchOptions
+        self.initialProps = launchOptions
         
         if let host = bundleUrl?.host, let port = bundleUrl?.port {
             let jsLocation = "\(host):\(port)"
@@ -108,46 +87,18 @@ public class ReactNative: NSObject, RCTReloadListener {
             fatalError("MendixApp not passed before starting the app")
         }
         
-        guard let rootViewFactory = (RCTSharedApplication()?.delegate as? RCTAppDelegate)?.rootViewFactory else {
-            fatalError("RCTRootViewFactory should not be nil")
-        }
-        
-        MxConfiguration.runtimeUrl = mendixApp.runtimeUrl
-        MxConfiguration.appName = mendixApp.identifier
-        MxConfiguration.isDeveloperApp = mendixApp.isDeveloperApp
-        
-        if let identifier = mendixApp.identifier {
-            MxConfiguration.databaseName = identifier
-            MxConfiguration.filesDirectoryName = "files/\(identifier)"
-        }
-        
-        MxConfiguration.warningsFilter = mendixApp.warningsFilter
-        
-        let timestamp = Int64(Date().timeIntervalSince1970 * 1000.0)
-        let randomValue = arc4random_uniform(1000)
-        MxConfiguration.appSessionId = "\(randomValue)\(timestamp)"
+        MxConfiguration.update(from: mendixApp)
         
         if mendixApp.clearDataAtLaunch {
-            clearData()
+            StorageHelper.clearAll()
         }
         
-        let appLoadingController: UIViewController
-        if let reactLoading = mendixApp.reactLoading {
-            appLoadingController = reactLoading.instantiateInitialViewController()!
-        } else {
-            appLoadingController = UIViewController()
-        }
+        let rootView = rootViewFactory.view(withModuleName: "App")
+        rootView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         
-        
-        
-        let reactRootView = rootViewFactory.view(withModuleName: "App")
-        reactRootView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        
-        if let rootWindow = self.rootWindow {
-            reactRootView.frame = rootWindow.rootViewController?.view.frame ?? .zero
-            rootWindow.rootViewController = appLoadingController
-            rootWindow.rootViewController?.view.addSubview(reactRootView)
-        }
+        rootView.frame = window.rootViewController?.view.frame ?? .zero
+        window.rootViewController = mendixApp.reactLoading?.instantiateInitialViewController() ?? UIViewController()
+        window.rootViewController?.view.addSubview(rootView)
         
         if let devSettings = turboModule(type: RCTDevSettings.self) {
             devSettings.isShakeToShowDevMenuEnabled = false
@@ -157,10 +108,7 @@ public class ReactNative: NSObject, RCTReloadListener {
         showSplashScreen()
         
         if mendixApp.isDeveloperApp || mendixApp.enableThreeFingerGestures {
-            if let rootWindow = self.rootWindow {
-                attachThreeFingerGestures(to: rootWindow)
-            }
-            
+            attachThreeFingerGestures(to: window)
             DispatchQueue.main.async {
                 RCTRegisterReloadCommandListener(self)
             }
@@ -169,10 +117,10 @@ public class ReactNative: NSObject, RCTReloadListener {
     
     public func stop() {
         hideSplashScreen()
-        launchOptions = nil
+        initialProps = nil
         
-        rootWindow?.isHidden = false
-        rootWindow?.makeKeyAndVisible()
+        window.isHidden = false
+        window.makeKeyAndVisible()
         
 #if DEBUG
         if AppPreferences.elementInspectorEnabled {
@@ -180,21 +128,19 @@ public class ReactNative: NSObject, RCTReloadListener {
         }
         AppPreferences.elementInspectorEnabled = false
 #endif
-        bridge?.invalidate()
+        rootViewFactory.bridge?.invalidate()
         
-        if let rootWindow = self.rootWindow {
-            removeThreeFingerGestures(from: rootWindow)
-            rootWindow.rootViewController = rootViewController
-        }
+        removeThreeFingerGestures(from: window)
+        window.rootViewController = rootViewController
         
         delegate?.onAppClosed()
         delegate = nil
-//        bridge = nil
+        rootViewFactory.bridge = nil
     }
     
     // MARK: - State Methods
     public func isActive() -> Bool {
-        return bridge != nil
+        return rootViewFactory.bridge != nil
     }
     
     // MARK: - Bundle Methods
@@ -214,13 +160,9 @@ public class ReactNative: NSObject, RCTReloadListener {
     
     // MARK: - Splash Screen Methods
     func showSplashScreen() {
-        guard let unsupportedFeatures = MendixBackwardsCompatUtility.unsupportedFeatures(),
-              !unsupportedFeatures.hideSplashScreenInClient,
-              let splashScreenPresenter = mendixApp?.splashScreenPresenter else {
-            return
+        if MendixBackwardsCompatUtility.isHideSplashScreenInClientSupported() {
+            mendixApp?.splashScreenPresenter?.show(rootViewController?.view)
         }
-        
-        splashScreenPresenter.show(getRootView())
     }
     
     func hideSplashScreen() {
@@ -231,17 +173,18 @@ public class ReactNative: NSObject, RCTReloadListener {
     func reload() {
         showSplashScreen()
         
-        if let mendixApp = self.mendixApp {
+        if let mendixApp {
             let otaBundleUrl = OtaJSBundleFileProvider.getBundleUrl()
             if !mendixApp.isDeveloperApp, let otaBundleUrl = otaBundleUrl {
-                bridge?.bundleURL = otaBundleUrl
+                RCTReloadCommandSetBundleURL(otaBundleUrl)
+                //                rootViewFactory.bridge?.bundleURL = otaBundleUrl
             }
             
             if mendixApp.isDeveloperApp {
                 let runtimeInfoUrl = AppUrl.forRuntimeInfo(mendixApp.runtimeUrl.absoluteString)
                 RuntimeInfoProvider.getRuntimeInfo(runtimeInfoUrl) { [weak self] response in
-                    if response.status == "SUCCESS" {
-                        MendixBackwardsCompatUtility.update(response.runtimeInfo!.version)
+                    if response.status == "SUCCESS", let version = response.runtimeInfo?.version {
+                        MendixBackwardsCompatUtility.update(version)
                     }
                     self?.reloadWithBridge()
                 }
@@ -264,30 +207,12 @@ public class ReactNative: NSObject, RCTReloadListener {
         showSplashScreen()
     }
     
-    // MARK: - Data Clearing Methods
-    public func clearData() {
-        let documentPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        let libraryPath = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask)[0]
-        
-        let filesDirectoryName = MxConfiguration.filesDirectoryName
-        let filesPath = documentPath.appendingPathComponent(filesDirectoryName)
-        _ = NativeFsModule.remove(filesPath.path, error: nil)
-        
-        RNCAsyncStorage.clearAllData()
-        ReactNative.clearKeychain()
-        NativeCookieModule.clearAll()
-        
-        let databaseName = MxConfiguration.databaseName
-        let databasePath = libraryPath.appendingPathComponent("LocalDatabase/\(databaseName)")
-        _ = NativeFsModule.remove(databasePath.path, error: nil)
-    }
-    
     // MARK: - Debugging Methods
     func remoteDebugging(_ enable: Bool) {
         showSplashScreen()
         AppPreferences.remoteDebuggingEnabled = enable
         
-        let appUrl = AppPreferences.appUrl!
+        let appUrl = AppPreferences.safeAppUrl
         let port = AppPreferences.remoteDebuggingPackagerPort
         bundleUrl = AppUrl.forBundle(appUrl, port: port, isDebuggingRemotely: enable, isDevModeEnabled: true)
         turboModule(type: RCTDevSettings.self)?.isDebuggingRemotely = enable
@@ -313,32 +238,11 @@ public class ReactNative: NSObject, RCTReloadListener {
     
     // MARK: - Gesture Recognition
     private func attachThreeFingerGestures(to window: UIWindow) {
-        if tapGestureRecognizer == nil {
-            tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(appReloadAction(_:)))
-            tapGestureRecognizer?.numberOfTouchesRequired = 3
-        }
-        if let tapGesture = tapGestureRecognizer {
-            window.addGestureRecognizer(tapGesture)
-        }
-        
-//        if longPressGestureRecognizer == nil {
-//            longPressGestureRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(appMenuShowAction(_:)))
-//            longPressGestureRecognizer?.numberOfTouchesRequired = 3
-//        }
-//        if let longPressGesture = longPressGestureRecognizer {
-//            window.addGestureRecognizer(longPressGesture)
-//        }
+        tapGestureHelper?.attach()
     }
     
     private func removeThreeFingerGestures(from window: UIWindow) {
-        if let tapGesture = tapGestureRecognizer {
-            window.removeGestureRecognizer(tapGesture)
-        }
-        
-        if let longPressGesture = longPressGestureRecognizer {
-            window.removeGestureRecognizer(longPressGesture)
-        }
-        
+        tapGestureHelper?.remove()
         window.motionBegan(.motionShake, with: nil)
     }
     
@@ -348,20 +252,6 @@ public class ReactNative: NSObject, RCTReloadListener {
         }
     }
     
-//    @objc private func appMenuShowAction(_ gestureRecognizer: UILongPressGestureRecognizer) {
-//        if gestureRecognizer.state == .began {
-//            showAppMenu()
-//        }
-//    }
-    
-    public func bundleURL() -> URL? {
-        return bundleUrl
-    }
-    
-    func getRootView() -> UIView? {
-        return rootViewController?.view
-    }
-    
     // MARK: - Legacy Methods (for compatibility)
     func useCodePush() -> Bool {
         // Implementation depends on your specific CodePush setup
@@ -369,39 +259,14 @@ public class ReactNative: NSObject, RCTReloadListener {
     }
     
     func turboModule<T: NSObject>(type: T.Type) -> T? {
-        return bridge?.moduleRegistry.module(for: type.self) as? T
+        return rootViewFactory.bridge?.moduleRegistry.module(for: type.self) as? T
+    }
+    
+    public override func sourceURL(for bridge: RCTBridge) -> URL? {
+        return self.bundleURL()
+    }
+    
+    public override func bundleURL() -> URL? {
+        return bundleUrl
     }
 }
-
-enum UnsafeMxFunction {
-    
-    case reloadClientWithState
-    
-    var name: String {
-        switch self {
-        case .reloadClientWithState:
-            return String(describing: self)
-        }
-    }
-    
-    var selector: Selector {
-        NSSelectorFromString(name)
-    }
-    
-    var className: String {
-        return "MendixNative"
-    }
-    
-    var target: NSObject? {
-        return ReactNative.instance.bridge?.moduleRegistry.module(forName: className) as? NSObject
-    }
-    
-    func perform() {
-        if let target = target, target.responds(to: selector) {
-            target.perform(selector)
-        } else {
-            print("Failed to invoke \(selector) on \(className)")
-        }
-    }
-}
-

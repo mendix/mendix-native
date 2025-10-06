@@ -6,7 +6,7 @@ import Foundation
     case none = 2
     
     /// String representation of the WarningsFilter value
-  var stringValue: String {
+    var stringValue: String {
         switch self {
         case .all:
             return "all"
@@ -18,14 +18,14 @@ import Foundation
     }
     
     /// Static array for Objective-C compatibility (equivalent to WarningsFilter_toString)
-  static let toString: [String] = [
+    static let toString: [String] = [
         "all",
-        "partial", 
+        "partial",
         "none"
     ]
     
     /// Get string representation for a given index (Objective-C compatibility)
-  static func string(for index: Int) -> String? {
+    static func string(for index: Int) -> String? {
         guard index >= 0 && index < toString.count else {
             return nil
         }
@@ -33,7 +33,7 @@ import Foundation
     }
     
     /// Create WarningsFilter from string value
-  static func from(string: String) -> WarningsFilter? {
+    static func from(string: String) -> WarningsFilter? {
         switch string.lowercased() {
         case "all":
             return .all
@@ -49,7 +49,7 @@ import Foundation
 
 // MARK: - CustomStringConvertible
 extension WarningsFilter: CustomStringConvertible {
-  public var description: String {
+    public var description: String {
         return stringValue
     }
 }

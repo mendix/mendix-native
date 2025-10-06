@@ -22,12 +22,16 @@ PODS:
     - React-graphics
     - React-ImageManager
     - React-NativeModulesApple
+    - React-RCTAppDelegate
     - React-RCTFabric
     - React-rendererdebug
     - React-utils
+    - ReactAppDependencyProvider
     - ReactCodegen
+    - ReactCommon
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
+    - RNCAsyncStorage
     - SSZipArchive
     - Yoga
   - op-sqlite (12.0.2):
@@ -1823,7 +1827,7 @@ SPEC CHECKSUMS:
   fmt: a40bb5bd0294ea969aaaba240a927bd33d878cdd
   glog: eb93e2f488219332457c3c4eafd2738ddc7e80b8
   hermes-engine: b2187dbe13edb0db8fcb2a93a69c1987a30d98a4
-  MendixNative: a5754dd55001ed5e15e2c9ff5442e9560faae14a
+  MendixNative: d76c461cfe93066190b9f1c21d01a4960e1f7ce2
   op-sqlite: f364fb409143a1194b76909630c050c6e91245e9
   OpenSSL-Universal: 6082b0bf950e5636fe0d78def171184e2b3899c2
   RCT-Folly: e78785aa9ba2ed998ea4151e314036f6c49e6d82
@@ -1890,6 +1894,6 @@ SPEC CHECKSUMS:
   SSZipArchive: fe6a26b2a54d5a0890f2567b5cc6de5caa600aef
   Yoga: 92f3bb322c40a86b7233b815854730442e01b8c4
 
-PODFILE CHECKSUM: efbfead38c8c78e490c24507177559908b58ea70
+PODFILE CHECKSUM: 3b9697ad784d7513a2d48765f6c9260a3ca3a4ff
 
 COCOAPODS: 1.15.2

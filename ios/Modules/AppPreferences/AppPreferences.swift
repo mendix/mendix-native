@@ -24,39 +24,15 @@ public class AppPreferences: NSObject {
             _packagerPort = newValue
         }
     }
-  
+    
     public static var appUrl = _appUrl
     public static var devModeEnabled = _devModeEnabled
     public static var remoteDebuggingEnabled = _remoteDebuggingEnabled
     public static var elementInspectorEnabled = _elementInspectorEnabled
-  
+    
     public static var safeAppUrl: String {
-      return appUrl ?? ""
+        return appUrl ?? ""
     }
-  
+    
 }
-
-//TODO: Move to separate file
-@propertyWrapper
-struct UserDefault<T> {
-    let key: String
-    let defaultValue: T
-    let container: UserDefaults
-
-    init(key: String, defaultValue: T, container: UserDefaults = .standard) {
-        self.key = key
-        self.defaultValue = defaultValue
-        self.container = container
-    }
-
-    var wrappedValue: T {
-        get {
-            return container.object(forKey: key) as? T ?? defaultValue
-        }
-        set {
-            container.set(newValue, forKey: key)
-        }
-    }
-}
-
 //Checked

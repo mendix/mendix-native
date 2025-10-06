@@ -6,14 +6,14 @@ import Foundation
 }
 
 @objcMembers public class MendixSplashScreen: NSObject {
-  
-  public func show() {
-    ReactNative.instance.showSplashScreen()
-  }
-  
-  public func hide() {
-    ReactNative.instance.hideSplashScreen()
-  }
+    
+    public func show() {
+        ReactNative.instance.showSplashScreen()
+    }
+    
+    public func hide() {
+        ReactNative.instance.hideSplashScreen()
+    }
 }
 
 //Checked
