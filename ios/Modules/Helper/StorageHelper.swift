@@ -1,9 +1,9 @@
 import Foundation
 import RNCAsyncStorage
 
-class StorageHelper {
+public class StorageHelper {
     
-    static func clearAll() {
+    public static func clearAll() {
         if let documentPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
             clearDataAt(url: documentPath, component: MxConfiguration.filesDirectoryName)
         }
@@ -17,7 +17,7 @@ class StorageHelper {
         }
     }
 
-    static func clearDataAt(url: URL, component: String) {
+    public static func clearDataAt(url: URL, component: String) {
         let path = url.appendingPathComponent(component).path
         _ = NativeFsModule.remove(path, error: nil)
     }

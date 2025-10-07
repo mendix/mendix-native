@@ -3,11 +3,17 @@ import React
 import MendixNative
 
 @main
-class AppDelegate: ReactNative {
+class AppDelegate: ReactAppProvider {
+    
     override func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+        super.setUpProvider()
         super.application(application, didFinishLaunchingWithOptions: launchOptions)
         changeRoot(to: Home())
         return true
+    }
+    
+    open override func bundleURL() -> URL? {
+        return RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: "index")
     }
 }
 
@@ -32,12 +38,6 @@ class Home: UIViewController {
     }
     
     @objc func openApp() {
-        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
-            return
-        }
-        let reactRootView = appDelegate.rootViewFactory.view(withModuleName: "MendixNativeExample")
-        let controller = UIViewController()
-        controller.view = reactRootView
-        appDelegate.changeRoot(to: controller)
+        ReactAppProvider.shared()?.setReactViewController(UIViewController())
     }
 }

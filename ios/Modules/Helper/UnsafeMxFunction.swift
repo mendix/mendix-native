@@ -20,7 +20,7 @@ enum UnsafeMxFunction {
     }
     
     var target: NSObject? {
-        return ReactNative.instance.rootViewFactory.bridge?.moduleRegistry.module(forName: className) as? NSObject
+        return ReactHostManager.module(name: className) as? NSObject
     }
     
     func perform() {

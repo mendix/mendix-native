@@ -5,7 +5,7 @@ public class ReloadHandler: NSObject {
     
     public func reload() {
         DispatchQueue.main.async {
-            ReactNative.instance.reload()
+            ReactNative.shared.reload()
         }
     }
     

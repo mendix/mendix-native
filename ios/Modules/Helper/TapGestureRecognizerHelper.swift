@@ -17,7 +17,7 @@ class TapGestureRecognizerHelper {
     private var tapGestureRecognizer: UITapGestureRecognizer?
     
     @objc private func handleTapAction(_ gestureRecognizer: UITapGestureRecognizer) {
-        if gestureRecognizer.state == .ended && ReactNative.instance.isActive() , let onTapAction {
+        if gestureRecognizer.state == .ended && ReactAppProvider.shared()?.isReactAppActive() == true , let onTapAction {
             onTapAction(gestureRecognizer)
         }
     }

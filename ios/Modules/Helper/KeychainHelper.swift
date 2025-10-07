@@ -2,6 +2,10 @@ import Foundation
 
 public class KeychainHelper {
     
+    public static func clear() {
+        clear(scopeKey: MxConfiguration.appName)
+    }
+    
     public static func clear(scopeKey: String?) {
         let keys = [
             Self.toAppScopeKey("token", scope: scopeKey),

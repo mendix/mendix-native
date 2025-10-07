@@ -8,11 +8,11 @@ import Foundation
 @objcMembers public class MendixSplashScreen: NSObject {
     
     public func show() {
-        ReactNative.instance.showSplashScreen()
+        ReactNative.shared.showSplashScreen()
     }
     
     public func hide() {
-        ReactNative.instance.hideSplashScreen()
+        ReactNative.shared.hideSplashScreen()
     }
 }
 
