@@ -140,9 +140,9 @@ class MendixNativeModule(reactContext: ReactApplicationContext) : NativeMendixNa
     NativeFsModule(reactApplicationContext).readAsDataURL(filePath, promise)
   }
 
-//  override fun fsReadAsText(filePath: String, promise: Promise) {
-//    NativeFsModule(reactApplicationContext).readAsText(filePath, promise)
-//  }
+  override fun fsReadAsText(filePath: String, promise: Promise) {
+    NativeFsModule(reactApplicationContext).readAsText(filePath, promise)
+  }
 
   override fun fsFileExists(filePath: String, promise: Promise) {
     NativeFsModule(reactApplicationContext).fileExists(filePath, promise)
