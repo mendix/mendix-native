@@ -3,9 +3,44 @@
 
 @implementation MendixEncryptedStorageModule
 
++ (instancetype)sharedInstance {
+    static MendixEncryptedStorageModule *shared = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        shared = [[MendixEncryptedStorageModule alloc] initPrivate];
+    });
+    return shared;
+}
+
+- (instancetype)initPrivate {
+    self = [super init];
+    if (self) {
+        // any initialization logic if needed
+    }
+
+    return self;
+}
+
+- (instancetype)init {
+    return [super init];
+}
+
 + (BOOL)requiresMainQueueSetup {
     return NO;
 }
+
+- (BOOL)ensureBackendAvailableWithRejecter:(RCTPromiseRejectBlock)reject {
+    EncryptedStorageModule *backend = [EncryptedStorageModule sharedInstance];
+    if (!backend) {
+        NSError *error = [NSError errorWithDomain:[[NSBundle mainBundle] bundleIdentifier]
+                                            code:-1
+                                            userInfo:@{ NSLocalizedDescriptionKey : @"EncryptedStorageModule backend unavailable" }];
+        [self rejectPromise:@"Backend instance not available" error:error reject:reject];
+        return NO;
+    }
+    return YES;
+}
+
 
 - (void)rejectPromise:(NSString *)message :(NSError *)error :(RCTPromiseRejectBlock)rejecter {
     NSString *errorCode = [NSString stringWithFormat:@"%ld", error.code];
@@ -17,13 +52,52 @@
 
 RCT_EXPORT_MODULE(RNMendixEncryptedStorage);
 
-RCT_EXPORT_METHOD(setItem
-                  : (NSString *)key withValue
-                  : (NSString *)value resolver
-                  : (RCTPromiseResolveBlock)resolve rejecter
-                  : (RCTPromiseRejectBlock)reject) {
-    NSData *dataFromValue = [value dataUsingEncoding:NSUTF8StringEncoding];
+RCT_EXPORT_METHOD(setItem:
+                  (NSString *)key
+                  withValue:(NSString *)value
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject) {
+    if (![EncryptedStorageModule ensureBackendAvailableWithRejecter:reject]) {
+        return;
+    }
 
+    [[MendixEncryptedStorageModule sharedInstance] internal_setItem:key
+                                                    withValue:value
+                                                    resolver:resolve
+                                                    rejecter:reject];
+}
+
+RCT_EXPORT_METHOD(getItem:
+                  (NSString *)key
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject) {
+    if (![EncryptedStorageModule ensureBackendAvailableWithRejecter:reject]) {
+        return;
+    }
+    
+    [[MendixEncryptedStorageModule sharedInstance] internal_getItem:key
+                                                     resolver:resolve
+                                                     rejecter:reject];
+}
+
+RCT_EXPORT_METHOD(removeItem:
+                  (NSString *)key
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject) {
+    if (![EncryptedStorageModule ensureBackendAvailableWithRejecter:reject]) {
+        return;
+    }
+    
+    [[MendixEncryptedStorageModule sharedInstance] internal_removeItem:key
+                                                        resolver:resolve
+                                                        rejecter:reject];
+}
+
+- (void)internal_setItem:(NSString *)key 
+                withValue:(NSString *)value
+                resolver:(RCTPromiseResolveBlock)resolve
+                rejecter:(RCTPromiseRejectBlock)reject {
+    NSData *dataFromValue = [value dataUsingEncoding:NSUTF8StringEncoding];
     if (dataFromValue == nil) {
         NSError *error =
             [NSError errorWithDomain:[[NSBundle mainBundle] bundleIdentifier]
@@ -59,10 +133,9 @@ RCT_EXPORT_METHOD(setItem
     }
 }
 
-RCT_EXPORT_METHOD(getItem
-                  : (NSString *)key resolver
-                  : (RCTPromiseResolveBlock)resolve rejecter
-                  : (RCTPromiseRejectBlock)reject) {
+- (void)internal_getItem:(NSString *)key
+                resolver:(RCTPromiseResolveBlock)resolve
+                rejecter:(RCTPromiseRejectBlock)reject {
     NSDictionary *getQuery = @{
         (__bridge id)kSecClass : (__bridge id)kSecClassGenericPassword,
         (__bridge id)kSecAttrAccount : key,
@@ -94,10 +167,9 @@ RCT_EXPORT_METHOD(getItem
     }
 }
 
-RCT_EXPORT_METHOD(removeItem
-                  : (NSString *)key resolver
-                  : (RCTPromiseResolveBlock)resolve rejecter
-                  : (RCTPromiseRejectBlock)reject) {
+- (void)internal_removeItem:(NSString *)key
+                   resolver:(RCTPromiseResolveBlock)resolve
+                   rejecter:(RCTPromiseRejectBlock)reject {
     NSDictionary *removeQuery = @{
         (__bridge id)kSecClass : (__bridge id)kSecClassGenericPassword,
         (__bridge id)kSecAttrAccount : key,
