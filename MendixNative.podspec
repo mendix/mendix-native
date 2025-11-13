@@ -1,0 +1,28 @@
+require "json"
+
+package = JSON.parse(File.read(File.join(__dir__, "package.json")))
+
+Pod::Spec.new do |s|
+  s.name         = "MendixNative"
+  s.version      = package["version"]
+  s.summary      = package["description"]
+  s.homepage     = package["homepage"]
+  s.license      = package["license"]
+  s.authors      = package["author"]
+
+  s.platforms    = { :ios => min_ios_version_supported }
+  s.source       = { :git => "https://github.com/mendix/mendix-native.git", :tag => "#{s.version}" }
+
+  s.source_files = "ios/**/*.{h,m,mm,cpp,swift}"
+  s.public_header_files = "ios/**/*.h"
+  s.private_header_files = "ios/**/*.h"
+
+  s.dependency "SSZipArchive"
+  s.dependency "RNCAsyncStorage"
+  s.dependency "ReactCommon"
+  s.dependency "ReactAppDependencyProvider"
+  s.dependency 'React-Core'
+  s.dependency 'React-RCTAppDelegate'
+
+  install_modules_dependencies(s)
+end

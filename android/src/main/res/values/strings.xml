@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="app_menu_reload">Reload app</string>
+  <string name="app_menu_close">Close app</string>
+  <string name="app_menu_advanced_settings">Advanced settings</string>
+  <string name="app_menu_toggle_element_inspector">Toggle Element Inspector</string>
+  <string name="app_menu_clear_data">Clear data</string>
+  <string name="dev_menu_enable_remote_debugging">Enable remote JS debugging</string>
+  <string name="dev_menu_disable_remote_debugging">Disable remote JS debugging</string>
+  <string name="advanced_settings_title">Advanced settings</string>
+  <string name="advanced_settings_port_hint">Packager port</string>
+  <string name="advanced_settings_relaunch_button">Relaunch</string>
+  <string name="advanced_settings_cancel_button">Cancel</string>
+  <string name="enable_dev_mode">Enable dev mode</string>
+  <string name="clear_data">Clear data</string>
+</resources>
+

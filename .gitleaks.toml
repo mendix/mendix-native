@@ -1,0 +1,71 @@
+title = "mendix-native gitleaks config"
+# Base config uses gitleaks defaults; we extend with allowlists and a few custom regexes
+
+[allowlist]
+  description = "Global allowlist"
+  files = [
+    "yarn.lock",
+    "package-lock.json",
+    "pnpm-lock.yaml",
+    "gradlew",
+    "gradlew.bat",
+    "example/ios/Pods/",
+    "example/android/"
+  ]
+  regexes = [
+    # Common false positives
+    '''(?i)localhost(:[0-9]{2,5})?''',
+    '''(?i)internal-slot''',
+    '''(?i)eastasianwidth'''
+  ]
+
+[[rules]]
+  id = "generic-api-key"
+  description = "Generic API key format"
+  regex = '''(?i)(api|access|auth)[_-]?key["'\s:=]+[A-Za-z0-9_\-]{16,}'''
+  tags = ["api", "key", "generic"]
+
+[[rules]]
+  id = "bearer-token-inline"
+  description = "Potential hard-coded bearer token"
+  regex = '''Bearer\s+[A-Za-z0-9\-_.]{20,}'''
+  tags = ["auth", "token"]
+
+[[rules]]
+  id = "jwt"
+  description = "JSON Web Token"
+  regex = '''eyJ[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}'''
+  tags = ["jwt", "token"]
+
+[[rules]]
+  id = "aws-access-key"
+  description = "AWS Access Key ID"
+  regex = '''AKIA[0-9A-Z]{16}'''
+  tags = ["aws", "key"]
+
+[[rules]]
+  id = "github-token"
+  description = "GitHub Personal Access Token"
+  regex = '''ghp_[A-Za-z0-9]{36,}'''
+  tags = ["github", "token"]
+
+[[rules]]
+  id = "slack-token"
+  description = "Slack token"
+  regex = '''xox[baprs]-[A-Za-z0-9\-]{10,}'''
+  tags = ["slack", "token"]
+
+[[rules]]
+  id = "stripe-secret-key"
+  description = "Stripe live secret key"
+  regex = '''sk_live_[0-9a-zA-Z]{10,}'''
+  tags = ["stripe", "secret"]
+
+[[rules]]
+  id = "private-key-block"
+  description = "Private key block"
+  regex = '''-----BEGIN (EC|RSA|DSA|OPENSSH|PRIVATE) KEY-----'''
+  tags = ["crypto", "private-key"]
+
+[whitelist]  # backward compatibility for older gitleaks versions
+  description = "Legacy whitelist alias"
