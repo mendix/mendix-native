@@ -14,5 +14,3 @@ public class NativeCookieModule: NSObject {
         }
     }
 }
-
-//Checked

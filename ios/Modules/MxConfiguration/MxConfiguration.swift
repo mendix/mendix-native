@@ -101,5 +101,3 @@ public class MxConfiguration: NSObject {
         MxConfiguration.appSessionId = "\(randomValue)\(timestamp)"
     }
 }
-
-//Checked

@@ -30,5 +30,3 @@ public class RuntimeInfo: NSObject {
         )
     }
 }
-
-//Checked

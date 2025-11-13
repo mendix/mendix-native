@@ -57,5 +57,3 @@ class OtaHelpers: NSObject {
         return NativeFsModule.readJson(path, error: nil) ?? [:]
     }
 }
-
-//Checked

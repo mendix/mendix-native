@@ -6,4 +6,3 @@ public class NativeErrorHandler: NSObject {
         RedBoxHelper.shared.redBox.showErrorMessage(message, withStack: stackTrace)
     }
 }
-//Checked

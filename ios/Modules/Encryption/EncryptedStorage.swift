@@ -82,5 +82,3 @@ import Foundation
         promise.resolve(nil)
     }
 }
-
-//Checked

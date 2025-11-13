@@ -96,5 +96,3 @@ public enum UrlPath: String, Codable {
     case packagerStatus = "/status"
     case bundle = "/index.bundle"
 }
-
-//Checked

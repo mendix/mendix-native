@@ -9,5 +9,3 @@ final class RedBoxHelper {
     
     private init() {}
 }
-
-//Checked

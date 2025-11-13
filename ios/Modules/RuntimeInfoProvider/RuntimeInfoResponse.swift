@@ -31,5 +31,3 @@ public enum RuntimeInfoResponseStatus {
         }
     }
 }
-
-//Checked

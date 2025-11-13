@@ -65,5 +65,3 @@ public class MendixBackwardsCompatUtility: NSObject {
         return true
     }
 }
-
-//Checked

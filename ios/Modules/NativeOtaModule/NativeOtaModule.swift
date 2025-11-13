@@ -206,5 +206,3 @@ public class NativeOtaModule: NSObject {
         }
     }
 }
-
-//Checked

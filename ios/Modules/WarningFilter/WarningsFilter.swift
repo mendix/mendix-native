@@ -69,5 +69,3 @@ extension WarningsFilter: CustomStringConvertible {
         return filter
     }
 }
-
-//Checked

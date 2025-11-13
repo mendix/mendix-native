@@ -33,4 +33,3 @@ public class MendixApp: NSObject {
         self.enableThreeFingerGestures = enableThreeFingerGestures
     }
 }
-//Checked

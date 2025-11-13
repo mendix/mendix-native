@@ -13,5 +13,3 @@ public class ReloadHandler: NSObject {
         exit(0)
     }
 }
-
-//Checked

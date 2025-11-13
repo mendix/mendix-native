@@ -154,5 +154,3 @@ public class NativeDownloadModule: NSObject {
         handler.download(url, downloadPath: downloadPath)
     }
 }
-
-//Checked

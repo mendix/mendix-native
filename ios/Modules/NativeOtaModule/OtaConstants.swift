@@ -25,5 +25,3 @@ let DEPLOY_CONFIG_EXTRACTION_DIR = "extractionDir"
 let MANIFEST_OTA_DEPLOYMENT_ID_KEY = "otaDeploymentID"
 let MANIFEST_RELATIVE_BUNDLE_PATH_KEY = "relativeBundlePath"
 let MANIFEST_APP_VERSION_KEY = "appVersion"
-
-//Checked

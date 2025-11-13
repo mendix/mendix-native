@@ -15,5 +15,3 @@ import Foundation
         ReactNative.shared.hideSplashScreen()
     }
 }
-
-//Checked

@@ -57,5 +57,3 @@ public class RuntimeInfoProvider: NSObject {
         return request
     }
 }
-
-//Checked
