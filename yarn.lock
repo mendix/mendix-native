@@ -2484,23 +2484,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@op-engineering/op-sqlite@npm:12.0.2":
-  version: 12.0.2
-  resolution: "@op-engineering/op-sqlite@npm:12.0.2"
+"@op-engineering/op-sqlite@npm:15.0.7":
+  version: 15.0.7
+  resolution: "@op-engineering/op-sqlite@npm:15.0.7"
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 6941693a1c30802a9cdc15a9f0d97b26b2209c370a6052f3a9b4437261c9dfdf86e0e00a264423dce5780c109bbe4eb453365ca86c788c8b394eba6a7e8b6eca
-  languageName: node
-  linkType: hard
-
-"@op-engineering/op-sqlite@patch:@op-engineering/op-sqlite@npm%3A12.0.2#./.yarn/patches/@op-engineering-op-sqlite-npm-12.0.2-eb873cce05.patch::locator=mendix-native%40workspace%3A.":
-  version: 12.0.2
-  resolution: "@op-engineering/op-sqlite@patch:@op-engineering/op-sqlite@npm%3A12.0.2#./.yarn/patches/@op-engineering-op-sqlite-npm-12.0.2-eb873cce05.patch::version=12.0.2&hash=7031f1&locator=mendix-native%40workspace%3A."
-  peerDependencies:
-    react: "*"
-    react-native: "*"
-  checksum: 2396f668acd18a26f0cd1606270809ba4130e89daeba8cca8a5a491a18c22670fced2a404c963714769b5ae0c9728cac4bfdd3744d9f872b9e2bb3af87bed287
+  checksum: 92de60d00eccc5d7beb774da5b91defdb788275fa30e6e1af86440679b0ba077ffe25737eea071033a2c3641f8d2d35640a0f6100849ef83ee85bf96b45c2c99
   languageName: node
   linkType: hard
 
@@ -8787,7 +8777,7 @@ __metadata:
     "@babel/core": ^7.21.0
     "@babel/preset-env": ^7.20.0
     "@babel/runtime": ^7.20.0
-    "@op-engineering/op-sqlite": 12.0.2
+    "@op-engineering/op-sqlite": 15.0.7
     "@react-native-async-storage/async-storage": 2.1.1
     "@react-native-community/cli": 16.0.2
     "@react-native-community/cli-platform-android": 16.0.2
@@ -8813,7 +8803,7 @@ __metadata:
     "@eslint/eslintrc": ^3.3.0
     "@eslint/js": ^9.22.0
     "@evilmartians/lefthook": ^1.5.0
-    "@op-engineering/op-sqlite": 12.0.2
+    "@op-engineering/op-sqlite": 15.0.7
     "@react-native-async-storage/async-storage": 2.1.1
     "@react-native-community/cli": 16.0.2
     "@react-native/babel-preset": 0.77.3

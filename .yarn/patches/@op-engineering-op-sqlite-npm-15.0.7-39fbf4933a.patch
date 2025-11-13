@@ -1,5 +1,5 @@
 diff --git a/android/build.gradle b/android/build.gradle
-index 70ebca0eed3ccd79fe8b7d107d5d860bd6ca34db..5da86593b0ad638d0147719ce5a987ea6617e198 100644
+index d36fd855813e87b17da43156be64782b325b2733..751355645c0b6e28e2df01e9bdc32f545d8dc83c 100644
 --- a/android/build.gradle
 +++ b/android/build.gradle
 @@ -1,5 +1,4 @@
@@ -7,9 +7,9 @@ index 70ebca0eed3ccd79fe8b7d107d5d860bd6ca34db..5da86593b0ad638d0147719ce5a987ea
 -import groovy.json.JsonSlurper
  
  buildscript {
-   repositories {
-@@ -27,10 +26,10 @@ def isNewArchitectureEnabled() {
-   return project.hasProperty("newArchEnabled") && project.newArchEnabled == "true"
+   ext.getExtOrDefault = {name ->
+@@ -27,57 +26,16 @@ def getExtOrIntegerDefault(name) {
+   return rootProject.ext.has(name) ? rootProject.ext.get(name) : (project.properties["OPSQLite_" + name]).toInteger()
  }
  
 -def useSQLCipher = false
@@ -21,22 +21,39 @@ index 70ebca0eed3ccd79fe8b7d107d5d860bd6ca34db..5da86593b0ad638d0147719ce5a987ea
  def sqliteFlags = ""
  def enableFTS5 = false
  def useSqliteVec = false
-@@ -38,28 +37,6 @@ def enableRtree = false
+ def enableRtree = false
  def tokenizers = []
  
- def isInsideNodeModules = rootDir.absolutePath.contains("node_modules")
--def packageJson
+-// On the example app, the package.json is located at the root of the project
+-// On the user app, the package.json is located at the root of the node_modules directory
+-def isUserApp = rootDir.absolutePath.contains("node_modules")
+-def packageJsonFile
 -
--if ( isInsideNodeModules ) {
--  def packageJsonFile = new File("$rootDir/../../../package.json")
--  packageJson = new JsonSlurper().parseText(packageJsonFile.text)
+-if (isUserApp) {
+-  // Start from the root + 1 level up (to avoid detecting the op-sqlite/package.json) and traverse upwards to find the first package.json
+-  File currentDir = new File("$rootDir/../")
+-  packageJsonFile = null
+-  
+-  // Try to find package.json by traversing upwards
+-  while (currentDir != null) {
+-    File potential = new File(currentDir, "package.json")
+-    if (potential.exists()) {
+-      packageJsonFile = potential
+-      break
+-    }
+-    currentDir = currentDir.parentFile
+-  }
 -} else {
--  def packageJsonFile = new File("$rootDir/../package.json")
--  packageJson = new JsonSlurper().parseText(packageJsonFile.text)
+-  packageJsonFile = new File("$rootDir/../package.json")
 -}
 -
+-
+-def packageJson = new JsonSlurper().parseText(packageJsonFile.text)
+-
 -def opsqliteConfig = packageJson["op-sqlite"]
+-
 -if(opsqliteConfig) {
+-  println "[OP-SQLITE] Detected op-sqlite config from package.json at: " + packageJsonFile.absolutePath
 -  useSQLCipher = opsqliteConfig["sqlcipher"]
 -  useCRSQLite = opsqliteConfig["crsqlite"]
 -  useSqliteVec = opsqliteConfig["sqliteVec"]
@@ -47,11 +64,12 @@ index 70ebca0eed3ccd79fe8b7d107d5d860bd6ca34db..5da86593b0ad638d0147719ce5a987ea
 -  enableRtree = opsqliteConfig["rtree"]
 -  tokenizers = opsqliteConfig["tokenizers"] ? opsqliteConfig["tokenizers"] : []
 -}
- 
+-
  if(useSQLCipher) {
-   println "[OP-SQLITE] using SQLCipher 🔒"
+   println "[OP-SQLITE] using sqlcipher."
+ } else if(useLibsql) {
 diff --git a/android/cpp-adapter.cpp b/android/cpp-adapter.cpp
-index 8feaf7719661ef248113f11b1643deedb4b510af..be0ade91b7f92281cdc4ebb941ed5e2a3770ea19 100644
+index 8feaf7719661ef248113f11b1643deedb4b510af..2393963bf982f80ccff2ed396f1538be7ee18fcb 100644
 --- a/android/cpp-adapter.cpp
 +++ b/android/cpp-adapter.cpp
 @@ -19,8 +19,8 @@ struct OPSQLiteBridge : jni::JavaClass<OPSQLiteBridge> {
@@ -61,7 +79,7 @@ index 8feaf7719661ef248113f11b1643deedb4b510af..be0ade91b7f92281cdc4ebb941ed5e2a
 -         makeNativeMethod("clearStateNativeJsi",
 -                          OPSQLiteBridge::clearStateNativeJsi)});
 +         makeNativeMethod("clearStateNativeJsi", OPSQLiteBridge::clearStateNativeJsi),
-+         makeNativeMethod("deleteAllDBsJsi", OPSQLiteBridge::deleteAllDBsJsi)});
++    	 makeNativeMethod("deleteAllDBsJsi", OPSQLiteBridge::deleteAllDBsJsi)});
    }
  
  private:
@@ -71,58 +89,49 @@ index 8feaf7719661ef248113f11b1643deedb4b510af..be0ade91b7f92281cdc4ebb941ed5e2a
    }
 +
 +  static bool deleteAllDBsJsi(jni::alias_ref<jni::JObject> thiz) {
-+    return opsqlite::deleteAllDbs();
++  	return opsqlite::deleteAllDbs();
 +  }
  };
  
  JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *) {
 diff --git a/android/src/main/java/com/op/sqlite/OPSQLiteBridge.kt b/android/src/main/java/com/op/sqlite/OPSQLiteBridge.kt
-index 44f86df6a21a6f7272b2c79b196586ef8fec886b..624eef492321269ef62d3ba55338c95a6da8d503 100644
+index 44f86df6a21a6f7272b2c79b196586ef8fec886b..9d9f7100fd34361701b2addf09a4f36e33b35d56 100644
 --- a/android/src/main/java/com/op/sqlite/OPSQLiteBridge.kt
 +++ b/android/src/main/java/com/op/sqlite/OPSQLiteBridge.kt
-@@ -13,6 +13,8 @@ class OPSQLiteBridge {
+@@ -12,6 +12,7 @@ class OPSQLiteBridge {
+         docPath: String
      )
      private external fun clearStateNativeJsi()
- 
 +    private external fun deleteAllDBsJsi(): Boolean
-+
+ 
      fun install(context: ReactContext) {
          val jsContextPointer = context.javaScriptContextHolder!!.get()
-         val jsCallInvokerHolder =
-@@ -31,6 +33,9 @@ class OPSQLiteBridge {
+@@ -31,6 +32,10 @@ class OPSQLiteBridge {
          clearStateNativeJsi()
      }
  
 +    fun deleteAllDBs() {
 +        deleteAllDBsJsi()
 +    }
++
      companion object {
          val instance = OPSQLiteBridge()
      }
 diff --git a/android/src/main/java/com/op/sqlite/OPSQLiteModule.kt b/android/src/main/java/com/op/sqlite/OPSQLiteModule.kt
-index fea0aa7fb0266f812370309393eccb6eafef0fd5..e169fea192761a619bac31df9bffb603eb2d65a1 100644
+index 688832fa2f9a7f91d16cd50495caa8c9f8873864..9ea814bfa63f27356e804b82e941b7121152db3a 100644
 --- a/android/src/main/java/com/op/sqlite/OPSQLiteModule.kt
 +++ b/android/src/main/java/com/op/sqlite/OPSQLiteModule.kt
-@@ -6,14 +6,15 @@ import com.facebook.react.bridge.ReactApplicationContext
- import com.facebook.react.bridge.ReactMethod
- import com.facebook.react.bridge.ReactContextBaseJavaModule
- import com.facebook.react.bridge.ReadableMap
-+import com.facebook.react.module.annotations.ReactModule
- import java.io.File
- import java.io.FileOutputStream
- import java.io.InputStream
- import java.io.OutputStream
+@@ -13,7 +13,7 @@ import java.io.OutputStream
  import com.facebook.react.util.RNLog;
  
--//@ReactModule(name = OPSQLiteModule.NAME)
+ //@ReactModule(name = OPSQLiteModule.NAME)
 -internal class OPSQLiteModule(context: ReactApplicationContext?) : ReactContextBaseJavaModule(context) {
-+@ReactModule(name = OPSQLiteModule.NAME)
 +class OPSQLiteModule(context: ReactApplicationContext?) : ReactContextBaseJavaModule(context) {
      override fun getName(): String {
          return NAME
      }
-@@ -55,6 +56,16 @@ internal class OPSQLiteModule(context: ReactApplicationContext?) : ReactContextB
-         throw Exception("Do not call getDylibPath on Android")
+@@ -56,6 +56,17 @@ internal class OPSQLiteModule(context: ReactApplicationContext?) : ReactContextB
+         return true
      }
  
 +    @ReactMethod(isBlockingSynchronousMethod = true)
@@ -135,14 +144,15 @@ index fea0aa7fb0266f812370309393eccb6eafef0fd5..e169fea192761a619bac31df9bffb603
 +        OPSQLiteBridge.instance.deleteAllDBs();
 +    }
 +
++
      @ReactMethod
      fun moveAssetsDatabase(args: ReadableMap, promise: Promise) {
          val filename = args.getString("filename")!!
 diff --git a/cpp/DBHostObject.cpp b/cpp/DBHostObject.cpp
-index 33e8e25b1268534c93de89c0bebe759b99553c40..5843a46942ff8004ab3efe9517cdd72c41d67314 100644
+index 85710eea286d45685aa526ed3851e8f1e1411039..8cf10f21ba467dea430aab106d43dd4e2adeacd6 100644
 --- a/cpp/DBHostObject.cpp
 +++ b/cpp/DBHostObject.cpp
-@@ -847,6 +847,10 @@ void DBHostObject::invalidate() {
+@@ -889,6 +889,10 @@ void DBHostObject::invalidate() {
  #endif
  }
  
@@ -154,10 +164,10 @@ index 33e8e25b1268534c93de89c0bebe759b99553c40..5843a46942ff8004ab3efe9517cdd72c
  
  } // namespace opsqlite
 diff --git a/cpp/DBHostObject.h b/cpp/DBHostObject.h
-index b665ddd63162b74ea96ff7cc96a61b2099dc9803..26a561d245967fdc7e6c6a3408c9455e166bafdb 100644
+index cc174b7c8c5ce500a6ffe5dc6fe092d282d2554c..ff36f742a22b8a84f37d6dd28441dbe9d0c6c873 100644
 --- a/cpp/DBHostObject.h
 +++ b/cpp/DBHostObject.h
-@@ -67,6 +67,7 @@ class JSI_EXPORT DBHostObject : public jsi::HostObject {
+@@ -73,6 +73,7 @@ class JSI_EXPORT DBHostObject : public jsi::HostObject {
      void on_commit();
      void on_rollback();
      void invalidate();
@@ -166,7 +176,7 @@ index b665ddd63162b74ea96ff7cc96a61b2099dc9803..26a561d245967fdc7e6c6a3408c9455e
  
    private:
 diff --git a/cpp/bindings.cpp b/cpp/bindings.cpp
-index 3af52b22a12ca4b07e4b019199cd969f3fac2f78..90e8dedf77c598eada71f0542c07773c6b27a82b 100644
+index 5e1c1de234e7bdb131769728fc862d389f9995a5..dc21c6503ffe18f3ae1cf99f327e8aa1fc587b71 100644
 --- a/cpp/bindings.cpp
 +++ b/cpp/bindings.cpp
 @@ -36,6 +36,13 @@ void invalidate() {
@@ -183,34 +193,18 @@ index 3af52b22a12ca4b07e4b019199cd969f3fac2f78..90e8dedf77c598eada71f0542c07773c
  void install(jsi::Runtime &rt,
               const std::shared_ptr<react::CallInvoker> &invoker,
               const char *base_path, const char *crsqlite_path,
-diff --git a/cpp/bindings.h b/cpp/bindings.h
-index 91511ab8dff0cbd34c6b8b844c1783c39d4317cb..cc73dfe4405d568cbfbbfa5a9c879a1d88f260bf 100644
---- a/cpp/bindings.h
-+++ b/cpp/bindings.h
-@@ -14,6 +14,7 @@ void install(jsi::Runtime &rt,
-              const char *base_path, const char *crsqlite_path,
-              const char *sqlite_vec_path);
- void invalidate();
-+bool deleteAllDbs();
- void expoUpdatesWorkaround(const char *base_path);
- 
- } // namespace opsqlite
 diff --git a/op-sqlite.podspec b/op-sqlite.podspec
-index b8568b91ae3f578512a9687e71801182e3457b5e..f547bc0a63ba243b2b0bfaf51c3161f4ee04621b 100644
+index 375cc3ef0838a3cffb87ec970f636880a8676bb3..e6fce21630ed00aa863f2baae7b3d04de783dcb0 100644
 --- a/op-sqlite.podspec
 +++ b/op-sqlite.podspec
-@@ -11,20 +11,11 @@ folly_compiler_flags = '-DFOLLY_NO_CONFIG -DFOLLY_MOBILE=1 -DFOLLY_USE_LIBCPP=1
- fabric_enabled = ENV['RCT_NEW_ARCH_ENABLED'] == '1'
+@@ -1,4 +1,3 @@
+-require "json"
+ require_relative "./generate_tokenizers_header_file"
  
- parent_folder_name = File.basename(__dir__)
--app_package = nil
--# When installed on user node_modules lives inside node_modules/@op-engineering/op-sqlite
--if is_user_app
--  app_package = JSON.parse(File.read(File.join(__dir__, "..", "..", "..", "package.json")))
--# When running on the example app
--else
--  app_package = JSON.parse(File.read(File.join(__dir__, "example", "package.json")))
--end
+ log_message = lambda do |message|
+@@ -39,11 +38,10 @@ else
+   app_package = JSON.parse(File.read(File.join(__dir__, "example", "package.json")))
+ end
  
 -op_sqlite_config = app_package["op-sqlite"]
 -use_sqlcipher = false
@@ -222,7 +216,7 @@ index b8568b91ae3f578512a9687e71801182e3457b5e..f547bc0a63ba243b2b0bfaf51c3161f4
  phone_version = false
  sqlite_flags = ""
  fts5 = false
-@@ -32,19 +23,6 @@ rtree = false
+@@ -51,37 +49,6 @@ rtree = false
  use_sqlite_vec = false
  tokenizers = []
  
@@ -239,6 +233,24 @@ index b8568b91ae3f578512a9687e71801182e3457b5e..f547bc0a63ba243b2b0bfaf51c3161f4
 -  tokenizers = op_sqlite_config["tokenizers"] || []
 -end
 -
- if phone_version then
-   if use_sqlcipher then
-     raise "SQLCipher is not supported with phone version"
+-if phone_version then
+-  if use_sqlcipher then
+-    raise "SQLCipher is not supported with phone version"
+-  end
+-
+-  if use_crsqlite then
+-    raise "CRSQLite is not supported with phone version"
+-  end
+-
+-  if rtree then
+-    raise "RTree is not supported with phone version"
+-  end
+-
+-  if use_sqlite_vec then
+-    raise "SQLite Vec is not supported with phone version"
+-  end
+-end
+-
+ Pod::Spec.new do |s|
+   s.name         = "op-sqlite"
+   s.version      = package["version"]

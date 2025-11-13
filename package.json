@@ -1,6 +1,6 @@
 {
   "name": "mendix-native",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Mendix native mobile package",
   "main": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",
@@ -65,7 +65,7 @@
     "@eslint/eslintrc": "^3.3.0",
     "@eslint/js": "^9.22.0",
     "@evilmartians/lefthook": "^1.5.0",
-    "@op-engineering/op-sqlite": "12.0.2",
+    "@op-engineering/op-sqlite": "15.0.7",
     "@react-native-async-storage/async-storage": "2.1.1",
     "@react-native-community/cli": "16.0.2",
     "@react-native/babel-preset": "0.77.3",
@@ -169,6 +169,6 @@
     "version": "0.53.0"
   },
   "resolutions": {
-    "@op-engineering/op-sqlite@12.0.2": "patch:@op-engineering/op-sqlite@npm%3A12.0.2#./.yarn/patches/@op-engineering-op-sqlite-npm-12.0.2-eb873cce05.patch"
+    "@op-engineering/op-sqlite@15.0.7": "patch:@op-engineering/op-sqlite@npm%3A15.0.7#./.yarn/patches/@op-engineering-op-sqlite-npm-15.0.7-39fbf4933a.patch"
   }
 }
