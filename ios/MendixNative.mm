@@ -140,5 +140,15 @@ RCT_EXPORT_MODULE()
     reject(@"NOT_SPPORTED", @"Read as text is not supported on iOS", nil);
 }
 
+- (nonnull NSNumber *)navigationModeIsNavigationBarActive {
+    // iOS doesn't have navigation bar like Android, always return false
+    return [NSNumber numberWithBool:NO];
+}
+
+- (double)navigationModeGetNavigationBarHeight {
+    // iOS doesn't have navigation bar like Android, always return 0
+    return 0.0;
+}
+
 
 @end

@@ -10,6 +10,7 @@ import com.mendix.mendixnative.encryption.MendixEncryptedStorageModule
 import com.mendix.mendixnative.react.MxConfiguration
 import com.mendix.mendixnative.react.NativeErrorHandler
 import com.mendix.mendixnative.react.NativeReloadHandler
+import com.mendix.mendixnative.react.NavigationModeModule
 import com.mendix.mendixnative.react.cookie.NativeCookieModule
 import com.mendix.mendixnative.react.download.NativeDownloadModule
 import com.mendix.mendixnative.react.fs.NativeFsModule
@@ -166,6 +167,14 @@ class MendixNativeModule(reactContext: ReactApplicationContext) : NativeMendixNa
 
   override fun errorHandlerHandle(message: String, stackTrace: ReadableArray) {
     NativeErrorHandler(reactApplicationContext).handle(message, stackTrace)
+  }
+
+  override fun navigationModeIsNavigationBarActive(): Boolean {
+    return NavigationModeModule(reactApplicationContext).isNavigationBarActive()
+  }
+
+  override fun navigationModeGetNavigationBarHeight(): Double {
+    return NavigationModeModule(reactApplicationContext).getNavigationBarHeight()
   }
 
   companion object {

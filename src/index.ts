@@ -8,3 +8,4 @@ export * from './reload-handler';
 export * from './encrypted-storage';
 export * from './error-handler';
 export * from './file-system';
+export * from './navigation-mode';

@@ -48,6 +48,9 @@ export interface Spec extends TurboModule {
 
   errorHandlerHandle(message: string, stackTrace: StackFrame[]): void;
 
+  navigationModeIsNavigationBarActive(): boolean;
+  navigationModeGetNavigationBarHeight(): Double;
+
   readonly onReloadWithState: EventEmitter<void>;
   readonly onDownloadProgress: EventEmitter<DownloadProgress>;
 }
