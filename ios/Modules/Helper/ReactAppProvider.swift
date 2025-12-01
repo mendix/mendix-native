@@ -31,7 +31,7 @@ open class ReactAppProvider: RCTAppDelegate {
     }
     
     public func reactAppView() -> UIView? {
-        let view = rootViewFactory.view(withModuleName: reactRootViewName)
+        let view = rootViewFactory().view(withModuleName: reactRootViewName)
         view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         view.frame = window.rootViewController?.view.frame ?? .zero
         return view
