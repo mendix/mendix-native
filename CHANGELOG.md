@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- We updated mendix-native to support react v19 and react native v0.78.2.
+
 ## [v0.1.3] - 2025-12-05
 
 - We introduced AndroidNavigationBar module to get navigation bar height and active status.
