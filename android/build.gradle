@@ -9,7 +9,7 @@ buildscript {
   }
 
   dependencies {
-    classpath "com.android.tools.build:gradle:8.7.2"
+    classpath "com.android.tools.build:gradle:8.8.2"
     // noinspection DifferentKotlinGradleVersion
     classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${getExtOrDefault('kotlinVersion')}"
   }
@@ -88,7 +88,7 @@ dependencies {
   kapt 'com.github.bumptech.glide:compiler:4.12.0'
 
 
-  api "com.facebook.react:react-android:0.77.3"
+  api "com.facebook.react:react-android:0.78.2"
   api project(':op-engineering_op-sqlite')
   api project(':react-native-async-storage_async-storage')
   api project(':react-native-gesture-handler')
