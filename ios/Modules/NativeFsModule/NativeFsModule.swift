@@ -247,6 +247,7 @@ public class NativeFsModule: NSObject {
         
         do {
             try NativeFsModule.save(jsonData, filepath: filepath)
+            resolve(nil)
         } catch {
             reject(NativeFsModule.ERROR_SAVE_FAILED, NativeFsModule.formatError("Failed to write JSON"), error)
         }
