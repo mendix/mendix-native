@@ -50,10 +50,10 @@ class OtaHelpers: NSObject {
     }
     
     static func getNativeDependencies() -> [String: Any] {
-        guard let path = Bundle.main.path(forResource: "native_dependencies", ofType: "json") else {
+        guard let path = Bundle.main.path(forResource: "native_dependencies", ofType: "json"),
+              let data = try? NativeFsModule.readJson(path) else {
             return [:]
         }
-        
-        return NativeFsModule.readJson(path, error: nil) ?? [:]
+        return data
     }
 }

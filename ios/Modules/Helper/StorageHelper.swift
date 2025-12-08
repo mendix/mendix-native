@@ -19,6 +19,6 @@ public class StorageHelper {
 
     public static func clearDataAt(url: URL, component: String) {
         let path = url.appendingPathComponent(component).path
-        _ = NativeFsModule.remove(path, error: nil)
+        try? NativeFsModule.remove(path)
     }
 }
