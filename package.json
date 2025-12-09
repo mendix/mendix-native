@@ -2,13 +2,13 @@
   "name": "mendix-native",
   "version": "0.1.3",
   "description": "Mendix native mobile package",
-  "main": "./lib/module/index.js",
+  "main": "./lib/commonjs/index.js",
   "types": "./lib/typescript/src/index.d.ts",
   "exports": {
     ".": {
       "source": "./src/index.tsx",
       "types": "./lib/typescript/src/index.d.ts",
-      "default": "./lib/module/index.js"
+      "default": "./lib/commonjs/index.js"
     },
     "./package.json": "./package.json"
   },
@@ -142,10 +142,7 @@
     "output": "lib",
     "targets": [
       [
-        "module",
-        {
-          "esm": true
-        }
+        "commonjs"
       ],
       [
         "typescript",
