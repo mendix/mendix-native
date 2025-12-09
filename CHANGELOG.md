@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- We fixed an issue that caused a FileNotFoundException during file deletion operations.
 - We updated mendix-native to support react v19 and react native v0.78.2.
 
 ## [v0.1.3] - 2025-12-05

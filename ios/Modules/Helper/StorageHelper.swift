@@ -19,6 +19,10 @@ public class StorageHelper {
 
     public static func clearDataAt(url: URL, component: String) {
         let path = url.appendingPathComponent(component).path
-        _ = NativeFsModule.remove(path, error: nil)
+        do {
+            try NativeFsModule.remove(path)
+        } catch {
+            NSLog("Failed to clear data at path: \(path), error: \(error.localizedDescription)")
+        }
     }
 }

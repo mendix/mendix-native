@@ -6,7 +6,7 @@ Mendix native mobile package for React Native applications.
 
 Before you begin, ensure you have the following installed:
 
-- **Node.js**: Version 18 (specified in `.nvmrc`)
+- **Node.js**: Version 24 (specified in `.nvmrc`)
 - **Yarn**: Package manager (Yarn workspaces are required)
 - **React Native development environment** (optional, only needed if running the example app): Follow the [React Native environment setup guide](https://reactnative.dev/docs/environment-setup)
   - For iOS: Xcode and CocoaPods
