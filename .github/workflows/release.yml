@@ -30,9 +30,23 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version-file: '.nvmrc'
+          cache: yarn
 
       - name: Enable corepack
         run: corepack enable
+
+      - name: Extract release notes from Unreleased section
+        id: changelog
+        run: |
+          NOTES=$(awk '/## \[Unreleased\]/ {flag=1; next} /^## \[/ {flag=0} flag && NF {print}' CHANGELOG.md)
+          if [ -z "$NOTES" ] || [ -z "$(echo "$NOTES" | tr -d '[:space:]')" ]; then
+            echo "Error: No release notes found in the [Unreleased] section of CHANGELOG.md"
+            echo "Please add release notes before creating a release."
+            exit 1
+          fi
+          echo "notes<<EOF" >> $GITHUB_OUTPUT
+          echo "$NOTES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Bump version and update CHANGELOG
         id: bump
@@ -41,18 +55,18 @@ jobs:
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
           sed -i "s/## \[Unreleased\]/## [Unreleased]\n\n## [$NEW_VERSION] - $(date +%Y-%m-%d)/" CHANGELOG.md
 
-      - name: Extract release notes
-        id: changelog
+      - name: Check if release already exists
         run: |
-          NOTES=$(awk '/## \[Unreleased\]/ {flag=1; next} /^## \[/ {flag=0} flag {print}' CHANGELOG.md)
-          echo "notes<<EOF" >> $GITHUB_OUTPUT
-          echo "$NOTES" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          if git ls-remote --tags origin | grep -q "refs/tags/${{ steps.bump.outputs.version }}$"; then
+            echo "Error: Release tag ${{ steps.bump.outputs.version }} already exists"
+            echo "Please check existing releases or use a different version bump type."
+            exit 1
+          fi
 
       - name: Build and pack
         id: pack
         run: |
-          yarn install
+          yarn install --immutable
           yarn prepare
           yarn pack --filename mendix-native-${{ steps.bump.outputs.version }}.tgz
           echo "tgz=mendix-native-${{ steps.bump.outputs.version }}.tgz" >> $GITHUB_OUTPUT
