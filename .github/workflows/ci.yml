@@ -5,30 +5,15 @@ on:
 
 jobs:
   lint-and-build:
-    name: Lint, Type Check & Build
-    runs-on: ubuntu-latest
+    name: Lint and Build
+    uses: ./.github/workflows/lint-and-build.yml
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
+  build-android:
+    name: Build Android
+    needs: lint-and-build
+    uses: ./.github/workflows/build-android.yml
 
-      - name: Setup Node
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
-        with:
-          node-version-file: '.nvmrc'
-          cache: yarn
-
-      - name: Enable corepack
-        run: corepack enable
-
-      - name: Install dependencies
-        run: yarn install --immutable
-
-      - name: Type check
-        run: yarn typecheck
-
-      - name: Lint check
-        run: yarn lint
-
-      - name: Build
-        run: yarn prepare
+  build-ios:
+    name: Build iOS
+    needs: lint-and-build
+    uses: ./.github/workflows/build-ios.yml

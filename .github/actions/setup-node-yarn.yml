@@ -1,0 +1,26 @@
+name: 'Setup Project'
+description: 'Checkout code, setup Node.js, enable Yarn, and install dependencies'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout
+      uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
+
+    - name: Setup Node
+      uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+      with:
+        node-version-file: '.nvmrc'
+        cache: yarn
+
+    - name: Enable corepack
+      shell: bash
+      run: corepack enable
+
+    - name: Install dependencies
+      shell: bash
+      run: yarn install --immutable
+
+    - name: Prepare package
+      shell: bash
+      run: yarn prepare

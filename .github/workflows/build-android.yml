@@ -1,0 +1,29 @@
+name: Build Android Example
+
+on:
+  workflow_call:
+
+jobs:
+  build-android-example:
+    name: Build Android Example
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup Project
+        uses: ./.github/actions/setup-node-yarn
+
+      - name: Setup Java
+        uses: actions/setup-java@f2beeb24e141e01a676f977032f5a29d81c9e27e
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407
+
+      - name: Install NDK
+        run: echo "y" | ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --install "ndk;27.1.12297006"
+
+      - name: Build with Gradle
+        run: ./gradlew assembleDebug
+        working-directory: example/android

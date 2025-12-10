@@ -1,0 +1,19 @@
+name: Lint and Build
+
+on:
+  workflow_call:
+
+jobs:
+  lint-and-build:
+    name: Lint, Type Check & Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup Project
+        uses: ./.github/actions/setup-node-yarn
+
+      - name: Type check
+        run: yarn typecheck
+
+      - name: Lint check
+        run: yarn lint
