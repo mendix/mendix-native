@@ -1,11 +1,11 @@
-name: Lint and Build
+name: Lint
 
 on:
   workflow_call:
 
 jobs:
-  lint-and-build:
-    name: Lint, Type Check & Build
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
 
     steps:

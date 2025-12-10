@@ -4,16 +4,16 @@ on:
   pull_request:
 
 jobs:
-  lint-and-build:
-    name: Lint and Build
-    uses: ./.github/workflows/lint-and-build.yml
+  lint:
+    name: Lint
+    uses: ./.github/workflows/lint.yml
 
   build-android:
     name: Build Android
-    needs: lint-and-build
+    needs: lint
     uses: ./.github/workflows/build-android.yml
 
   build-ios:
     name: Build iOS
-    needs: lint-and-build
+    needs: lint
     uses: ./.github/workflows/build-ios.yml
