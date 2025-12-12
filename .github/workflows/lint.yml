@@ -1,0 +1,22 @@
+name: Lint
+
+on:
+  workflow_call:
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
+
+      - name: Setup Project
+        uses: ./.github/actions/setup-node-yarn
+
+      - name: Type check
+        run: yarn typecheck
+
+      - name: Lint check
+        run: yarn lint
