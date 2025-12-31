@@ -17,18 +17,29 @@ public class AppPreferences: NSObject {
     private static var _packagerPort: Int
     
     public static var remoteDebuggingPackagerPort: Int {
-        get {
-            return AppUrl.ensurePort(_packagerPort)
-        }
-        set {
-            _packagerPort = newValue
-        }
+        get { AppUrl.ensurePort(_packagerPort) }
+        set { _packagerPort = newValue }
     }
     
-    public static var appUrl = _appUrl
-    public static var devModeEnabled = _devModeEnabled
-    public static var remoteDebuggingEnabled = _remoteDebuggingEnabled
-    public static var elementInspectorEnabled = _elementInspectorEnabled
+    public static var appUrl: String? {
+        get { _appUrl }
+        set { _appUrl = newValue }
+    }
+    
+    public static var devModeEnabled: Bool {
+        get { _devModeEnabled }
+        set { _devModeEnabled = newValue }
+    }
+    
+    public static var remoteDebuggingEnabled: Bool {
+        get { _remoteDebuggingEnabled }
+        set { _remoteDebuggingEnabled = newValue }
+    }
+    
+    public static var elementInspectorEnabled: Bool {
+        get { _elementInspectorEnabled }
+        set { _elementInspectorEnabled = newValue }
+    }
     
     public static var safeAppUrl: String {
         return appUrl ?? ""
