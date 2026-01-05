@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.3.1] - 2026-01-05
+
+- We added `SessionCookieStore` to persist, restore and clear session cookies on iOS.
+
 ## [v0.3.0] - 2025-12-09
 
 - We fixed an issue that caused a FileNotFoundException during file deletion operations.
