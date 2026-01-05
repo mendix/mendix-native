@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- We improved `NativeCookieModule` to persist and restore session cookies on iOS.
+- We added `SessionCookieStore` to persist, restore and clear session cookies on iOS.
 
 ## [v0.3.0] - 2025-12-09
 
