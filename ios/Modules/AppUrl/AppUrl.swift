@@ -55,7 +55,7 @@ public class AppUrl: NSObject {
     }
     
     // MARK: - Private Helper Methods
-    private static func createUrl(_ url: String, path: UrlPath?, port: Int? = nil, query: String? = nil, concatPath: Bool = false) -> URL? {
+    private static func createUrl(_ url: String, path: UrlPath?, port: Int? = nil, query: String? = nil, concatPath: Bool = true) -> URL? {
         let processedUrl = ensureProtocol(removeTrailingSlash(url))
         guard var components = URLComponents(string: processedUrl) ?? URLComponents(string: defaultUrlString) else {
             return nil

@@ -15,6 +15,7 @@ class AppDelegate: RCTAppDelegate {
         super.application(application, didFinishLaunchingWithOptions: launchOptions)
         
         //Start - For MendixApplication compatibility only, not part of React Native template
+        SessionCookieStore.restore()
         MxConfiguration.update(from:
             MendixApp.init(
                 identifier: nil,
@@ -30,6 +31,14 @@ class AppDelegate: RCTAppDelegate {
         )
         //End - For MendixApplication compatibility only, not part of React Native template
         return true
+    }
+    
+    override func applicationDidEnterBackground(_ application: UIApplication) {
+        SessionCookieStore.persist()
+    }
+    
+    override func applicationWillTerminate(_ application: UIApplication) {
+        SessionCookieStore.persist()
     }
     
     override func sourceURL(for bridge: RCTBridge) -> URL? {

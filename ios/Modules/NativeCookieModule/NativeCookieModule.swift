@@ -12,5 +12,6 @@ public class NativeCookieModule: NSObject {
         for cookie in (storage.cookies ?? []) {
             storage.deleteCookie(cookie)
         }
+        SessionCookieStore.clear()
     }
 }
