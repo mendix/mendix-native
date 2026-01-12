@@ -64,7 +64,7 @@
     "@eslint/compat": "1.3.2",
     "@eslint/eslintrc": "3.3.1",
     "@eslint/js": "9.35.0",
-    "@op-engineering/op-sqlite": "15.0.7",
+    "@op-engineering/op-sqlite": "15.1.5",
     "@react-native-async-storage/async-storage": "2.1.1",
     "@react-native-community/cli": "18.0.1",
     "@react-native/babel-preset": "0.78.2",
@@ -176,6 +176,6 @@
     "version": "0.55.1"
   },
   "resolutions": {
-    "@op-engineering/op-sqlite@15.0.7": "patch:@op-engineering/op-sqlite@npm%3A15.0.7#./.yarn/patches/@op-engineering-op-sqlite-npm-15.0.7-39fbf4933a.patch"
+    "@op-engineering/op-sqlite@15.1.5": "patch:@op-engineering/op-sqlite@npm%3A15.1.5#./.yarn/patches/@op-engineering-op-sqlite-npm-15.1.5-29351e9e0f.patch"
   }
 }
