@@ -1,6 +1,6 @@
 {
   "name": "mendix-native",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Mendix native mobile package",
   "main": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",
