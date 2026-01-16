@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- We updated the `OPSqlite` with compatibility for ANdroid 16kb page alignment.
+
 ## [v0.3.1] - 2026-01-08
 
 - We added `SessionCookieStore` to persist, restore and clear session cookies on iOS.
