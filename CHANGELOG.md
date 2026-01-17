@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.3.2] - 2026-01-16
+
 - We updated the `OPSqlite` with compatibility for ANdroid 16kb page alignment.
 
 ## [v0.3.1] - 2026-01-08
