@@ -8,12 +8,12 @@ jobs:
     name: Lint
     uses: ./.github/workflows/lint.yml
 
-  build-android:
-    name: Build Android
+  android:
+    name: Android Build & Test
     needs: lint
-    uses: ./.github/workflows/build-android.yml
+    uses: ./.github/workflows/android.yml
 
-  build-ios:
-    name: Build iOS
+  ios:
+    name: iOS Build & Test
     needs: lint
-    uses: ./.github/workflows/build-ios.yml
+    uses: ./.github/workflows/ios.yml

@@ -8,7 +8,7 @@ PODS:
   - hermes-engine (0.78.2):
     - hermes-engine/Pre-built (= 0.78.2)
   - hermes-engine/Pre-built (0.78.2)
-  - MendixNative (0.3.1):
+  - MendixNative (0.3.2):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1851,7 +1851,7 @@ SPEC CHECKSUMS:
   fmt: a40bb5bd0294ea969aaaba240a927bd33d878cdd
   glog: eb93e2f488219332457c3c4eafd2738ddc7e80b8
   hermes-engine: 2771b98fb813fdc6f92edd7c9c0035ecabf9fee7
-  MendixNative: 358ef00fc883a39da69680c6c2a09ecf85a0b887
+  MendixNative: 5d4f642347f8d28bdf18e0af822bdb0ff830a430
   op-sqlite: e8590c98ed3f69c072eea7949bfa214088d3f5c1
   OpenSSL-Universal: 6082b0bf950e5636fe0d78def171184e2b3899c2
   RCT-Folly: e78785aa9ba2ed998ea4151e314036f6c49e6d82
