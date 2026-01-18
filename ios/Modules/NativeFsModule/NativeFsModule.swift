@@ -279,7 +279,7 @@ public class NativeFsModule: NSObject {
             try NativeFsModule.ensureWhiteListedPath(paths)
             return true
         } catch let error {
-            reject(NativeFsModule.INVALID_PATH, NativeFsModule.formatError("Path not accessible"), error)
+            reject(NativeFsModule.INVALID_PATH, NativeFsModule.formatError("Path needs to be an absolute path to the apps accessible space."), error)
             return false
         }
     }

@@ -1,5 +1,10 @@
 # Mendix Native
 
+[![CI](https://github.com/mendix/mendix-native/actions/workflows/ci.yml/badge.svg)](https://github.com/mendix/mendix-native/actions/workflows/ci.yml)
+[![Lint](https://github.com/mendix/mendix-native/actions/workflows/lint.yml/badge.svg)](https://github.com/mendix/mendix-native/actions/workflows/lint.yml)
+[![Android](https://github.com/mendix/mendix-native/actions/workflows/android.yml/badge.svg)](https://github.com/mendix/mendix-native/actions/workflows/android.yml)
+[![iOS](https://github.com/mendix/mendix-native/actions/workflows/ios.yml/badge.svg)](https://github.com/mendix/mendix-native/actions/workflows/ios.yml)
+
 Mendix native mobile package for React Native applications.
 
 ## Prerequisites
@@ -15,6 +20,7 @@ Before you begin, ensure you have the following installed:
 ## Local Development Setup
 
 This project is a monorepo managed using Yarn workspaces with:
+
 - The library package in the root directory
 - An example app in the `example/` directory
 
@@ -80,10 +86,12 @@ yarn example android
 #### Edit Native Code
 
 **iOS (Objective-C/Swift):**
+
 - Open `example/ios/MendixNativeExample.xcworkspace` in Xcode
 - Find source files at: `Pods > Development Pods > mendix-native`
 
 **Android (Java/Kotlin):**
+
 - Open `example/android` in Android Studio
 - Find source files under: `mendix-native` in the Android view
 
@@ -231,6 +239,7 @@ Example:
 ## [Unreleased]
 
 ## [1.2.0] - 2025-01-15
+
 <previous unreleased notes>
 ```
 

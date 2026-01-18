@@ -16,10 +16,15 @@ class AppDelegate: RCTAppDelegate {
         
         //Start - For MendixApplication compatibility only, not part of React Native template
         SessionCookieStore.restore()
+        
+        guard let bundleUrl = bundleURL() else {
+            fatalError("Unable to load JavaScript bundle.")
+        }
+        
         MxConfiguration.update(from:
             MendixApp.init(
                 identifier: nil,
-                bundleUrl: bundleURL()!,
+                bundleUrl: bundleUrl,
                 runtimeUrl: URL(string: "http://localhost:8081")!,
                 warningsFilter: .none,
                 isDeveloperApp: false,
