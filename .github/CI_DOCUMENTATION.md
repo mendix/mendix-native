@@ -28,7 +28,7 @@ All workflows use standardized tooling versions to ensure consistency:
 
 | Tool                    | Version                  | Defined In                     |
 | ----------------------- | ------------------------ | ------------------------------ |
-| **Java**                | `17` (Zulu distribution) | All Android workflows          |
+| **Java**                | `21` (Zulu distribution) | All Android workflows          |
 | **Gradle**              | `8.12`                   | `gradle-wrapper.properties`    |
 | **Android Build Tools** | `35.0.0`                 | `example/android/build.gradle` |
 | **NDK**                 | `27.3.13750724`          | `example/android/build.gradle` |
@@ -56,7 +56,7 @@ All workflows use standardized tooling versions to ensure consistency:
 | Tool                     | Version               | Defined In              |
 | ------------------------ | --------------------- | ----------------------- |
 | **React Native Harness** | `1.0.0-alpha.21`      | `package.json`          |
-| **Android Emulator**     | Pixel_API_34 (API 34) | `rn-harness.config.mjs` |
+| **Android Emulator**     | Pixel_API_35 (API 35) | `rn-harness.config.mjs` |
 | **iOS Simulator**        | iPhone 17 (iOS 26.2) | `rn-harness.config.mjs` |
 
 ### GitHub Actions
@@ -129,7 +129,7 @@ All actions are pinned to specific commit SHAs for security and reproducibility:
 - Sets up Android emulator
 - Runs harness tests
 - Runs on: `ubuntu-latest`
-- Uses: Java 17, Android SDK, NDK 27.3.13750724
+- Uses: Java 21, Android SDK, NDK 27.3.13750724
 
 #### 3. iOS Build & Test (`.github/workflows/ios.yml`)
 
@@ -149,7 +149,7 @@ The harness tests are configured in `example/rn-harness.config.mjs`:
 runners: [
   androidPlatform({
     name: 'android',
-    device: androidEmulator('Pixel_API_34'),
+    device: androidEmulator('Pixel_API_35'),
     bundleId: 'mendixnative.example',
   }),
   applePlatform({
@@ -186,7 +186,7 @@ yarn harness:ios:with:build
 
 ### Android
 
-Make sure emulator with name `Pixel_API_34` is up and running
+Make sure emulator with name `Pixel_API_35` is up and running
 
 ```bash
 corepack enable
@@ -205,7 +205,7 @@ yarn harness:android:with:build
 - Check AVD cache - clear `avd-*` entries if corrupted
 - Verify KVM is enabled (workflows handle this automatically)
 - Check emulator logs in workflow output
-- Ensure AVD_NAME matches harness config (`Pixel_API_34`)
+- Ensure AVD_NAME matches harness config (`Pixel_API_35`)
 
 **iOS simulator not found or fails to boot:**
 
