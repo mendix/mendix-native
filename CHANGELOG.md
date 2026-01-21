@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- We downgraded the `OPSqlite` to v15.0.7 to align it with `make-it-native` and `native-template`.
+
 ## [v0.3.2] - 2026-01-16
 
 - We updated the `OPSqlite` with compatibility for ANdroid 16kb page alignment.
