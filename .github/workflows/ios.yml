@@ -1,0 +1,89 @@
+name: iOS Build & Test
+
+on:
+  workflow_call:
+
+env:
+  DEVICE_MODEL: 'iPhone 17'
+  IOS_VERSION: '26.2'
+  USE_CCACHE: 1
+
+jobs:
+  ios:
+    name: iOS Build & Test
+    runs-on: macos-26
+    timeout-minutes: 60
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.2.app/Contents/Developer
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v4.2.2
+
+      - name: Setup Project
+        uses: ./.github/actions/setup-node-yarn
+
+      - name: Setup Xcode
+        run: sudo xcode-select -s /Applications/Xcode_26.2.app
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@d697be2f83c6234b20877c3b5eac7a7f342f0d0c # v1.204.0
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+          working-directory: example
+
+      # Build dependencies (only if app not cached)
+      - name: Cache CocoaPods
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.2.0
+        with:
+          path: |
+            example/ios/Pods
+            ~/Library/Caches/CocoaPods
+            ~/.cocoapods
+          key: ${{ runner.os }}-pods-${{ hashFiles('example/ios/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+
+      - name: Install CocoaPods
+        working-directory: example
+        run: yarn pod
+
+      # Build iOS app (only if not cached)
+      - name: Build iOS app for simulator
+        if: steps.cache-ios-app.outputs.cache-hit != 'true'
+        working-directory: example
+        run: yarn app:package:ios
+
+      # Setup simulator (after build)
+      - name: Launch iOS Simulator
+        run: |
+          # Install jq if not available
+          if ! command -v jq &> /dev/null; then
+            brew install jq
+          fi
+
+          # Ensure `gtimeout` is available (coreutils) for robust timeouts on macOS.
+          if ! command -v gtimeout &> /dev/null; then
+            brew install coreutils
+          fi
+
+          # Launch simulator with our custom script
+          bash .github/scripts/launch-ios-simulator.sh "${{ env.DEVICE_MODEL }}" "${{ env.IOS_VERSION }}"
+
+      # Install app on simulator
+      - name: Install app on simulator
+        working-directory: example
+        run: yarn app:install:ios
+
+      # Wait for app and bridge to be fully ready
+      - name: Wait for React Native bridge initialization
+        run: |
+          echo "Waiting for app and bridge to be fully initialized..."
+          sleep 10
+          echo "Ready to run tests"
+
+      # Run tests
+      - name: Run Harness E2E tests
+        working-directory: example
+        run: yarn harness:ios

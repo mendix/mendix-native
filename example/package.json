@@ -8,7 +8,18 @@
     "start": "react-native start",
     "build:android": "react-native build-android --extra-params \"--no-daemon --console=plain -PreactNativeArchitectures=arm64-v8a\"",
     "build:ios": "react-native build-ios --mode Debug",
-    "pod": "(cd ios && bundle install && bundle exec pod install)"
+    "pod": "bundle install && bundle exec pod install --project-directory=ios",
+    "app:package:ios": "xcodebuild -workspace ios/MendixNativeExample.xcworkspace -scheme MendixNativeExample -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath ios/build build",
+    "app:install:ios": "xcrun simctl install booted ios/build/Build/Products/Debug-iphonesimulator/MendixNativeExample.app",
+    "app:package:android": "(cd android && ./gradlew assembleDebug --no-daemon)",
+    "app:install:android": "adb install -r android/app/build/outputs/apk/debug/app-debug.apk",
+    "harness": "react-native-harness --verbose",
+    "harness:ios": "yarn harness --harnessRunner ios",
+    "harness:android": "yarn harness --harnessRunner android",
+    "harness:all": "yarn harness:ios && yarn harness:android",
+    "harness:all:with:build": "yarn harness:ios:with:build && yarn harness:android:with:build",
+    "harness:android:with:build": "yarn app:package:android && yarn app:install:android && yarn harness:android",
+    "harness:ios:with:build": "yarn app:package:ios && yarn app:install:ios && yarn harness:ios"
   },
   "dependencies": {
     "@op-engineering/op-sqlite": "15.0.7",
@@ -24,11 +35,15 @@
     "@react-native-community/cli": "18.0.1",
     "@react-native-community/cli-platform-android": "18.0.1",
     "@react-native-community/cli-platform-ios": "18.0.1",
+    "@react-native-harness/jest": "1.0.0-alpha.21",
+    "@react-native-harness/platform-android": "1.0.0-alpha.21",
+    "@react-native-harness/platform-apple": "1.0.0-alpha.21",
     "@react-native/babel-preset": "0.78.2",
     "@react-native/metro-config": "0.78.2",
     "@react-native/typescript-config": "0.78.2",
     "@types/react": "19.0.0",
     "react-native-builder-bob": "0.40.16",
+    "react-native-harness": "1.0.0-alpha.21",
     "react-native-monorepo-config": "0.1.9"
   },
   "engines": {

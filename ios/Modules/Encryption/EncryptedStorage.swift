@@ -44,7 +44,7 @@ import Foundation
             }
             promise.resolve(value)
         } else if status == errSecItemNotFound {
-            promise.resolve(nil)
+            promise.resolve(NSNull())
         } else {
             promise.reject("An error occured while retrieving value", errorCode: Int(status))
         }

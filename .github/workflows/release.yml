@@ -22,7 +22,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v4.2.2
         with:
           fetch-depth: 0
 
@@ -66,7 +66,7 @@ jobs:
           echo "tgz=mendix-native-${{ steps.bump.outputs.version }}.tgz" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b
+        uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2.5.0
         with:
           tag_name: ${{ steps.bump.outputs.version }}
           name: ${{ steps.bump.outputs.version }}
@@ -74,7 +74,7 @@ jobs:
           files: ${{ steps.pack.outputs.tgz }}
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@84ae59a2cdc2258d6fa0732dd66352dddae2a412
+        uses: peter-evans/create-pull-request@84ae59a2cdc2258d6fa0732dd66352dddae2a412 # v7.0.9
         with:
           commit-message: "chore: release ${{ steps.bump.outputs.version }}"
           branch: release/${{ steps.bump.outputs.version }}

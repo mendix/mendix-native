@@ -16,10 +16,17 @@ class AppDelegate: RCTAppDelegate {
         
         //Start - For MendixApplication compatibility only, not part of React Native template
         SessionCookieStore.restore()
+        
+        guard let bundleUrl = bundleURL() else {
+            let message = "No script URL provided. Make sure the metro packager is running or you have embedded a JS bundle in your application bundle."
+            NativeErrorHandler().handle(message: message, stackTrace: [])
+            return false
+        }
+        
         MxConfiguration.update(from:
             MendixApp.init(
                 identifier: nil,
-                bundleUrl: bundleURL()!,
+                bundleUrl: bundleUrl,
                 runtimeUrl: URL(string: "http://localhost:8081")!,
                 warningsFilter: .none,
                 isDeveloperApp: false,

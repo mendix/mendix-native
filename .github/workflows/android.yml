@@ -1,0 +1,139 @@
+name: Android Build & Test
+
+on:
+  workflow_call:
+
+env:
+  DEVICE_API_LEVEL: '35'
+  DEVICE_ARCH: 'x86_64'
+  DEVICE_TARGET: 'google_apis'
+  AVD_NAME: 'Pixel_API_35'
+  EMULATOR_DISK_SIZE: '8G'
+  ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+  ANDROID_HOME: /usr/local/lib/android/sdk
+  NDK_VERSION: '27.3.13750724'
+
+jobs:
+  android:
+    name: Android Build & Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v4.2.2
+
+      - name: Setup Project
+        uses: ./.github/actions/setup-node-yarn
+
+      - name: Setup Java
+        uses: actions/setup-java@f2beeb24e141e01a676f977032f5a29d81c9e27e # v4.7.1
+        with:
+          distribution: 'zulu'
+          java-version: '21'
+
+      # Restore NDK from cache before sdkmanager runs.
+      - name: Cache NDK
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.2.0
+        with:
+          path: ${{ env.ANDROID_SDK_ROOT }}/ndk/${{ env.NDK_VERSION }}
+          key: ${{ runner.os }}-ndk-${{ env.NDK_VERSION }}
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3.2.1
+        with:
+          packages: tools platform-tools ndk;${{ env.NDK_VERSION }}
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+          ls /dev/kvm
+
+      - name: Free Disk Space
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "Disk space before cleanup:"
+          df -h
+
+          # GitHub-hosted runners come with extra SDKs/toolchains preinstalled.
+          # Removing a few of the largest ones gives the Android emulator enough
+          # room to create its userdata partition.
+          sudo rm -rf /usr/share/dotnet || true
+          sudo rm -rf /opt/ghc || true
+          sudo rm -rf /usr/local/share/boost || true
+          sudo rm -rf /usr/share/swift || true
+
+          echo "Disk space after cleanup:"
+          df -h
+
+      - name: Cache Gradle
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.2.0
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            example/android/.gradle
+            example/android/app/.cxx
+            example/android/app/build/intermediates
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'android/build.gradle', 'example/android/app/build.gradle') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      # Build APK (only if not cached)
+      - name: Build APK with Gradle
+        working-directory: example
+        run: yarn app:package:android
+
+      - name: AVD cache
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.2.0
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-${{ env.DEVICE_API_LEVEL }}-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_ARCH }}-${{ env.EMULATOR_DISK_SIZE }}
+
+      # Create AVD (only if not cached, runs after build)
+      - name: Create AVD and generate snapshot for caching
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@b530d96654c385303d652368551fb075bc2f0b6b # v2.33.0
+        with:
+          api-level: ${{ env.DEVICE_API_LEVEL }}
+          target: ${{ env.DEVICE_TARGET }}
+          arch: ${{ env.DEVICE_ARCH }}
+          ram-size: 4096M
+          disk-size: ${{ env.EMULATOR_DISK_SIZE }}
+          force-avd-creation: true
+          avd-name: ${{ env.AVD_NAME }}
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -memory 4096
+          script: echo "Generated AVD snapshot for caching."
+
+      # Launch AVD, install app, and run tests
+      - name: Run Harness E2E tests
+        uses: reactivecircus/android-emulator-runner@b530d96654c385303d652368551fb075bc2f0b6b # v2.33.0
+        with:
+          working-directory: example
+          api-level: ${{ env.DEVICE_API_LEVEL }}
+          target: ${{ env.DEVICE_TARGET }}
+          arch: ${{ env.DEVICE_ARCH }}
+          ram-size: 4096M
+          disk-size: ${{ env.EMULATOR_DISK_SIZE }}
+          force-avd-creation: false
+          avd-name: ${{ env.AVD_NAME }}
+          disable-animations: true
+          emulator-boot-timeout: 900
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -memory 4096
+          script: |
+            yarn app:install:android
+            yarn harness:android
+
+      # Cleanup
+      - name: Stop Gradle Daemon
+        if: always()
+        working-directory: example/android
+        run: ./gradlew --stop
