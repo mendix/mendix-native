@@ -2,10 +2,6 @@ import { TurboModuleRegistry, type TurboModule } from 'react-native';
 import type { StackFrame } from 'stacktrace-parser';
 import type { CodegenTypes } from 'react-native';
 
-type EventEmitter<T> = CodegenTypes.EventEmitter<T>;
-type Int32 = CodegenTypes.Int32;
-type Double = CodegenTypes.Double;
-
 export interface Spec extends TurboModule {
   encryptedStorageSetItem(key: string, value: string): Promise<void>;
   encryptedStorageGetItem(key: string): Promise<string | null>;
@@ -48,10 +44,10 @@ export interface Spec extends TurboModule {
   errorHandlerHandle(message: string, stackTrace: StackFrame[]): void;
 
   navigationModeIsNavigationBarActive(): boolean;
-  navigationModeGetNavigationBarHeight(): Double;
+  navigationModeGetNavigationBarHeight(): CodegenTypes.Double;
 
-  readonly onReloadWithState: EventEmitter<void>;
-  readonly onDownloadProgress: EventEmitter<DownloadProgress>;
+  readonly onReloadWithState: CodegenTypes.EventEmitter<void>;
+  readonly onDownloadProgress: CodegenTypes.EventEmitter<DownloadProgress>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('MendixNative');
@@ -97,12 +93,12 @@ type Configuration = {
    * @deprecated
    */
   CODE_PUSH_KEY?: string;
-  NATIVE_BINARY_VERSION?: Int32;
+  NATIVE_BINARY_VERSION?: CodegenTypes.Int32;
   APP_SESSION_ID?: string;
 };
 
 type DownloadConfig = {
-  connectionTimeout?: Int32;
+  connectionTimeout?: CodegenTypes.Int32;
   mimeType?: string;
 };
 
@@ -121,8 +117,8 @@ type OtaDownloadResponse = {
 };
 
 type DownloadProgress = {
-  receivedBytes: Double;
-  totalBytes: Double;
+  receivedBytes: CodegenTypes.Double;
+  totalBytes: CodegenTypes.Double;
 };
 
 export type {
