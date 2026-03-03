@@ -1,11 +1,10 @@
 import { TurboModuleRegistry, type TurboModule } from 'react-native';
 import type { StackFrame } from 'stacktrace-parser';
+import type { CodegenTypes } from 'react-native';
 
-import {
-  type EventEmitter,
-  type Int32,
-  type Double,
-} from 'react-native/Libraries/Types/CodegenTypes';
+type EventEmitter<T> = CodegenTypes.EventEmitter<T>;
+type Int32 = CodegenTypes.Int32;
+type Double = CodegenTypes.Double;
 
 export interface Spec extends TurboModule {
   encryptedStorageSetItem(key: string, value: string): Promise<void>;
