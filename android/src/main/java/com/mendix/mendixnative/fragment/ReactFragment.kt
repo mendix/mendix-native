@@ -35,7 +35,7 @@ open class ReactFragment : Fragment(), PermissionAwareActivity {
       launchOptions = requireArguments().getBundle(ARG_LAUNCH_OPTIONS)
     }
     checkNotNull(mainComponentName) { "Cannot loadApp if component name is null" }
-    mReactDelegate = ReactDelegate(activity, reactHost, mainComponentName, launchOptions)
+    mReactDelegate = activity?.let { ReactDelegate(it, reactHost, mainComponentName, launchOptions) }
   }
 
   /**
