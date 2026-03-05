@@ -176,6 +176,6 @@
     "version": "0.55.1"
   },
   "resolutions": {
-    "@op-engineering/op-sqlite@15.0.7": "patch:@op-engineering/op-sqlite@npm%3A15.0.7#./.yarn/patches/@op-engineering-op-sqlite-npm-15.0.7-39fbf4933a.patch"
+    "@op-engineering/op-sqlite@15.2.5": "patch:@op-engineering/op-sqlite@npm%3A15.2.5#./.yarn/patches/@op-engineering-op-sqlite-npm-15.2.5-936f5cf3a5.patch"
   }
 }
