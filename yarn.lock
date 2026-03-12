@@ -1533,6 +1533,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@clack/core@npm:1.0.0-alpha.7":
+  version: 1.0.0-alpha.7
+  resolution: "@clack/core@npm:1.0.0-alpha.7"
+  dependencies:
+    picocolors: "npm:^1.0.0"
+    sisteransi: "npm:^1.0.5"
+  checksum: 10/5dc7107f57f25698c5c409149b5749b41ee9bf08587a8d88273063566ca8ed533ec64db6fe740369c15ce4fd4a31b4608d6b559d76b2a708d79503dfb0da3913
+  languageName: node
+  linkType: hard
+
 "@clack/prompts@npm:1.0.0-alpha.5":
   version: 1.0.0-alpha.5
   resolution: "@clack/prompts@npm:1.0.0-alpha.5"
@@ -1541,6 +1551,17 @@ __metadata:
     picocolors: "npm:^1.0.0"
     sisteransi: "npm:^1.0.5"
   checksum: 10/53388c862d6026bb02a0758caab8421749a48ba28d95815ba974dbfb1cdde3fe209b51338aca2237de0f0d77ae9bee3aa42b33d8a84f62b7b77ba25f7b8c5b06
+  languageName: node
+  linkType: hard
+
+"@clack/prompts@npm:1.0.0-alpha.9":
+  version: 1.0.0-alpha.9
+  resolution: "@clack/prompts@npm:1.0.0-alpha.9"
+  dependencies:
+    "@clack/core": "npm:1.0.0-alpha.7"
+    picocolors: "npm:^1.0.0"
+    sisteransi: "npm:^1.0.5"
+  checksum: 10/424ff9fec917790a711d98cb20e5796c26ceb3c59bc0c4e281ef29d9807741211262c79ce3ecc23d98a1dd92b26c2d281bb0869f76e70ed78c18dedba08d38cc
   languageName: node
   linkType: hard
 
@@ -2993,6 +3014,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@react-native-harness/babel-preset@npm:1.0.0":
+  version: 1.0.0
+  resolution: "@react-native-harness/babel-preset@npm:1.0.0"
+  dependencies:
+    "@babel/plugin-transform-class-static-block": "npm:^7.27.1"
+    babel-plugin-istanbul: "npm:^7.0.1"
+  peerDependencies:
+    "@babel/core": ^7.22.0
+    "@babel/plugin-transform-react-jsx": "*"
+  checksum: 10/b11125b767ccc3a540bf1cc37afa20e5a1ec534b71ac26c06003b65f7a352c7f3acdc7b3656cd2a05e664d5d44ac83310978e9d62fc313bf3d19deb0f7ee8cc3
+  languageName: node
+  linkType: hard
+
 "@react-native-harness/babel-preset@npm:1.0.0-alpha.21":
   version: 1.0.0-alpha.21
   resolution: "@react-native-harness/babel-preset@npm:1.0.0-alpha.21"
@@ -3005,6 +3039,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@react-native-harness/bridge@npm:1.0.0":
+  version: 1.0.0
+  resolution: "@react-native-harness/bridge@npm:1.0.0"
+  dependencies:
+    "@react-native-harness/platforms": "npm:1.0.0"
+    "@react-native-harness/tools": "npm:1.0.0"
+    birpc: "npm:^2.4.0"
+    pixelmatch: "npm:^7.1.0"
+    pngjs: "npm:^7.0.0"
+    ssim.js: "npm:^3.5.0"
+    tslib: "npm:^2.3.0"
+    ws: "npm:^8.18.2"
+  checksum: 10/845286bdbfa45e0b33f75e7fe5a5a39e2935dc03ebae28c2a11fe630b31e069b2806719d4c76d61dc31df7f1420ba1a69d6c1a55bbdca41477b387043af91a70
+  languageName: node
+  linkType: hard
+
 "@react-native-harness/bridge@npm:1.0.0-alpha.21":
   version: 1.0.0-alpha.21
   resolution: "@react-native-harness/bridge@npm:1.0.0-alpha.21"
@@ -3014,6 +3064,23 @@ __metadata:
     tslib: "npm:^2.3.0"
     ws: "npm:^8.18.2"
   checksum: 10/8b8efde703d1ff8ef9bcac598cfe0ae55ab41cd86d36b25b388163b5272fb7d9997c886651b604ab1b8911b43e27ec749b70d4a70cbbd3b60c447562164f0053
+  languageName: node
+  linkType: hard
+
+"@react-native-harness/bundler-metro@npm:1.0.0":
+  version: 1.0.0
+  resolution: "@react-native-harness/bundler-metro@npm:1.0.0"
+  dependencies:
+    "@react-native-harness/config": "npm:1.0.0"
+    "@react-native-harness/metro": "npm:1.0.0"
+    "@react-native-harness/tools": "npm:1.0.0"
+    connect: "npm:^3.7.0"
+    nocache: "npm:^4.0.0"
+    tslib: "npm:^2.3.0"
+  peerDependencies:
+    metro: "*"
+    metro-config: "*"
+  checksum: 10/d59345e25f0a687474b41333793c7808ce54d56bad7e265342527c1dbf304cc84c082292d1fa6c22418f53a62e8cbb212efc08fc83e696506a3e04de8bd95a53
   languageName: node
   linkType: hard
 
@@ -3034,16 +3101,29 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native-harness/cli@npm:1.0.0-alpha.21":
-  version: 1.0.0-alpha.21
-  resolution: "@react-native-harness/cli@npm:1.0.0-alpha.21"
+"@react-native-harness/cli@npm:1.0.0":
+  version: 1.0.0
+  resolution: "@react-native-harness/cli@npm:1.0.0"
   dependencies:
-    "@react-native-harness/bridge": "npm:1.0.0-alpha.21"
-    "@react-native-harness/config": "npm:1.0.0-alpha.21"
+    "@react-native-harness/bridge": "npm:1.0.0"
+    "@react-native-harness/config": "npm:1.0.0"
+    "@react-native-harness/platforms": "npm:1.0.0"
+    "@react-native-harness/tools": "npm:1.0.0"
     tslib: "npm:^2.3.0"
   peerDependencies:
     jest-cli: "*"
-  checksum: 10/8c2345f9eef8555d61442ee7434c8ddc2fe9e881186001da6d63d105b9f092f4520abd1d1d3f697261c06d1081757a5cca06a804e8f5df5e8fb1a0355d6e287f
+  checksum: 10/0d89f9f1af0c84b6ef4fd1692ace077999bf964a4f74de889905ddb616280ff6edb5d699ddcb3a011317594f9c3deca0d74633e120bdc83d213f3f6b0040b828
+  languageName: node
+  linkType: hard
+
+"@react-native-harness/config@npm:1.0.0":
+  version: 1.0.0
+  resolution: "@react-native-harness/config@npm:1.0.0"
+  dependencies:
+    "@react-native-harness/tools": "npm:1.0.0"
+    tslib: "npm:^2.3.0"
+    zod: "npm:^3.25.67"
+  checksum: 10/b4a20460b7d4ce09aa0c24764ed068a1425aaf80b7a1ede6582c81f2aa2ee77ad83c269fef267a6b695c6c0dc215880ce2db863a435c798793ef07b20f1a5534
   languageName: node
   linkType: hard
 
@@ -3055,6 +3135,26 @@ __metadata:
     tslib: "npm:^2.3.0"
     zod: "npm:^3.25.67"
   checksum: 10/e27712d87dbcf800da199a6c569f8a8d068c6a6bc015f3ff01235e0d2b9d01bb76d49d6e07753295fc7600bd574726a9b127f4840b31d0df2bc4edde2961c408
+  languageName: node
+  linkType: hard
+
+"@react-native-harness/jest@npm:1.0.0":
+  version: 1.0.0
+  resolution: "@react-native-harness/jest@npm:1.0.0"
+  dependencies:
+    "@jest/test-result": "npm:^30.2.0"
+    "@react-native-harness/bridge": "npm:1.0.0"
+    "@react-native-harness/bundler-metro": "npm:1.0.0"
+    "@react-native-harness/config": "npm:1.0.0"
+    "@react-native-harness/platforms": "npm:1.0.0"
+    "@react-native-harness/tools": "npm:1.0.0"
+    chalk: "npm:^4.1.2"
+    jest-message-util: "npm:^30.2.0"
+    jest-util: "npm:^30.2.0"
+    p-limit: "npm:^7.1.1"
+    tslib: "npm:^2.3.0"
+    yargs: "npm:^17.7.2"
+  checksum: 10/5f0499c545cce3f06ad7ae72d5eb95013bdf4ca1e496b97615fd56298c50e5db2d98eeaf28f8b77128d0ab77cab9cbce86eba6b0cba2999f218a5d3b50b3eb26
   languageName: node
   linkType: hard
 
@@ -3075,6 +3175,20 @@ __metadata:
     tslib: "npm:^2.3.0"
     yargs: "npm:^17.7.2"
   checksum: 10/50ac7947a6fc49bcfa4ccdbea4bdb203a189cfa4c425c2b8c717b73c37f8be53799d972b3cb7bddc884bcddc5d5e6dd966b04ee1bc7738ce54121c0ea6434767
+  languageName: node
+  linkType: hard
+
+"@react-native-harness/metro@npm:1.0.0":
+  version: 1.0.0
+  resolution: "@react-native-harness/metro@npm:1.0.0"
+  dependencies:
+    "@react-native-harness/babel-preset": "npm:1.0.0"
+    "@react-native-harness/config": "npm:1.0.0"
+    tslib: "npm:^2.3.0"
+  peerDependencies:
+    "@react-native-harness/runtime": 1.0.0
+    metro: "*"
+  checksum: 10/3e8ce17e163b0b80ad28d1e4e6d3e1ca097e8b847ee07d0324ca6ae58ede3cce8ebf23460a1a6df549509d4edb73fd129d92c55bb1e9bfd963c8aaae7c99a567
   languageName: node
   linkType: hard
 
@@ -3117,6 +3231,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@react-native-harness/platforms@npm:1.0.0":
+  version: 1.0.0
+  resolution: "@react-native-harness/platforms@npm:1.0.0"
+  dependencies:
+    tslib: "npm:^2.3.0"
+  checksum: 10/3f615f0f009291d548cf98aca67f9dabc45197ed9351c13c671c9adc0051be6d53ed6ae4f33a687841d8b516ddb0dea8c7c933c03d5ed729b01d830734c0381e
+  languageName: node
+  linkType: hard
+
 "@react-native-harness/platforms@npm:1.0.0-alpha.21":
   version: 1.0.0-alpha.21
   resolution: "@react-native-harness/platforms@npm:1.0.0-alpha.21"
@@ -3126,11 +3249,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native-harness/runtime@npm:1.0.0-alpha.21":
-  version: 1.0.0-alpha.21
-  resolution: "@react-native-harness/runtime@npm:1.0.0-alpha.21"
+"@react-native-harness/runtime@npm:1.0.0":
+  version: 1.0.0
+  resolution: "@react-native-harness/runtime@npm:1.0.0"
   dependencies:
-    "@react-native-harness/bridge": "npm:1.0.0-alpha.21"
+    "@react-native-harness/bridge": "npm:1.0.0"
     "@vitest/expect": "npm:4.0.16"
     "@vitest/spy": "npm:4.0.16"
     chai: "npm:^6.2.2"
@@ -3140,7 +3263,22 @@ __metadata:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 10/410dad9aeda57007259246fa9eeb9408740245bc606971821711f94f3139d613da7954280cbe9ac97bcc1cdfa6f228a29153e2b97434f45283c081b4ec59e752
+  checksum: 10/763f0615a1dee67923ba146793f6c965cfa21e5d5874118e01c5c6534083d7ca8b17e1de506d182549a991a690e343867135d22d3162c5936a3dcbe5f21ea9d6
+  languageName: node
+  linkType: hard
+
+"@react-native-harness/tools@npm:1.0.0":
+  version: 1.0.0
+  resolution: "@react-native-harness/tools@npm:1.0.0"
+  dependencies:
+    "@clack/prompts": "npm:1.0.0-alpha.9"
+    is-unicode-supported: "npm:^0.1.0"
+    nano-spawn: "npm:^1.0.2"
+    picocolors: "npm:^1.1.1"
+    tslib: "npm:^2.3.0"
+  peerDependencies:
+    react-native: "*"
+  checksum: 10/62ae1e5f1085e7d3aa4c8d4ff561b7f32cc35e616842842b03b617be5b1940eea819de4a518c6b971236604e546d217adb75a0414833afd05b68356ef6d00469
   languageName: node
   linkType: hard
 
@@ -9028,7 +9166,7 @@ __metadata:
     react-native: "npm:0.83.4"
     react-native-builder-bob: "npm:0.40.18"
     react-native-gesture-handler: "npm:2.30.0"
-    react-native-harness: "npm:1.0.0-alpha.21"
+    react-native-harness: "npm:1.0.0"
     react-native-monorepo-config: "npm:0.1.10"
   languageName: unknown
   linkType: soft
@@ -10268,6 +10406,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"pixelmatch@npm:^7.1.0":
+  version: 7.1.0
+  resolution: "pixelmatch@npm:7.1.0"
+  dependencies:
+    pngjs: "npm:^7.0.0"
+  bin:
+    pixelmatch: bin/pixelmatch
+  checksum: 10/57a122196318ea8ce74e8759b1b7b94b9f9627b495cd79e50a49d470dc23b6c679e89c38660d0f7e8f959eac3b279c55b728e52d02c276dc51505f06eaba1141
+  languageName: node
+  linkType: hard
+
 "pkg-dir@npm:^4.2.0":
   version: 4.2.0
   resolution: "pkg-dir@npm:4.2.0"
@@ -10285,6 +10434,13 @@ __metadata:
     exsolve: "npm:^1.0.7"
     pathe: "npm:^2.0.3"
   checksum: 10/4b36e4eb12693a1beb145573c564ec6fb74b1008d3b457eaa1f0072331edf05cb7c479c47fe0c4bfdec76c2caff5b68215ff270e5fe49634c07984a7a0197118
+  languageName: node
+  linkType: hard
+
+"pngjs@npm:^7.0.0":
+  version: 7.0.0
+  resolution: "pngjs@npm:7.0.0"
+  checksum: 10/e843ebbb0df092ee0f3a3e7dbd91ff87a239a4e4c4198fff202916bfb33b67622f4b83b3c29f3ccae94fcb97180c289df06068624554f61686fe6b9a4811f7db
   languageName: node
   linkType: hard
 
@@ -10564,19 +10720,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-harness@npm:1.0.0-alpha.21":
-  version: 1.0.0-alpha.21
-  resolution: "react-native-harness@npm:1.0.0-alpha.21"
+"react-native-harness@npm:1.0.0":
+  version: 1.0.0
+  resolution: "react-native-harness@npm:1.0.0"
   dependencies:
-    "@react-native-harness/babel-preset": "npm:1.0.0-alpha.21"
-    "@react-native-harness/cli": "npm:1.0.0-alpha.21"
-    "@react-native-harness/jest": "npm:1.0.0-alpha.21"
-    "@react-native-harness/metro": "npm:1.0.0-alpha.21"
-    "@react-native-harness/runtime": "npm:1.0.0-alpha.21"
+    "@react-native-harness/babel-preset": "npm:1.0.0"
+    "@react-native-harness/cli": "npm:1.0.0"
+    "@react-native-harness/jest": "npm:1.0.0"
+    "@react-native-harness/metro": "npm:1.0.0"
+    "@react-native-harness/runtime": "npm:1.0.0"
     tslib: "npm:^2.3.0"
   bin:
+    harness: bin.js
     react-native-harness: bin.js
-  checksum: 10/32f6db33de03987959198eece3614f06f0597b51c61e41c02747e1e2a9fefd5b25710e2e9ba37793e58113d165619cdfe51bf990ad16366b9b134e004b01f38b
+  checksum: 10/229d644d7055358450c2fc126a1221a509bf3559cae57d4a748cc69ce41e2b409533b7dd548127daa512e153c1d527946472bed165e6ecd8415eb436c721111f
   languageName: node
   linkType: hard
 
@@ -11384,6 +11541,13 @@ __metadata:
   version: 1.0.3
   resolution: "sprintf-js@npm:1.0.3"
   checksum: 10/c34828732ab8509c2741e5fd1af6b767c3daf2c642f267788f933a65b1614943c282e74c4284f4fa749c264b18ee016a0d37a3e5b73aee446da46277d3a85daa
+  languageName: node
+  linkType: hard
+
+"ssim.js@npm:^3.5.0":
+  version: 3.5.0
+  resolution: "ssim.js@npm:3.5.0"
+  checksum: 10/fface2e7f0317a4a612d5d00c82ff3c92d4a45638457468be1775bdf77a3d8d9453d457373af9700978f66ecc9fc56237c4b1379246d86b3af7276ab63c8dec3
   languageName: node
   linkType: hard
 
