@@ -6,6 +6,20 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class ReflectionUtils {
+    private static Field findDeclaredField(Class<?> objectClass, String... fieldNames) {
+        NoSuchFieldException lastException = null;
+
+        for (String fieldName : fieldNames) {
+            try {
+                return objectClass.getDeclaredField(fieldName);
+            } catch (NoSuchFieldException e) {
+                lastException = e;
+            }
+        }
+
+        throw new RuntimeException(lastException);
+    }
+
     public static ConstructorWrapper findConstructor(String className, Class<?>... parameterTypes) {
         try {
             Constructor constructor = Class.forName(className).getDeclaredConstructor(parameterTypes);
@@ -63,12 +77,12 @@ public class ReflectionUtils {
     }
 
     public static void setFieldOfSuperclass(Object object, String fieldName, Object value) {
-        try {
-            Field field = object.getClass().getSuperclass().getDeclaredField(fieldName);
-            setField(object, field, value);
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
-        }
+        setFieldOfSuperclass(object, value, fieldName);
+    }
+
+    public static void setFieldOfSuperclass(Object object, Object value, String... fieldNames) {
+        Field field = findDeclaredField(object.getClass().getSuperclass(), fieldNames);
+        setField(object, field, value);
     }
 
     public static void setField(Object object, String fieldName, Object value) {
@@ -92,11 +106,15 @@ public class ReflectionUtils {
     }
 
     public static <T> T getFieldOfSuperclass(Object object, String fieldName) {
+        return getFieldOfSuperclass(object, new String[] { fieldName });
+    }
+
+    public static <T> T getFieldOfSuperclass(Object object, String... fieldNames) {
         try {
-            Field field = object.getClass().getSuperclass().getDeclaredField(fieldName);
+            Field field = findDeclaredField(object.getClass().getSuperclass(), fieldNames);
             field.setAccessible(true);
             return (T) field.get(object);
-        } catch (NoSuchFieldException | IllegalAccessException | ClassCastException e) {
+        } catch (IllegalAccessException | ClassCastException e) {
             throw new RuntimeException(e);
         }
     }
