@@ -1,4 +1,5 @@
-import Mx from './specs/NativeMendixNative';
+import NativeMxReload from './reload-handler/NativeMxReload';
+import NativeMxOta from './ota/NativeMxOta';
 
-export const onReloadWithStateEvent = Mx.onReloadWithState;
-export const onDownloadProgressEvent = Mx.onDownloadProgress;
+export const onReloadWithStateEvent = NativeMxReload.onReloadWithState;
+export const onDownloadProgressEvent = NativeMxOta.onDownloadProgress;

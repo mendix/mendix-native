@@ -88,30 +88,63 @@ fun clearDataWithReactContext(applicationContext: Application, reactNativeHost: 
 }
 
 fun deleteAppDatabaseAsync(reactContext: ReactContext?, cb: BooleanCallback) {
-  reactContext?.typeSafeNativeModule<OPSQLiteModule>()?.let {
-    it.deleteAllDBs()
-    cb(true)
-  } ?: cb(false)
+  val opSQLiteModule = reactContext?.getNativeModule(OPSQLiteModule::class.java)
+  if (opSQLiteModule != null) {
+    try {
+      opSQLiteModule.deleteAllDBs()
+      cb(true)
+    } catch (e: Exception) {
+      Log.e("ClearData", "Failed to delete databases: ${e.message}")
+      cb(false)
+    }
+  } else {
+    cb(false)
+  }
 }
 
+/**
+ * Clears all AsyncStorage data.
+ *
+ * Note: Previous implementation only checked module availability without clearing.
+ * This now actually clears the storage using AsyncStorageModule.clear().
+ */
 fun clearAsyncStorage(reactNativeHost: ReactNativeHost): Boolean {
-  val module = reactNativeHost.typeSafeNativeModule<AsyncStorageModule>()
-  if (module != null) {
-    return true
-  } else {
-    return false
+  val asyncStorageModule = reactNativeHost.reactContext()?.getNativeModule(AsyncStorageModule::class.java)
+  if (asyncStorageModule != null) {
+    try {
+      // Clear AsyncStorage synchronously - clear() expects a callback but we're using fire-and-forget
+      asyncStorageModule.clear { error ->
+        if (error != null) {
+          Log.e("ClearData", "AsyncStorage clear error: $error")
+        }
+      }
+      return true
+    } catch (e: Exception) {
+      Log.e("ClearData", "Failed to clear AsyncStorage: ${e.message}")
+      return false
+    }
   }
+  return false
 }
 
 fun clearSecureStorage(context: Context?): Boolean =
   context?.let { MendixEncryptedStorage.getMendixEncryptedStorage(it).clear() } ?: false
 
-fun clearCookiesAsync(reactContext: ReactContext?, cb: (success: Boolean) -> Unit) =
-  reactContext?.typeSafeNativeModule<NetworkingModule>()?.let { module ->
-    module.clearCookies {
-      cb(it[0] as Boolean)
+fun clearCookiesAsync(reactContext: ReactContext?, cb: (success: Boolean) -> Unit) {
+  val networkingModule = reactContext?.getNativeModule(NetworkingModule::class.java)
+  if (networkingModule != null) {
+    try {
+      networkingModule.clearCookies { result ->
+        cb(result[0] as Boolean)
+      }
+    } catch (e: Exception) {
+      Log.e("ClearData", "Failed to clear cookies: ${e.message}")
+      cb(false)
     }
-  } ?: cb(false)
+  } else {
+    cb(false)
+  }
+}
 
 fun clearCachedReactNativeDevBundle(applicationContext: Application) {
   try {

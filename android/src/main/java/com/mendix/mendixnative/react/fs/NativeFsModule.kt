@@ -30,7 +30,7 @@ class NativeFsModule(private val reactContext: ReactApplicationContext) {
 
   fun save(blob: ReadableMap, filePath: String, promise: Promise) {
     val blobModule = reactContext.getNativeModule<BlobModule?>(BlobModule::class.java)
-    val blobId: String = blob.getString("blobId") ?: run {""
+    val blobId: String = blob.getString("blobId") ?: run {
       promise.reject(ERROR_INVALID_BLOB, "The specified blob is invalid")
       return
     }

@@ -1,10 +1,16 @@
 package com.mendix.mendixnative.util;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
+/**
+ * Minimal reflection utilities for accessing React Native private fields.
+ *
+ * **Usage:** Only used by MendixShakeDetector to swap React Native's shake detector.
+ * There is no public React Native API for this functionality.
+ *
+ * **Note:** Reflection should be avoided where possible. This class is kept minimal
+ * and only exposes methods that are actively used.
+ */
 public class ReflectionUtils {
     private static Field findDeclaredField(Class<?> objectClass, String... fieldNames) {
         NoSuchFieldException lastException = null;
@@ -20,76 +26,33 @@ public class ReflectionUtils {
         throw new RuntimeException(lastException);
     }
 
-    public static ConstructorWrapper findConstructor(String className, Class<?>... parameterTypes) {
-        try {
-            Constructor constructor = Class.forName(className).getDeclaredConstructor(parameterTypes);
-            constructor.setAccessible(true);
-            return new ConstructorWrapper(constructor);
-        } catch (ClassNotFoundException | NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    // TODO: replace this with a lambda after upgrading to Java 8
-    public static class ConstructorWrapper {
-        private final Constructor constructor;
-
-        ConstructorWrapper(Constructor constructor) {
-            this.constructor = constructor;
-        }
-
-        public <T> T newInstance(Object... args) {
-            try {
-                return (T) constructor.newInstance(args);
-            } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
-    public static MethodWrapper findMethod(Object object, String methodName, Class<?>... parameterTypes) {
-        try {
-            Method method = object.getClass().getDeclaredMethod(methodName, parameterTypes);
-            method.setAccessible(true);
-            return new MethodWrapper(method, object);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    // TODO: replace this with a lambda after upgrading to Java 8
-    public static class MethodWrapper {
-        private final Method method;
-        private final Object object;
-
-        MethodWrapper(Method method, Object object) {
-            this.method = method;
-            this.object = object;
-        }
-
-        public void invoke(Object... args) {
-            try {
-                method.invoke(object, args);
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
-    public static void setFieldOfSuperclass(Object object, String fieldName, Object value) {
-        setFieldOfSuperclass(object, value, fieldName);
-    }
-
+    /**
+     * Sets a field on the superclass of the given object.
+     * Tries multiple field names to handle React Native version differences.
+     *
+     * @param object The object whose superclass field should be set
+     * @param value The value to set
+     * @param fieldNames Field names to try (in order of preference)
+     */
     public static void setFieldOfSuperclass(Object object, Object value, String... fieldNames) {
         Field field = findDeclaredField(object.getClass().getSuperclass(), fieldNames);
         setField(object, field, value);
     }
 
-    public static void setField(Object object, String fieldName, Object value) {
+    /**
+     * Gets a field from the superclass of the given object.
+     * Tries multiple field names to handle React Native version differences.
+     *
+     * @param object The object whose superclass field should be retrieved
+     * @param fieldNames Field names to try (in order of preference)
+     * @return The field value
+     */
+    public static <T> T getFieldOfSuperclass(Object object, String... fieldNames) {
         try {
-            Field field = object.getClass().getDeclaredField(fieldName);
-            setField(object, field, value);
-        } catch (NoSuchFieldException e) {
+            Field field = findDeclaredField(object.getClass().getSuperclass(), fieldNames);
+            field.setAccessible(true);
+            return (T) field.get(object);
+        } catch (IllegalAccessException | ClassCastException e) {
             throw new RuntimeException(e);
         }
     }
@@ -104,29 +67,4 @@ public class ReflectionUtils {
             field.setAccessible(false);
         }
     }
-
-    public static <T> T getFieldOfSuperclass(Object object, String fieldName) {
-        return getFieldOfSuperclass(object, new String[] { fieldName });
-    }
-
-    public static <T> T getFieldOfSuperclass(Object object, String... fieldNames) {
-        try {
-            Field field = findDeclaredField(object.getClass().getSuperclass(), fieldNames);
-            field.setAccessible(true);
-            return (T) field.get(object);
-        } catch (IllegalAccessException | ClassCastException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static <T> T getField(Object object, String fieldName) {
-        try {
-            Field field = object.getClass().getDeclaredField(fieldName);
-            field.setAccessible(true);
-            return (T) field.get(object);
-        } catch (NoSuchFieldException | IllegalAccessException | ClassCastException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
 }

@@ -21,7 +21,7 @@ import com.mendix.mendixnative.react.clearCachedReactNativeDevBundle
 import com.mendix.mendixnative.react.clearData
 import com.mendix.mendixnative.react.closeSqlDatabaseConnection
 import com.mendix.mendixnative.react.toggleElementInspector
-import com.mendixnative.MendixNativeModule
+import com.mendix.mendixnative.react.NativeReloadHandler
 
 class MendixInitializer(
   private val context: Activity,
@@ -70,7 +70,9 @@ class MendixInitializer(
     devMenuTouchEventHandler =
       DevMenuTouchEventHandler(object : DevMenuTouchEventHandler.DevMenuTouchListener {
         override fun onTap() {
-          reactNativeHost.typeSafeNativeModule<MendixNativeModule>()?.reloadClientWithState()
+          reactNativeHost.reactApplicationContext()?.let {
+            NativeReloadHandler(it).reload()
+          }
         }
 
         override fun onLongPress() {

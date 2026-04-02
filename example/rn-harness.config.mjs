@@ -20,12 +20,12 @@ const config = {
   runners: [
     androidPlatform({
       name: 'android',
-      device: androidEmulator('Pixel_API_35'),
+      device: androidEmulator('Pixel_6'),
       bundleId: 'mendixnative.example',
     }),
     applePlatform({
       name: 'ios',
-      device: appleSimulator('iPhone 17', '26.2'),
+      device: appleSimulator('iPhone 17', '26.0'),
       bundleId: 'mendixnative.example',
     }),
   ],
