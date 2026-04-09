@@ -16,13 +16,13 @@ All workflows use standardized tooling versions to ensure consistency:
 
 ### Core Tools
 
-| Tool             | Version  | Defined In                    |
-| ---------------- | -------- | ----------------------------- |
-| **Node.js**      | `24`     | `.nvmrc`                      |
-| **Yarn**         | `4.12.0` | `package.json#packageManager` |
-| **React Native** | `0.83.2` | `package.json`                |
+| Tool             | Version   | Defined In                    |
+| ---------------- | --------- | ----------------------------- |
+| **Node.js**      | `24`      | `.nvmrc`                      |
+| **Yarn**         | `4.12.0`  | `package.json#packageManager` |
+| **React Native** | `0.83.4`  | `package.json`                |
 | **React**        | `19.2.14` | `package.json`                |
-| **TypeScript**   | `5.9.3`  | `package.json`                |
+| **TypeScript**   | `5.9.3`   | `package.json`                |
 
 ### Android Tooling
 
@@ -57,7 +57,7 @@ All workflows use standardized tooling versions to ensure consistency:
 | ------------------------ | --------------------- | ----------------------- |
 | **React Native Harness** | `1.0.0-alpha.21`      | `package.json`          |
 | **Android Emulator**     | Pixel_API_35 (API 35) | `rn-harness.config.mjs` |
-| **iOS Simulator**        | iPhone 17 (iOS 26.2) | `rn-harness.config.mjs` |
+| **iOS Simulator**        | iPhone 17 (iOS 26.2)  | `rn-harness.config.mjs` |
 
 ### GitHub Actions
 
