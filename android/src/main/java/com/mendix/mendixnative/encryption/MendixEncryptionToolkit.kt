@@ -3,12 +3,10 @@ package com.mendix.mendixnative.encryption
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
-import android.os.Build
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
 import android.util.Base64.DEFAULT
-import androidx.annotation.RequiresApi
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import java.io.IOException
@@ -17,10 +15,15 @@ import java.security.Key
 import java.security.KeyStore
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
+import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.IvParameterSpec
 
 private const val STORE_AES_KEY = "AES_KEY"
-private const val encryptionTransformationName = "AES/CBC/PKCS7Padding"
+private const val STORE_AES_KEY_V2 = "AES_KEY_V2"
+private const val legacyEncryptionTransformationName = "AES/CBC/PKCS7Padding"
+private const val modernEncryptionTransformationName = "AES/GCM/NoPadding"
+private const val modernEncryptionVersionPrefix = "v2:"
+private const val gcmTagLengthBits = 128
 
 private var masterKey: MasterKey? = null
 fun getMasterKey(context: Context): MasterKey {
@@ -48,27 +51,41 @@ fun getEncryptedSharedPreferences(
 }
 
 /**
- * generates or returns an application wide AES key.
+ * returns an application wide AES key.
  *
  * @return Key
  */
-@RequiresApi(Build.VERSION_CODES.M)
 private fun getAESKey(): Key? {
   val keyStore = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
-  if (!keyStore.containsAlias(STORE_AES_KEY)) {
+  return if (keyStore.containsAlias(STORE_AES_KEY))
+    keyStore.getKey(STORE_AES_KEY, null)
+  else null
+}
+
+private fun getAESKeyV2(): Key? {
+  return getOrCreateAESKey(
+    STORE_AES_KEY_V2,
+    KeyProperties.BLOCK_MODE_GCM,
+    KeyProperties.ENCRYPTION_PADDING_NONE
+  )
+}
+
+private fun getOrCreateAESKey(alias: String, blockMode: String, encryptionPadding: String): Key? {
+  val keyStore = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
+  if (!keyStore.containsAlias(alias)) {
     val keyGenerator =
       KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore")
     keyGenerator.init(
       KeyGenParameterSpec.Builder(
-        STORE_AES_KEY,
+        alias,
         KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
       )
-        .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
-        .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_PKCS7).build()
+        .setBlockModes(blockMode)
+        .setEncryptionPaddings(encryptionPadding).build()
     )
     keyGenerator.generateKey()
   }
-  return keyStore.getKey(STORE_AES_KEY, null)
+  return keyStore.getKey(alias, null)
 }
 
 /**
@@ -79,13 +96,15 @@ private fun getAESKey(): Key? {
  */
 fun encryptValue(
   value: String,
-  @SuppressLint("NewApi", "LocalSuppress") getPassword: () -> Key? = { getAESKey() },
+  @SuppressLint("NewApi", "LocalSuppress") getPassword: () -> Key? = { getAESKeyV2() },
 ): Triple<ByteArray, ByteArray?, Boolean> {
-  val cipher = Cipher.getInstance(encryptionTransformationName)
+  val cipher = Cipher.getInstance(modernEncryptionTransformationName)
   cipher.init(Cipher.ENCRYPT_MODE, getPassword())
   val encryptedValue = cipher.doFinal(value.encodeToByteArray())
+  val versionedEncryptedValue =
+    "$modernEncryptionVersionPrefix${Base64.encodeToString(encryptedValue, DEFAULT)}"
   return Triple(
-    Base64.encode(encryptedValue, DEFAULT),
+    versionedEncryptedValue.encodeToByteArray(),
     Base64.encode(cipher.iv, DEFAULT),
     true
   )
@@ -101,13 +120,43 @@ fun encryptValue(
 fun decryptValue(
   value: String,
   iv: String?,
-  @SuppressLint("NewApi", "LocalSuppress") getPassword: () -> Key? = { getAESKey() },
+  @SuppressLint("NewApi", "LocalSuppress") legacyGetPassword: () -> Key? = { getAESKey() },
+  @SuppressLint("NewApi", "LocalSuppress") modernGetPassword: () -> Key? = { getAESKeyV2() },
 ): String {
-  val cipher = Cipher.getInstance(encryptionTransformationName)
+  return if (value.startsWith(modernEncryptionVersionPrefix)) {
+    decryptModernValue(value.removePrefix(modernEncryptionVersionPrefix), iv, modernGetPassword)
+  } else {
+    decryptLegacyValue(value, iv, legacyGetPassword)
+  }
+}
+
+private fun decryptLegacyValue(
+  value: String,
+  iv: String?,
+  getPassword: () -> Key?,
+): String {
+  requireNotNull(iv) { "Missing IV for legacy encrypted value." }
+  val cipher = Cipher.getInstance(legacyEncryptionTransformationName)
   cipher.init(
     Cipher.DECRYPT_MODE,
     getPassword(),
     IvParameterSpec(Base64.decode(iv, DEFAULT))
+  )
+  val unencryptedValue = cipher.doFinal(Base64.decode(value, DEFAULT))
+  return String(unencryptedValue, Charsets.UTF_8)
+}
+
+private fun decryptModernValue(
+  value: String,
+  iv: String?,
+  getPassword: () -> Key?,
+): String {
+  requireNotNull(iv) { "Missing nonce for modern encrypted value." }
+  val cipher = Cipher.getInstance(modernEncryptionTransformationName)
+  cipher.init(
+    Cipher.DECRYPT_MODE,
+    getPassword(),
+    GCMParameterSpec(gcmTagLengthBits, Base64.decode(iv, DEFAULT))
   )
   val unencryptedValue = cipher.doFinal(Base64.decode(value, DEFAULT))
   return String(unencryptedValue, Charsets.UTF_8)
