@@ -49,7 +49,7 @@ open class ReactNative: NSObject, RCTReloadListener {
         ReactAppProvider.shared()?.setReactViewController(mendixApp.reactLoading?.instantiateInitialViewController() ?? UIViewController())
         
         DevHelper.devSettings?.isShakeToShowDevMenuEnabled = false
-        DevHelper.devSettings?.isDebuggingRemotely = AppPreferences.devModeEnabled && AppPreferences.remoteDebuggingEnabled
+        DevHelper.setDebugMode(enabled: AppPreferences.devModeEnabled && AppPreferences.remoteDebuggingEnabled)
         
         showSplashScreen()
         

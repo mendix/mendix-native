@@ -1,6 +1,6 @@
 {
   "name": "mendix-native-example",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
     "android": "react-native run-android",
@@ -22,29 +22,29 @@
     "harness:ios:with:build": "yarn app:package:ios && yarn app:install:ios && yarn harness:ios"
   },
   "dependencies": {
-    "@op-engineering/op-sqlite": "15.0.7",
-    "@react-native-async-storage/async-storage": "2.1.1",
-    "react": "19.0.0",
-    "react-native": "0.78.2",
-    "react-native-gesture-handler": "2.25.0"
+    "@op-engineering/op-sqlite": "15.2.5",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "react": "19.2.4",
+    "react-native": "0.83.4",
+    "react-native-gesture-handler": "2.30.0"
   },
   "devDependencies": {
-    "@babel/core": "7.25.2",
-    "@babel/preset-env": "7.25.3",
-    "@babel/runtime": "7.25.0",
-    "@react-native-community/cli": "18.0.1",
-    "@react-native-community/cli-platform-android": "18.0.1",
-    "@react-native-community/cli-platform-ios": "18.0.1",
+    "@babel/core": "7.29.0",
+    "@babel/preset-env": "7.29.0",
+    "@babel/runtime": "^7.28.6",
+    "@react-native-community/cli": "20.1.2",
+    "@react-native-community/cli-platform-android": "20.1.2",
+    "@react-native-community/cli-platform-ios": "20.1.2",
     "@react-native-harness/jest": "1.0.0-alpha.21",
     "@react-native-harness/platform-android": "1.0.0-alpha.21",
     "@react-native-harness/platform-apple": "1.0.0-alpha.21",
-    "@react-native/babel-preset": "0.78.2",
-    "@react-native/metro-config": "0.78.2",
-    "@react-native/typescript-config": "0.78.2",
-    "@types/react": "19.0.0",
-    "react-native-builder-bob": "0.40.16",
-    "react-native-harness": "1.0.0-alpha.21",
-    "react-native-monorepo-config": "0.1.9"
+    "@react-native/babel-preset": "0.83.4",
+    "@react-native/metro-config": "0.83.4",
+    "@react-native/typescript-config": "0.83.4",
+    "@types/react": "19.2.14",
+    "react-native-builder-bob": "0.40.18",
+    "react-native-harness": "1.0.0",
+    "react-native-monorepo-config": "0.1.10"
   },
   "engines": {
     "node": ">=18"

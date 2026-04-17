@@ -30,7 +30,10 @@ class NativeFsModule(private val reactContext: ReactApplicationContext) {
 
   fun save(blob: ReadableMap, filePath: String, promise: Promise) {
     val blobModule = reactContext.getNativeModule<BlobModule?>(BlobModule::class.java)
-    val blobId = blob.getString("blobId")
+    val blobId: String = blob.getString("blobId") ?: run {""
+      promise.reject(ERROR_INVALID_BLOB, "The specified blob is invalid")
+      return
+    }
 
     val bytes = blobModule!!.resolve(blobId, blob.getInt("offset"), blob.getInt("size"))
     if (bytes == null) {
@@ -197,12 +200,12 @@ class NativeFsModule(private val reactContext: ReactApplicationContext) {
     try {
       val bytes =
         fileBackend.read(ensureWhiteListedPath(filepath))
-      val typeRef: TypeReference<MutableMap<String?, Any?>?> =
-        object : TypeReference<MutableMap<String?, Any?>?>() {
+      val typeRef: TypeReference<MutableMap<String, Any?>?> =
+        object : TypeReference<MutableMap<String, Any?>?>() {
         }
       promise.resolve(
         Arguments.makeNativeMap(
-          ObjectMapper().readValue<MutableMap<String?, Any?>?>(
+          ObjectMapper().readValue<MutableMap<String, Any?>?>(
             bytes,
             typeRef
           )

@@ -97,7 +97,6 @@ fun deleteAppDatabaseAsync(reactContext: ReactContext?, cb: BooleanCallback) {
 fun clearAsyncStorage(reactNativeHost: ReactNativeHost): Boolean {
   val module = reactNativeHost.typeSafeNativeModule<AsyncStorageModule>()
   if (module != null) {
-    module.clearSensitiveData()
     return true
   } else {
     return false
