@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- We strengthened Android cookie encryption by migrating from `AES/CBC/PKCS7Padding` to `AES/GCM/NoPadding`.
+
 ## [v0.4.0] - 2026-04-17
 
 - We upgraded `@op-engineering/op-sqlite` from v15.0.7 to v15.2.5.
