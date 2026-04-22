@@ -9,7 +9,12 @@ fun setBundleDownloadListener(
   listener: DevBundleDownloadListener
 ) {
   devSupportManager?.apply {
-    ReflectionUtils.setFieldOfSuperclass(this, "mBundleDownloadListener", listener)
+    ReflectionUtils.setFieldOfSuperclass(
+      this,
+      listener,
+      "mBundleDownloadListener",
+      "devBundleDownloadListener"
+    )
   }
 }
 
@@ -18,6 +23,11 @@ fun overrideDevLoadingViewController(
   devLoadingViewController: DefaultDevLoadingViewImplementation
 ) {
   devSupportManager.apply {
-    ReflectionUtils.setFieldOfSuperclass(this, "mDevLoadingViewManager", devLoadingViewController)
+    ReflectionUtils.setFieldOfSuperclass(
+      this,
+      devLoadingViewController,
+      "mDevLoadingViewManager",
+      "devLoadingViewManager"
+    )
   }
 }

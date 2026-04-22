@@ -7,6 +7,7 @@ import com.facebook.react.devsupport.interfaces.DevSupportManager
 import com.mendix.mendixnative.util.ReflectionUtils
 
 const val SHAKE_DETECTECTOR_VAR = "mShakeDetector"
+const val SHAKE_DETECTOR_VAR = "shakeDetector"
 
 fun makeShakeDetector(applicationContext: Context, onShake: () -> Unit): ShakeDetector {
   val shakeDetector = ShakeDetector(onShake)
@@ -18,9 +19,28 @@ fun makeShakeDetector(applicationContext: Context, onShake: () -> Unit): ShakeDe
 fun attachMendixSupportManagerShakeDetector(
   shakeDetector: ShakeDetector,
   devSupportManager: DevSupportManager?
-): Unit = devSupportManager.let { supportManager ->
-  val devShakeDetector =
-    ReflectionUtils.getFieldOfSuperclass<ShakeDetector>(supportManager, SHAKE_DETECTECTOR_VAR)
-  (devShakeDetector != shakeDetector).let { devShakeDetector.stop() }
-  ReflectionUtils.setFieldOfSuperclass(supportManager, SHAKE_DETECTECTOR_VAR, shakeDetector)
+) {
+  val supportManager = devSupportManager ?: return
+
+  try {
+    val devShakeDetector =
+      ReflectionUtils.getFieldOfSuperclass<ShakeDetector>(
+        supportManager,
+        SHAKE_DETECTECTOR_VAR,
+        SHAKE_DETECTOR_VAR
+      )
+
+    if (devShakeDetector !== shakeDetector) {
+      devShakeDetector.stop()
+    }
+
+    ReflectionUtils.setFieldOfSuperclass(
+      supportManager,
+      shakeDetector,
+      SHAKE_DETECTECTOR_VAR,
+      SHAKE_DETECTOR_VAR
+    )
+  } catch (_: RuntimeException) {
+    // React Native internals changed; keep the Mendix detector active without replacing RN's.
+  }
 }

@@ -19,10 +19,6 @@ Pod::Spec.new do |s|
 
   s.dependency "SSZipArchive"
   s.dependency "RNCAsyncStorage"
-  s.dependency "ReactCommon"
-  s.dependency "ReactAppDependencyProvider"
-  s.dependency 'React-Core'
-  s.dependency 'React-RCTAppDelegate'
 
   install_modules_dependencies(s)
 end
