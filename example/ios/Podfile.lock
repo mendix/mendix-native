@@ -8,7 +8,7 @@ PODS:
   - hermes-engine (0.14.1):
     - hermes-engine/Pre-built (= 0.14.1)
   - hermes-engine/Pre-built (0.14.1)
-  - MendixNative (0.3.2):
+  - MendixNative (0.4.0):
     - boost
     - DoubleConversion
     - fast_float
@@ -2832,8 +2832,8 @@ SPEC CHECKSUMS:
   FBLazyVector: 82d1d7996af4c5850242966eb81e73f9a6dfab1e
   fmt: a40bb5bd0294ea969aaaba240a927bd33d878cdd
   glog: 5683914934d5b6e4240e497e0f4a3b42d1854183
-  hermes-engine: 9014a6bbc3a5b421aa3cb6e6dfa0606ad37c2694
-  MendixNative: 73ee938465675ee5ff94dfde36dd3e4217e94a2e
+  hermes-engine: f8a008831ed2a6655a05eec287332a01c1c2e108
+  MendixNative: 6797c879017115950e255901676934a272fb8102
   op-sqlite: 64000c0da2357c4d73faf4d23ff34dd1ddb332d4
   OpenSSL-Universal: 6082b0bf950e5636fe0d78def171184e2b3899c2
   RCT-Folly: 846fda9475e61ec7bcbf8a3fe81edfcaeb090669
@@ -2913,4 +2913,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: fc108f79384f3de82954e66ee55dfd1e08b9f8c4
 
-COCOAPODS: 1.16.2
+COCOAPODS: 1.15.2
