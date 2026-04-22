@@ -1,21 +1,14 @@
 import UIKit
 import React
-import React_RCTAppDelegate
-import ReactAppDependencyProvider
 import MendixNative
 
 @main
-class AppDelegate: RCTAppDelegate {
+class AppDelegate: ReactAppProvider {
     
     override func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
         
-        self.moduleName = "App"
-        self.dependencyProvider = RCTAppDependencyProvider()
-        self.initialProps = [:]
-        super.application(application, didFinishLaunchingWithOptions: launchOptions)
-        
-        //Start - For MendixApplication compatibility only, not part of React Native template
         SessionCookieStore.restore()
+        setUpProvider()
         
         guard let bundleUrl = bundleURL() else {
             let message = "No script URL provided. Make sure the metro packager is running or you have embedded a JS bundle in your application bundle."
@@ -23,7 +16,7 @@ class AppDelegate: RCTAppDelegate {
             return false
         }
         
-        MxConfiguration.update(from:
+        ReactNative.shared.setup(
             MendixApp.init(
                 identifier: nil,
                 bundleUrl: bundleUrl,
@@ -34,17 +27,18 @@ class AppDelegate: RCTAppDelegate {
                 splashScreenPresenter: nil,
                 reactLoading: nil,
                 enableThreeFingerGestures: false
-            )
+            ),
+            launchOptions: launchOptions
         )
-        //End - For MendixApplication compatibility only, not part of React Native template
-        return true
+        ReactNative.shared.start()
+        return super.application(application, didFinishLaunchingWithOptions: launchOptions)
     }
     
-    override func applicationDidEnterBackground(_ application: UIApplication) {
+    func applicationDidEnterBackground(_ application: UIApplication) {
         SessionCookieStore.persist()
     }
     
-    override func applicationWillTerminate(_ application: UIApplication) {
+    func applicationWillTerminate(_ application: UIApplication) {
         SessionCookieStore.persist()
     }
     

@@ -1,5 +1,6 @@
 package com.mendix.mendixnative.request
 
+import android.util.Log
 import com.mendix.mendixnative.config.AppUrl
 import com.mendix.mendixnative.encryption.decryptValue
 import com.mendix.mendixnative.encryption.encryptValue
@@ -39,10 +40,14 @@ fun Request.withDecryptedCookies(): Request {
     val (key, value) = it.split("=", limit = 2)
 
     if (encryptedCookieExists!! && key.startsWith(encryptedCookieKeyPrefix)) {
-      val params = cookieValueToDecryptionParams(value)
-      val decryptedValue = decryptValue(params.first, params.second)
-
-      return@map "${key.removePrefix(encryptedCookieKeyPrefix)}=$decryptedValue"
+      try {
+        val params = cookieValueToDecryptionParams(value)
+        val decryptedValue = decryptValue(params.first, params.second)
+        return@map "${key.removePrefix(encryptedCookieKeyPrefix)}=$decryptedValue"
+      } catch (e: Exception) {
+        Log.w("MendixNetworkInterceptor", "Failed to decrypt cookie $key, dropping it", e)
+        return@map null
+      }
     } else if (!encryptedCookieExists) {
       return@map it;
     }
