@@ -41,9 +41,7 @@ jobs:
             example/ios/Pods
             ~/Library/Caches/CocoaPods
             ~/.cocoapods
-          key: ${{ runner.os }}-pods-${{ hashFiles('example/ios/Podfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pods-
+          key: ${{ runner.os }}-pods-${{ hashFiles('example/ios/Podfile.lock', 'yarn.lock', 'package.json', 'example/package.json') }}
 
       - name: Install CocoaPods
         working-directory: example
