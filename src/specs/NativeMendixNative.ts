@@ -20,16 +20,16 @@ export interface Spec extends TurboModule {
   downloadHandlerDownload(
     url: string,
     downloadPath: string,
-    config: GenericMap
+    config: DownloadConfig
   ): Promise<void>;
 
   mxConfigurationGetConfig(): Configuration;
 
-  otaDownload(config: GenericMap): Promise<OtaDownloadResponse>;
-  otaDeploy(config: GenericMap): Promise<void>;
+  otaDownload(config: OtaDownloadConfig): Promise<OtaDownloadResponse>;
+  otaDeploy(config: OtaDeployConfig): Promise<void>;
 
-  fsConstants(): GenericMap;
-  fsSave(blob: GenericMap, filePath: string): Promise<void>;
+  fsConstants(): FsConstants;
+  fsSave(blob: BlobData, filePath: string): Promise<void>;
   fsRead(filePath: string): Promise<BlobData>;
   fsMove(filePath: string, newPath: string): Promise<void>;
   fsRemove(filePath: string): Promise<void>;
@@ -37,8 +37,8 @@ export interface Spec extends TurboModule {
   fsReadAsDataURL(filePath: string): Promise<string>;
   fsReadAsText(filePath: string): Promise<string>; //Android only
   fsFileExists(filePath: string): Promise<boolean>;
-  fsWriteJson(data: GenericMap, filepath: string): Promise<void>;
-  fsReadJson(filepath: string): Promise<GenericMap | GenericArray>;
+  fsWriteJson(data: CodegenTypes.UnsafeObject, filepath: string): Promise<void>;
+  fsReadJson(filepath: string): Promise<CodegenTypes.UnsafeObject | null>;
   fsSetEncryptionEnabled(enabled: boolean): void;
 
   errorHandlerHandle(message: string, stackTrace: StackFrame[]): void;
@@ -63,19 +63,6 @@ type BlobData = {
   lastModified?: number;
 };
 
-type GenericType =
-  | string
-  | number
-  | boolean
-  | null
-  | undefined
-  | { [key: string]: GenericType }
-  | GenericType[];
-
-type GenericMap = { [key: string]: GenericType };
-
-type GenericArray = GenericType[];
-
 type Configuration = {
   RUNTIME_URL: string;
   APP_NAME: string | null;
@@ -95,6 +82,12 @@ type Configuration = {
   CODE_PUSH_KEY?: string;
   NATIVE_BINARY_VERSION?: CodegenTypes.Int32;
   APP_SESSION_ID?: string;
+};
+
+type FsConstants = {
+  DocumentDirectoryPath: string;
+  SUPPORTS_DIRECTORY_MOVE: boolean;
+  SUPPORTS_ENCRYPTION: boolean;
 };
 
 type DownloadConfig = {
@@ -123,9 +116,8 @@ type DownloadProgress = {
 
 export type {
   BlobData,
-  GenericMap,
-  GenericArray,
   Configuration,
+  FsConstants,
   DownloadConfig,
   OtaDownloadConfig,
   OtaDeployConfig,
