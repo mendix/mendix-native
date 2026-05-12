@@ -1,17 +1,6 @@
 import { TurboModuleRegistry, type TurboModule } from 'react-native';
 import type { CodegenTypes } from 'react-native';
 
-type GenericType =
-  | string
-  | number
-  | boolean
-  | null
-  | undefined
-  | { [key: string]: GenericType }
-  | GenericType[];
-
-type GenericMap = { [key: string]: GenericType };
-
 type OtaDownloadConfig = {
   url: string;
 };
@@ -32,15 +21,14 @@ type DownloadProgress = {
 };
 
 export interface Spec extends TurboModule {
-  download(config: GenericMap): Promise<OtaDownloadResponse>;
-  deploy(config: GenericMap): Promise<void>;
+  download(config: OtaDownloadConfig): Promise<OtaDownloadResponse>;
+  deploy(config: OtaDeployConfig): Promise<void>;
   readonly onDownloadProgress: CodegenTypes.EventEmitter<DownloadProgress>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('MxOta');
 
 export type {
-  GenericMap,
   OtaDownloadConfig,
   OtaDeployConfig,
   OtaDownloadResponse,

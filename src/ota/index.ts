@@ -1,13 +1,9 @@
-import NativeMxOta from './NativeMxOta';
-
-// Re-export types for backward compatibility
-export type {
-  OtaDeployConfig,
-  OtaDownloadConfig,
-  OtaDownloadResponse,
+import NativeMxOta, {
+  type OtaDeployConfig,
+  type OtaDownloadConfig,
 } from './NativeMxOta';
 
 export const NativeOta = {
-  download: (config: Record<string, any>) => NativeMxOta.download(config),
-  deploy: (config: Record<string, any>) => NativeMxOta.deploy(config),
+  download: (config: OtaDownloadConfig) => NativeMxOta.download(config),
+  deploy: (config: OtaDeployConfig) => NativeMxOta.deploy(config),
 };

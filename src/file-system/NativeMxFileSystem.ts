@@ -1,4 +1,8 @@
-import { TurboModuleRegistry, type TurboModule } from 'react-native';
+import {
+  TurboModuleRegistry,
+  type TurboModule,
+  type CodegenTypes,
+} from 'react-native';
 
 type BlobData = {
   blobId: string;
@@ -9,21 +13,15 @@ type BlobData = {
   lastModified?: number;
 };
 
-type GenericType =
-  | string
-  | number
-  | boolean
-  | null
-  | undefined
-  | { [key: string]: GenericType }
-  | GenericType[];
-
-type GenericMap = { [key: string]: GenericType };
-type GenericArray = GenericType[];
+type FsConstants = {
+  DocumentDirectoryPath: string;
+  SUPPORTS_DIRECTORY_MOVE: boolean;
+  SUPPORTS_ENCRYPTION: boolean;
+};
 
 export interface Spec extends TurboModule {
-  constants(): GenericMap;
-  save(blob: GenericMap, filePath: string): Promise<void>;
+  constants(): FsConstants;
+  save(blob: BlobData, filePath: string): Promise<void>;
   read(filePath: string): Promise<BlobData>;
   move(filePath: string, newPath: string): Promise<void>;
   remove(filePath: string): Promise<void>;
@@ -31,11 +29,11 @@ export interface Spec extends TurboModule {
   readAsDataURL(filePath: string): Promise<string>;
   readAsText(filePath: string): Promise<string>;
   fileExists(filePath: string): Promise<boolean>;
-  writeJson(data: GenericMap, filepath: string): Promise<void>;
-  readJson(filepath: string): Promise<GenericMap | GenericArray>;
+  writeJson(data: CodegenTypes.UnsafeObject, filepath: string): Promise<void>;
+  readJson(filepath: string): Promise<CodegenTypes.UnsafeObject | null>;
   setEncryptionEnabled(enabled: boolean): void;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('MxFileSystem');
 
-export type { BlobData, GenericMap, GenericArray };
+export type { BlobData, FsConstants };
