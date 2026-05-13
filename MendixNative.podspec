@@ -19,6 +19,7 @@ Pod::Spec.new do |s|
 
   s.dependency "SSZipArchive"
   s.dependency "RNCAsyncStorage"
+  s.dependency "ReactAppDependencyProvider"
 
   install_modules_dependencies(s)
 end

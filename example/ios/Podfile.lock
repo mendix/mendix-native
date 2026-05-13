@@ -20,6 +20,7 @@ PODS:
     - React-renderercss
     - React-rendererdebug
     - React-utils
+    - ReactAppDependencyProvider
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
@@ -2125,7 +2126,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   FBLazyVector: e97c19a5a442429d1988f182a1940fb08df514da
   hermes-engine: a7179a4cd45fa3f8143712e52bd3c2d20b5274a0
-  MendixNative: a9d1f912d97cf141eaa5fc8aedf04ef45108dbbc
+  MendixNative: 0014d648c1ad67c7da144e99603ad636b017b424
   op-sqlite: e9ef65bcf95a97863874cee87841425bb71c8396
   OpenSSL-Universal: 9110d21982bb7e8b22a962b6db56a8aa805afde7
   RCTDeprecation: af44b104091a34482596cd9bd7e8d90c4e9b4bd7

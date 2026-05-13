@@ -8,6 +8,7 @@
 #import "ReactHostHelper.h"
 #import <ReactCommon/RCTHost.h>
 #import <React/RCTReloadCommand.h>
+#import "RCTDefaultReactNativeFactoryDelegate.h"
 #import "RCTReactNativeFactory.h"
 #import "MendixNative-Swift.h"
 #import "MxReload.h"

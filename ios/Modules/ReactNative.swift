@@ -1,7 +1,7 @@
 import UIKit
 import React
 
-public protocol ReactNativeDelegate: AnyObject {
+public protocol ReactNativeDelegateInternal: AnyObject {
     func onAppClosed()
 }
 
@@ -13,7 +13,7 @@ open class ReactNative: NSObject, RCTReloadListener {
     private var mendixOTAEnabled: Bool = false
     private var tapGestureHelper: TapGestureRecognizerHelper?
     
-    public weak var delegate: ReactNativeDelegate?
+    public weak var delegate: ReactNativeDelegateInternal?
     
     // MARK: - Singleton
     public static let shared = ReactNative()
