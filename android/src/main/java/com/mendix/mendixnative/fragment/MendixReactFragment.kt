@@ -67,8 +67,8 @@ open class MendixReactFragment : ReactFragment(), MendixReactFragmentView {
     val hasRNDeveloperSupport = requireArguments().getBoolean(ARG_USE_DEVELOPER_SUPPORT, false)
 
     mendixInitializer =
-      MendixInitializer(requireActivity(), reactHost!!, reactNativeHost, hasRNDeveloperSupport).also {
-        it.onCreate(mendixApp!!, this, clearData)
+      MendixInitializer(requireActivity(), reactHost!!, hasRNDeveloperSupport).also {
+        it.onCreate(mendixApp!!, clearData)
       }
 
     super.onCreate(savedInstanceState)

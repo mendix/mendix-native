@@ -3,9 +3,6 @@ package com.mendix.mendixnative
 import android.app.Activity
 import android.view.MotionEvent
 import com.facebook.react.ReactHost
-import com.facebook.react.ReactInstanceEventListener
-import com.facebook.react.ReactNativeHost
-import com.facebook.react.bridge.ReactContext
 import com.facebook.react.common.ShakeDetector
 import com.facebook.react.devsupport.DevSupportManagerBase
 import com.facebook.react.devsupport.attachMendixSupportManagerShakeDetector
@@ -20,25 +17,16 @@ import com.mendix.mendixnative.react.MxConfiguration
 import com.mendix.mendixnative.react.clearCachedReactNativeDevBundle
 import com.mendix.mendixnative.react.clearData
 import com.mendix.mendixnative.react.closeSqlDatabaseConnection
-import com.mendix.mendixnative.react.toggleElementInspector
-import com.mendix.mendixnative.react.NativeReloadHandler
 
 class MendixInitializer(
   private val context: Activity,
   private val reactHost: ReactHost,
-  private val reactNativeHost: ReactNativeHost,
   private val hasRNDeveloperSupport: Boolean = false,
-) : ReactInstanceEventListener {
+) {
   private var shakeDetector: ShakeDetector? = null
   private var devMenuTouchEventHandler: DevMenuTouchEventHandler? = null
 
-  fun onCreate(
-    mendixApp: MendixApp,
-    devAppMenuHandler: DevAppMenuHandler = object : DevAppMenuHandler {
-      override fun showDevAppMenu() {}
-    },
-    clearData: Boolean,
-  ) {
+  fun onCreate(mendixApp: MendixApp, clearData: Boolean) {
     // Assign mendix xas id interceptor to okhttp
     CookieEncryption.init(this.context)
     if (CookieEncryption.isCookieEncryptionEnabled()) {
@@ -54,33 +42,9 @@ class MendixInitializer(
     MxConfiguration.warningsFilter = mendixApp.warningsFilter
 
     // This is here to make sure that a clean host instance is initialised.
-    restartReactInstanceManager()
+    reactHost.invalidate()
     if (clearData) clearData(context.application)
     if (hasRNDeveloperSupport) setupDeveloperApp(runtimeUrl, mendixApp)
-    if (mendixApp.attachCustomDeveloperMenu) attachCustomDeveloperMenu(devAppMenuHandler)
-  }
-
-  private fun restartReactInstanceManager() {
-    if (reactNativeHost.hasInstance()) reactNativeHost.clear()
-    // Pre-initialize reactInstanceManager to be available for other methods
-    if (reactNativeHost.hasInstance()) reactNativeHost.reactInstanceManager
-  }
-
-  private fun attachCustomDeveloperMenu(devAppMenuHandler: DevAppMenuHandler) {
-    devMenuTouchEventHandler =
-      DevMenuTouchEventHandler(object : DevMenuTouchEventHandler.DevMenuTouchListener {
-        override fun onTap() {
-          reactNativeHost.reactApplicationContext()?.let {
-            NativeReloadHandler(it).reload()
-          }
-        }
-
-        override fun onLongPress() {
-          devAppMenuHandler.showDevAppMenu()
-        }
-      })
-
-    attachShakeDetector(devAppMenuHandler)
   }
 
   fun onDestroy() {
@@ -89,27 +53,16 @@ class MendixInitializer(
 
     if (hasRNDeveloperSupport) {
       AppPreferences(context.applicationContext).setElementInspector(false)
-      reactHost.removeReactInstanceEventListener(this)
     }
-
-    // We need to clear the host to allow for reinitialization of the Native Modules
-    // Especially for when switching between apps
-    reactNativeHost.clear()
+    reactHost.invalidate()
 
     // We need to close all databases separately to avoid hitting a read only state exception
     // Databases need to close after we are done closing the react native host to avoid db locks
-    closeSqlDatabaseConnection(reactNativeHost.reactApplicationContext())
+    closeSqlDatabaseConnection(reactHost.currentReactContext)
   }
 
   fun stopShakeDetector() {
     shakeDetector?.stop()
-  }
-
-  override fun onReactContextInitialized(context: ReactContext) {
-    val preferences = AppPreferences(context)
-    if (preferences.isElementInspectorEnabled) {
-      toggleElementInspector(context)
-    }
   }
 
   fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
@@ -139,7 +92,6 @@ class MendixInitializer(
     preferences.setDevMode((mendixApp.showExtendedDevMenu))
 
     clearCachedReactNativeDevBundle(context.application)
-    reactHost.addReactInstanceEventListener(this)
   }
 }
 

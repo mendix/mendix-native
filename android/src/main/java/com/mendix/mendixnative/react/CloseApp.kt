@@ -10,7 +10,7 @@ import com.op.sqlite.OPSQLiteModule
  * This is called during app shutdown to gracefully close database connections.
  */
 fun closeSqlDatabaseConnection(reactContext: ReactContext?) {
-  val opSQLiteModule = reactContext?.getNativeModule(OPSQLiteModule::class.java)
+  val opSQLiteModule = reactContext?.nativeModule<OPSQLiteModule>(OPSQLiteModule.NAME)
   if (opSQLiteModule != null) {
     try {
       opSQLiteModule.closeAllConnections()

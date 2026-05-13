@@ -25,4 +25,8 @@ RCT_EXPORT_MODULE()
     resolve(nil);
 }
 
+- (void)reloadClientWithState {
+    [self emitOnReloadWithState];
+}
+
 @end

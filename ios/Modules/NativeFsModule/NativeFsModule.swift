@@ -25,7 +25,7 @@ public class NativeFsModule: NSObject {
     }
     
     private func getBlobManager() -> RCTBlobManager? {
-        guard let blobManager: RCTBlobManager = ReactAppProvider.getModule(type: RCTBlobManager.self) else {
+        guard let blobManager: RCTBlobManager = ReactAppProvider.getModule(name: RCTBlobManager.moduleName(), type: RCTBlobManager.self) else {
             NSLog("NativeFsModule: Failed to get RCTBlobManager")
             return nil
         }

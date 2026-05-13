@@ -105,7 +105,7 @@ open class ReactNative: NSObject, RCTReloadListener {
     }
     
     public func reloadWithState() {
-        UnsafeMxFunction.reloadClientWithState.perform()
+        ReactHostHelper().reloadClientWithState()
     }
     
     // MARK: - RCTReloadListener

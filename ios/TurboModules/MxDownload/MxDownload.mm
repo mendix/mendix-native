@@ -15,13 +15,18 @@ RCT_EXPORT_MODULE()
 
 - (void)download:(nonnull NSString *)url
     downloadPath:(nonnull NSString *)downloadPath
-          config:(nonnull NSDictionary *)config
-         resolve:(nonnull RCTPromiseResolveBlock)resolve
-          reject:(nonnull RCTPromiseRejectBlock)reject {
+    config:(JS::NativeMxDownload::DownloadConfig &)config
+    resolve:(nonnull RCTPromiseResolveBlock)resolve
+    reject:(nonnull RCTPromiseRejectBlock)reject {
     Promise *promise = [Promise instance:resolve reject:reject];
     // Note: Progress events are not emitted from this module
     // Use MxOta module for progress events
-    [[[NativeDownloadModule alloc] init] download:url downloadPath:downloadPath config:config onProgress:nil promise:promise];
+    NSNumber *connectionTimeout = nil;
+    if (config.connectionTimeout().has_value()) {
+        connectionTimeout = @(config.connectionTimeout().value());
+    }    
+    NSString *mimeType = config.mimeType();;
+    [[[NativeDownloadModule alloc] init] download:url downloadPath:downloadPath connectionTimeout:connectionTimeout mimeType:mimeType onProgress:nil promise:promise];
 }
 
 @end

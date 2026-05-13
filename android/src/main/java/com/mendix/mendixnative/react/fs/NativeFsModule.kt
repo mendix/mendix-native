@@ -13,6 +13,7 @@ import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.mendix.mendixnative.react.nativeModule
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -29,7 +30,7 @@ class NativeFsModule(private val reactContext: ReactApplicationContext) {
   }
 
   fun save(blob: ReadableMap, filePath: String, promise: Promise) {
-    val blobModule = reactContext.getNativeModule<BlobModule?>(BlobModule::class.java)
+    val blobModule = reactContext.nativeModule<BlobModule>(BlobModule.NAME)
     val blobId: String = blob.getString("blobId") ?: run {
       promise.reject(ERROR_INVALID_BLOB, "The specified blob is invalid")
       return
@@ -149,7 +150,7 @@ class NativeFsModule(private val reactContext: ReactApplicationContext) {
   fun readAsDataURL(filePath: String, promise: Promise) {
     try {
       val fileReaderModule =
-        reactContext.getNativeModule(FileReaderModule::class.java)
+        reactContext.nativeModule<FileReaderModule>(FileReaderModule.NAME)
       fileReaderModule!!.readAsDataURL(read(ensureWhiteListedPath(filePath)), promise)
     } catch (_: FileNotFoundException) {
       promise.resolve(null)
@@ -241,7 +242,7 @@ class NativeFsModule(private val reactContext: ReactApplicationContext) {
   private fun read(filePath: String): ReadableMap {
     val data = fileBackend.read(filePath)
 
-    val blobModule = reactContext.getNativeModule(BlobModule::class.java)
+    val blobModule = reactContext.nativeModule<BlobModule>(BlobModule.NAME)
     val blob: WritableMap = WritableNativeMap()
     blob.putString("blobId", blobModule!!.store(data))
     blob.putInt("offset", 0)

@@ -14,4 +14,3 @@ export * from './error';
 export * from './file-system';
 export * from './navigation-mode';
 export * from './dev-settings';
-export * from './storage';

@@ -21,7 +21,7 @@ describe('NativeDownloadHandler', () => {
     };
 
     await expect(
-      NativeDownloadHandler.download(
+      await NativeDownloadHandler.download(
         '://definitely-invalid-url',
         downloadPath,
         config
@@ -39,7 +39,11 @@ describe('NativeDownloadHandler', () => {
     const originalConfig = { ...config };
 
     await expect(
-      NativeDownloadHandler.download('://still-invalid', downloadPath, config)
+      await NativeDownloadHandler.download(
+        '://still-invalid',
+        downloadPath,
+        config
+      )
     ).rejects.toBeDefined();
 
     expect(config).toEqual(originalConfig);

@@ -14,18 +14,19 @@ class NativeDownloadHandler: NSObject {
     let failCallback: ((Error) -> Void)?
     var downloadPath: String = ""
     
-    init(_
-         config: [String: Any],
-         doneCallback: @escaping () -> Void,
-         progressCallback: ((Int64, Int64) -> Void)?,
-         failCallback: @escaping (Error) -> Void
+    init(
+        connectionTimeout: NSNumber?,
+        mimeType: String?,
+        doneCallback: @escaping () -> Void,
+        progressCallback: ((Int64, Int64) -> Void)?,
+        failCallback: @escaping (Error) -> Void
     ) {
-        if let timeoutValue = config["connectionTimeout"] as? NSNumber {
-            self.connectionTimeout = timeoutValue.intValue / 1000
+        if let connectionTimeout {
+            self.connectionTimeout = connectionTimeout.intValue / 1000
         } else {
             self.connectionTimeout = 10
         }
-        self.mimeType = config["mimeType"] as? String
+        self.mimeType = mimeType
         self.doneCallback = doneCallback
         self.progressCallback = progressCallback
         self.failCallback = failCallback
@@ -133,18 +134,20 @@ public class NativeDownloadModule: NSObject {
     public func download(
         _ url: String,
         downloadPath: String,
-        config: [String: Any],
-        onProgress: @escaping ([String: Int64]) -> Void,
+        connectionTimeout: NSNumber?,
+        mimeType: String?,
+        onProgress: (([String: Int64]) -> Void)?,
         promise: Promise
     ) {
         
         let handler = NativeDownloadHandler(
-            config,
+            connectionTimeout: connectionTimeout,
+            mimeType: mimeType,
             doneCallback: {
                 promise.resolve(nil)
             },
             progressCallback: { received, total in
-                onProgress(["receivedBytes": received, "totalBytes": total])
+                onProgress?(["receivedBytes": received, "totalBytes": total])
             },
             failCallback: { error in
                 promise.reject(NativeDownloadModule.ERROR_DOWNLOAD_FAILED, formatMessage(error.localizedDescription), error)

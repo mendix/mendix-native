@@ -16,7 +16,6 @@ import com.mendixnative.navigation.MxNavigationModule
 import com.mendixnative.ota.MxOtaModule
 import com.mendixnative.reload.MxReloadModule
 import com.mendixnative.splash.MxSplashScreenModule
-import com.mendixnative.storage.MxStorageModule
 import java.util.HashMap
 
 class MendixNativePackage : BaseReactPackage() {
@@ -32,7 +31,6 @@ class MendixNativePackage : BaseReactPackage() {
         module
       }
       MxFileSystemModule.NAME -> MxFileSystemModule(reactContext)
-      MxStorageModule.NAME -> MxStorageModule(reactContext)
       MxOtaModule.NAME -> MxOtaModule(reactContext)
       MxDownloadModule.NAME -> MxDownloadModule(reactContext)
       MxReloadModule.NAME -> MxReloadModule(reactContext)
@@ -51,7 +49,6 @@ class MendixNativePackage : BaseReactPackage() {
         MxEncryptionModule.NAME,
         MxSplashScreenModule.NAME,
         MxFileSystemModule.NAME,
-        MxStorageModule.NAME,
         MxOtaModule.NAME,
         MxDownloadModule.NAME,
         MxReloadModule.NAME,

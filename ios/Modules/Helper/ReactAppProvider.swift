@@ -2,7 +2,8 @@ import UIKit
 import React
 import React_RCTAppDelegate
 
-open class ReactAppProvider: RCTDefaultReactNativeFactoryDelegate, UIApplicationDelegate {
+@objcMembers
+open class ReactAppProvider: UIResponder, UIApplicationDelegate {
     
     public static let defaultName = "App"
 
@@ -15,27 +16,16 @@ open class ReactAppProvider: RCTDefaultReactNativeFactoryDelegate, UIApplication
     public func setUpProvider(
         moduleName: String = ReactAppProvider.defaultName,
         reactRootViewName: String = ReactAppProvider.defaultName,
-        dependencyProvider: (any RCTDependencyProvider)? = nil
+        reactNativeFactory: RCTReactNativeFactory?
     ) {
         self.moduleName = moduleName
         self.reactRootViewName = reactRootViewName
-        if let dependencyProvider {
-            self.dependencyProvider = dependencyProvider
-        }
+        self.reactNativeFactory = reactNativeFactory
         window = MendixReactWindow(frame: UIScreen.main.bounds)
-        reactNativeFactory = RCTReactNativeFactory(delegate: self)
-    }
-
-    open func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
-        true
     }
     
-    open override func bundleURL() -> URL? {
-        return ReactNative.shared.bundleURL()
-    }
-
-    open override func sourceURL(for bridge: RCTBridge) -> URL? {
-        return self.bundleURL()
+    open func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+        return true
     }
 
     public func setReactViewController(_ controller: UIViewController) {
@@ -51,14 +41,7 @@ open class ReactAppProvider: RCTDefaultReactNativeFactoryDelegate, UIApplication
         view.frame = window?.rootViewController?.view.frame ?? .zero
         return view
     }
-
-    public func startReactApp() {
-
-    }
-
-    public func stopReactApp() {
-    }
-
+    
     public static func shared() -> ReactAppProvider? {
         return UIApplication.shared.delegate as? ReactAppProvider
     }
@@ -74,18 +57,10 @@ open class ReactAppProvider: RCTDefaultReactNativeFactoryDelegate, UIApplication
 
     // Check if React Native app is active and running
     public static func isReactAppActive() -> Bool {
-        return RCTBridge.current() != nil
+        return ReactHostHelper().isReactAppActive()
     }
 
-    // Dev-only module access (RCTDevMenu, RCTDevSettings, RCTDevLoadingView)
-    // These modules are not TurboModules and are only available in DEV mode
-    // Using optional RCTBridge.current() - returns nil gracefully when bridge unavailable
-    // Note: In RN 0.83+, dev modules may not be available if using new architecture exclusively
-    public static func getModule<T: NSObject>(type: T.Type) -> T? {
-        return RCTBridge.current()?.moduleRegistry.module(for: type.self) as? T
-    }
-
-    public static func getModule(name: String) -> Any? {
-        return RCTBridge.current()?.moduleRegistry.module(forName: name)
+    public static func getModule<T: NSObject>(name:String, type: T.Type) -> T? {
+        return ReactHostHelper().module(forName: name) as? T
     }
 }

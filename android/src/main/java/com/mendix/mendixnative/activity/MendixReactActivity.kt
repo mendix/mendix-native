@@ -31,8 +31,8 @@ open class MendixReactActivity : ReactActivity(), DevAppMenuHandler, LaunchScree
       ?: throw ClassCastException("Application needs to implement MendixApplication")
 
     mendixInitializer =
-      MendixInitializer(this, reactHost, reactNativeHost, mendixApplication.useDeveloperSupport)
-    mendixInitializer.onCreate(mendixApp!!, this, intent.getBooleanExtra(CLEAR_DATA, false))
+      MendixInitializer(this, reactHost, mendixApplication.useDeveloperSupport)
+    mendixInitializer.onCreate(mendixApp!!, intent.getBooleanExtra(CLEAR_DATA, false))
 
     super.onCreate(null)
   }

@@ -14,11 +14,11 @@ public class DevHelper {
     // Modern Architecture: Access dev modules through ReactAppProvider's moduleRegistry
     // Works with RN 0.83+ where RCTBridge.current() returns nil
     public static var devSettings: RCTDevSettings? {
-        return ReactAppProvider.getModule(type: RCTDevSettings.self)
+        return ReactAppProvider.getModule(name: RCTDevSettings.moduleName(), type: RCTDevSettings.self)
     }
 
     public static var devMenu: RCTDevMenu? {
-        return ReactAppProvider.getModule(type: RCTDevMenu.self)
+        return ReactAppProvider.getModule(name: RCTDevSettings.moduleName(), type: RCTDevMenu.self)
     }
 
     public static func setDebugMode(enabled: Bool) {
@@ -40,6 +40,6 @@ public class DevHelper {
     }
 
     public static var devLoadingView: RCTDevLoadingView? {
-        return ReactAppProvider.getModule(type: RCTDevLoadingView.self)
+        return ReactAppProvider.getModule(name: RCTDevSettings.moduleName(), type: RCTDevLoadingView.self)
     }
 }

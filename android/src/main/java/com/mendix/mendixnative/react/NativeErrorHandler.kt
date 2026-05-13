@@ -13,7 +13,7 @@ import com.facebook.react.modules.core.ExceptionsManagerModule
 class NativeErrorHandler(val reactContext: ReactApplicationContext) {
     fun handle(message: String?, stackTrace: ReadableArray?) {
         // Use typed module access instead of generic typeSafeNativeModule
-        val exceptionsManagerModule = reactContext.getNativeModule(ExceptionsManagerModule::class.java)
+        val exceptionsManagerModule = reactContext.nativeModule<ExceptionsManagerModule>(ExceptionsManagerModule.NAME)
         exceptionsManagerModule?.reportSoftException(message, stackTrace, 0.0)
 
         // Note: updateExceptionMessage is not available in RN 0.77.1+

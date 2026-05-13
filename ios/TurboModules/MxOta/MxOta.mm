@@ -13,18 +13,23 @@ RCT_EXPORT_MODULE()
     return std::make_shared<facebook::react::NativeMxOtaSpecJSI>(params);
 }
 
-- (void)download:(nonnull NSDictionary *)config
-         resolve:(nonnull RCTPromiseResolveBlock)resolve
-          reject:(nonnull RCTPromiseRejectBlock)reject {
+- (void)deploy:(JS::NativeMxOta::OtaDeployConfig &)config
+        resolve:(nonnull RCTPromiseResolveBlock)resolve
+        reject:(nonnull RCTPromiseRejectBlock)reject {
+    OtaDeploymentConfiguration *_config = [[OtaDeploymentConfiguration alloc]
+                                    initWithOtaDeploymentID:config.otaDeploymentID()
+                                    otaPackage:config.otaPackage()
+                                    extractionDir:config.extractionDir()];
     Promise *promise = [Promise instance:resolve reject:reject];
-    [[[NativeOtaModule alloc] init] download:config promise:promise];
+    [[[NativeOtaModule alloc] init] deploy:_config promise:promise];
 }
 
-- (void)deploy:(nonnull NSDictionary *)config
-       resolve:(nonnull RCTPromiseResolveBlock)resolve
+- (void)download:(JS::NativeMxOta::OtaDownloadConfig &)config
+        resolve:(nonnull RCTPromiseResolveBlock)resolve
         reject:(nonnull RCTPromiseRejectBlock)reject {
+    OtaDownloadConfiguration *_config = [[OtaDownloadConfiguration alloc] initWithUrl:config.url()];
     Promise *promise = [Promise instance:resolve reject:reject];
-    [[[NativeOtaModule alloc] init] deploy:config promise:promise];
+    [[[NativeOtaModule alloc] init] download:_config promise:promise];
 }
 
 @end
