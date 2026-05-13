@@ -56,7 +56,7 @@ class MxConfiguration(val reactContext: ReactApplicationContext) {
   }
 
   companion object {
-    const val NATIVE_BINARY_VERSION: Int = 31
+    const val NATIVE_BINARY_VERSION: Int = 32
     const val NAME: String = "MxConfiguration"
     var defaultDatabaseName: String = "default"
 
