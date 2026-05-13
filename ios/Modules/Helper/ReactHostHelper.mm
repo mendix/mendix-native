@@ -62,6 +62,17 @@ NS_ASSUME_NONNULL_BEGIN
     }
 }
 
+- (void)emitEvent:(nonnull NSString *)eventName payload:(nullable id)payload {
+    RCTHost *reactHost = [self currentHost];
+    
+    NSMutableArray *args = [NSMutableArray arrayWithObject:eventName];
+    if (payload != nil) {
+        [args addObject:payload];
+    }
+    
+    [reactHost callFunctionOnJSModule:@"RCTDeviceEventEmitter" method:@"emit" args:args];
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

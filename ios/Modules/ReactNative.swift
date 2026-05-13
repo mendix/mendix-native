@@ -48,7 +48,7 @@ open class ReactNative: NSObject, RCTReloadListener {
         
         ReactAppProvider.shared()?.setReactViewController(mendixApp.reactLoading?.instantiateInitialViewController() ?? UIViewController())
         
-        DevHelper.devSettings?.isShakeToShowDevMenuEnabled = false
+        DevHelper.setShakeToShowDevMenuEnabled(enabled: AppPreferences.devModeEnabled)
         DevHelper.setDebugMode(enabled: AppPreferences.devModeEnabled && AppPreferences.remoteDebuggingEnabled)
         
         showSplashScreen()
@@ -75,7 +75,6 @@ open class ReactNative: NSObject, RCTReloadListener {
     
     public func hideSplashScreen() {
         mendixApp?.splashScreenPresenter?.hide()
-        DevHelper.hideDevLoadingView()
     }
     
     // MARK: - Reload Methods

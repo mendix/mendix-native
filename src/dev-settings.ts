@@ -1,6 +1,19 @@
-import { NativeModules, Platform } from 'react-native';
+import { DeviceEventEmitter, NativeModules, Platform } from 'react-native';
 
 const NativeDevSettings = NativeModules.DevSettings;
+
+// Listen for native-to-JS calls to control shake gesture.
+// In RN 0.84+ bridgeless mode, native cannot directly set this on RCTDevSettings
+// because the TurboModule instance isn't accessible via moduleForName. Instead,
+// native uses RCTHost.callFunctionOnJSModule to emit this event.
+if (__DEV__ && Platform.OS === 'ios') {
+  DeviceEventEmitter.addListener(
+    'mendixSetShakeToShowDevMenu',
+    (enabled: boolean) => {
+      NativeDevSettings?.setIsShakeToShowDevMenuEnabled?.(enabled);
+    }
+  );
+}
 
 /**
  * Controls debugging and development settings using React Native's built-in APIs.

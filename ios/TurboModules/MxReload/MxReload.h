@@ -2,6 +2,4 @@
 
 @interface MxReload : NativeMxReloadSpecBase <NativeMxReloadSpec>
 
-- (void)reloadClientWithState;
-
 @end

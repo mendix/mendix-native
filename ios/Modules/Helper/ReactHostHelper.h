@@ -14,6 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable id) moduleForName: (NSString *) name;
 - (void) reloadClientWithState;
 - (BOOL) isReactAppActive;
+- (void) emitEvent: (nonnull NSString*) eventName payload: (nullable id) payload;
 
 @end
 

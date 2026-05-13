@@ -37,6 +37,10 @@ open class ReactAppProvider: UIResponder, UIApplicationDelegate {
         controller.view = reactAppView()
         changeRoot(to: controller)
     }
+    
+    public func start() {
+        reactNativeFactory?.startReactNative(withModuleName: moduleName, in: window)
+    }
 
     public func reactAppView() -> UIView? {
         guard let view = reactNativeFactory?.rootViewFactory.view(withModuleName: reactRootViewName) else {
