@@ -70,10 +70,6 @@ open class ReactAppProvider: UIResponder, UIApplicationDelegate {
     public static func isReactAppActive() -> Bool {
         return ReactHostHelper().isReactAppActive()
     }
-
-    public static func getModule<T: NSObject>(name:String, type: T.Type) -> T? {
-        return ReactHostHelper().module(forName: name) as? T
-    }
 }
 
 

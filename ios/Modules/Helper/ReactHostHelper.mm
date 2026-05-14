@@ -17,22 +17,22 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation ReactHostHelper
 
-- (nullable id)moduleForName:(nonnull NSString*)name {
+- (nullable id) moduleForClass: (Class) clazz {
     if ([NSThread isMainThread]) {
-        return [self getModuleForName: name];
+        return [self getModuleForClass: clazz];
     } else {
         __block id result;
         dispatch_sync(dispatch_get_main_queue(), ^{
-            result = [self getModuleForName: name];
+            result = [self getModuleForClass: clazz];
         });
         return result;
     }
 }
 
-- (nullable id) getModuleForName:(nonnull NSString*)name {
+- (nullable id) getModuleForClass: (Class) clazz {
     RCTHost *reactHost = [self currentHost];
     RCTModuleRegistry *moduleRegistry = [reactHost moduleRegistry];
-    id nativeModule = [moduleRegistry moduleForName: name.UTF8String];
+    id nativeModule = [moduleRegistry moduleForClass: clazz];
     return nativeModule;
 }
 
@@ -46,7 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 
 - (void) reloadClientWithState {
-    MxReload *mxReload = [self moduleForName: MxReload.moduleName];
+    MxReload *mxReload = [self moduleForClass: MxReload.class];
     [mxReload emitOnReloadWithState];
 }
 

@@ -75,6 +75,7 @@ open class ReactNative: NSObject, RCTReloadListener {
     
     public func hideSplashScreen() {
         mendixApp?.splashScreenPresenter?.hide()
+        DevHelper.hideDevLoadingView()
     }
     
     // MARK: - Reload Methods
