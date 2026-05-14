@@ -41,8 +41,9 @@ class MendixInitializer(
     MxConfiguration.runtimeUrl = runtimeUrl
     MxConfiguration.warningsFilter = mendixApp.warningsFilter
 
-    // This is here to make sure that a clean host instance is initialised.
-    reactHost.invalidate()
+    // Destroy any existing ReactInstance so we start fresh, but do NOT invalidate —
+    // invalidate() is terminal in bridgeless mode and prevents the host from ever being reused.
+    reactHost.destroy("Clean start for new Mendix app", null)
     if (clearData) clearData(context.application)
     if (hasRNDeveloperSupport) setupDeveloperApp(runtimeUrl, mendixApp)
   }
@@ -54,7 +55,9 @@ class MendixInitializer(
     if (hasRNDeveloperSupport) {
       AppPreferences(context.applicationContext).setElementInspector(false)
     }
-    reactHost.invalidate()
+    // Destroy the current instance but keep the host reusable — invalidate() is terminal
+    // in bridgeless mode and would prevent the host from ever starting a new instance.
+    reactHost.destroy("MendixInitializer.onDestroy()", null)
 
     // We need to close all databases separately to avoid hitting a read only state exception
     // Databases need to close after we are done closing the react native host to avoid db locks
