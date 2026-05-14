@@ -85,15 +85,14 @@ open class MendixReactFragment : ReactFragment(), MendixReactFragmentView {
   }
 
   override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
-    if (mendixApp?.showExtendedDevMenu != true) {
-      return false
-    }
     if (keyCode == KeyEvent.KEYCODE_MENU || doubleTapReloadRecognizer.didDoubleTapBacktick(
         keyCode,
         view
       )
     ) {
-      showDevAppMenu()
+      if (mendixApp?.showExtendedDevMenu == true) {
+        showDevAppMenu()
+      }
       return true
     }
     return super.onKeyUp(keyCode, event)

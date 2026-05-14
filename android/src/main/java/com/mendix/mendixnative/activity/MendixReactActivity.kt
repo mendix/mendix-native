@@ -58,8 +58,10 @@ open class MendixReactActivity : ReactActivity(), DevAppMenuHandler, LaunchScree
   override fun createReactActivityDelegate(): ReactActivityDelegate {
     return object : ReactActivityDelegate(this, mainComponentName) {
       override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
-        if (mendixApp?.showExtendedDevMenu == true && keyCode == KeyEvent.KEYCODE_MENU) {
-          showDevAppMenu()
+        if (keyCode == KeyEvent.KEYCODE_MENU) {
+          if (mendixApp?.showExtendedDevMenu == true) {
+            showDevAppMenu()
+          }
           return true
         }
         return super.onKeyUp(keyCode, event)
