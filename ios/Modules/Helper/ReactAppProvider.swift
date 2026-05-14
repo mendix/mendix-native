@@ -26,7 +26,7 @@ open class ReactAppProvider: UIResponder, UIApplicationDelegate {
         delegate.dependencyProvider = RCTAppDependencyProvider()
         reactNativeDelegate = delegate
         reactNativeFactory = factory
-        window = MendixReactWindow(frame: UIScreen.main.bounds)
+        window = UIWindow(frame: UIScreen.main.bounds)
     }
     
     open func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
