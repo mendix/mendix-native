@@ -1,8 +1,5 @@
-// Modern TurboModule exports (Mx prefix)
-export * from './encryption'; // MxEncryption
-export * from './splash-screen'; // MxSplashScreen
-
-// Legacy exports (keep for backward compatibility)
+export * from './encryption';
+export * from './splash-screen';
 export * from './mx-configuration';
 export * from './cookie';
 export * from './events';

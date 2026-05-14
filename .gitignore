@@ -90,5 +90,3 @@ lib/
 
 # Fastlane.swift runner binary
 **/fastlane/FastlaneRunner
-
-.claude/

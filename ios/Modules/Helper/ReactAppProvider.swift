@@ -37,10 +37,6 @@ open class ReactAppProvider: UIResponder, UIApplicationDelegate {
         controller.view = reactAppView()
         changeRoot(to: controller)
     }
-    
-    public func start() {
-        reactNativeFactory?.startReactNative(withModuleName: moduleName, in: window)
-    }
 
     public func reactAppView() -> UIView? {
         guard let view = reactNativeFactory?.rootViewFactory.view(withModuleName: reactRootViewName) else {
@@ -49,6 +45,13 @@ open class ReactAppProvider: UIResponder, UIApplicationDelegate {
         view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         view.frame = window?.rootViewController?.view.frame ?? .zero
         return view
+    }
+
+    public func startReactApp() {
+        reactNativeFactory?.startReactNative(withModuleName: moduleName, in: window)
+    }
+    
+    public func stopReactApp() {
     }
     
     public static func shared() -> ReactAppProvider? {
@@ -81,10 +84,6 @@ public class ReactNativeDelegate: RCTDefaultReactNativeFactoryDelegate {
     }
 
     public override func bundleURL() -> URL? {
-        #if DEBUG
-            RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: "index")
-        #else
-            Bundle.main.url(forResource: "main", withExtension: "jsbundle")
-        #endif
+        return ReactNative.shared.bundleURL()
     }
 }

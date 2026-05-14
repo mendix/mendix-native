@@ -102,17 +102,10 @@ fun deleteAppDatabaseAsync(reactContext: ReactContext?, cb: BooleanCallback) {
   }
 }
 
-/**
- * Clears all AsyncStorage data.
- *
- * Note: Previous implementation only checked module availability without clearing.
- * This now actually clears the storage using AsyncStorageModule.clear().
- */
 fun clearAsyncStorage(reactHost: ReactHost): Boolean {
   val asyncStorageModule = reactHost.nativeModule<AsyncStorageModule>(AsyncStorageModule.NAME)
   if (asyncStorageModule != null) {
     try {
-      // Clear AsyncStorage synchronously - clear() expects a callback but we're using fire-and-forget
       asyncStorageModule.clear { error ->
         if (error != null) {
           Log.e("ClearData", "AsyncStorage clear error: $error")

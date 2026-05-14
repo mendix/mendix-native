@@ -1,37 +1,18 @@
 import { Text, View, StyleSheet } from 'react-native';
-import { NativeDownloadHandler, NativeFileSystem } from 'mendix-native';
-
-const downloadPath = NativeFileSystem.relativeToDocumentsAbsolutePath(
-  'downloads/invalid-url.txt'
-);
+import { AndroidNavigationBar } from 'mendix-native';
 
 export default function App() {
-  const download = async () => {
-    const exists = await NativeFileSystem.fileExists(downloadPath);
-    if (exists) {
-      await NativeFileSystem.remove(downloadPath);
-    }
+  const runtime = (global as any).nativeFabricUIManager
+    ? 'New Architecture'
+    : 'Legacy Architecture';
 
-    const config = {
-      connectionTimeout: 25,
-      mimeType: 'text/plain',
-    };
-
-    try {
-      await NativeDownloadHandler.download(
-        '://definitely-invalid-url',
-        downloadPath,
-        config
-      );
-    } catch (error) {
-      console.error('Download failed as expected:', error);
-    }
-  };
+  console.log('Navigation Bar Height:', AndroidNavigationBar.height);
+  console.log('Is Navigation Bar Active:', AndroidNavigationBar.isActive);
 
   return (
     <View style={styles.container}>
       <View style={styles.archContainer}>
-        <Text onPress={download}>Download</Text>
+        <Text style={styles.text}>{runtime}</Text>
       </View>
     </View>
   );
