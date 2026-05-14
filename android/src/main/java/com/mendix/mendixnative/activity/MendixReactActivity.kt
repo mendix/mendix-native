@@ -2,7 +2,6 @@ package com.mendix.mendixnative.activity
 
 import android.os.Bundle
 import android.view.KeyEvent
-import android.view.MotionEvent
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.bridge.ReactContext
@@ -42,12 +41,6 @@ open class MendixReactActivity : ReactActivity(), DevAppMenuHandler, LaunchScree
     super.onDestroy()
   }
 
-  override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
-    return if (mendixInitializer.dispatchTouchEvent(ev)) {
-      true
-    } else super.dispatchTouchEvent(ev)
-  }
-
   override fun getMainComponentName(): String? {
     return MAIN_COMPONENT_NAME
   }
@@ -65,7 +58,7 @@ open class MendixReactActivity : ReactActivity(), DevAppMenuHandler, LaunchScree
   override fun createReactActivityDelegate(): ReactActivityDelegate {
     return object : ReactActivityDelegate(this, mainComponentName) {
       override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
-        if (keyCode == KeyEvent.KEYCODE_MENU) {
+        if (mendixApp?.showExtendedDevMenu == true && keyCode == KeyEvent.KEYCODE_MENU) {
           showDevAppMenu()
           return true
         }

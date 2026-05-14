@@ -3,7 +3,6 @@ package com.mendix.mendixnative.fragment
 import android.content.Intent
 import android.os.Bundle
 import android.view.KeyEvent
-import android.view.MotionEvent
 import com.facebook.react.devsupport.interfaces.DevSupportManager
 import com.mendix.mendixnative.DevAppMenuHandler
 import com.mendix.mendixnative.MendixInitializer
@@ -86,6 +85,9 @@ open class MendixReactFragment : ReactFragment(), MendixReactFragmentView {
   }
 
   override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
+    if (mendixApp?.showExtendedDevMenu != true) {
+      return false
+    }
     if (keyCode == KeyEvent.KEYCODE_MENU || doubleTapReloadRecognizer.didDoubleTapBacktick(
         keyCode,
         view
@@ -104,21 +106,11 @@ open class MendixReactFragment : ReactFragment(), MendixReactFragmentView {
   }
 
   open fun onCloseProjectSelected() {
-    // Closing shake detection to avoid dialog from triggering while closing
-    mendixInitializer.stopShakeDetector();
-  }
-
-  override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
-    return mendixInitializer.dispatchTouchEvent(ev)
   }
 }
 
-interface MendixReactFragmentView : DevAppMenuHandler, TouchEventDispatcher, BackButtonHandler {
+interface MendixReactFragmentView : DevAppMenuHandler, BackButtonHandler {
   fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean
-}
-
-interface TouchEventDispatcher {
-  fun dispatchTouchEvent(ev: MotionEvent?): Boolean
 }
 
 interface BackButtonHandler {
