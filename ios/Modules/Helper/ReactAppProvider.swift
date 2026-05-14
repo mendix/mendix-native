@@ -67,7 +67,6 @@ open class ReactAppProvider: UIResponder, UIApplicationDelegate {
         return window?.rootViewController?.view
     }
 
-    // Check if React Native app is active and running
     public static func isReactAppActive() -> Bool {
         return ReactHostHelper().isReactAppActive()
     }

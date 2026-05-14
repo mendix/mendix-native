@@ -7,7 +7,7 @@ class AppDelegate: ReactAppProvider {
     
     override func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
         setUpProvider()
-        guard let bundleUrl = reactNativeDelegate?.bundleURL() else {
+        guard let bundleUrl = bundleURL() else {
             let message = "No script URL provided. Make sure the metro packager is running or you have embedded a JS bundle in your application bundle."
             fatalError(message)
         }
@@ -29,5 +29,13 @@ class AppDelegate: ReactAppProvider {
         ReactNative.shared.setup(mendixApp, launchOptions: nil)
         ReactNative.shared.start()
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+    }
+    
+    func bundleURL() -> URL? {
+        #if DEBUG
+            RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: "index")
+        #else
+            Bundle.main.url(forResource: "main", withExtension: "jsbundle")
+        #endif
     }
 }
