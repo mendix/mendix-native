@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.5.0] - 2026-05-15
+
 - We updated to React Native v0.84.1 and replaced deprecated APIs with modern equivalents.
 
 ## [v0.4.1] - 2026-04-22
