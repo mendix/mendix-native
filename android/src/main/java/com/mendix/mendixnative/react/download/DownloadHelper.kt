@@ -43,23 +43,31 @@ fun downloadFile(
   outputFile.parentFile?.mkdirs()
   outputFile.createNewFile()
 
-  client.newCall(Request.Builder().url(url).get().build()).enqueue(object : Callback {
-    override fun onFailure(call: Call, e: IOException) = onFailure(e)
-
-    override fun onResponse(call: Call, response: Response) {
-      try {
-        DownloadResponseHandler(
-          response,
-          expectedMimeType,
-          outputFile,
-          progressCallback,
-        ).handle()
-        onSuccess()
-      } catch (e: Exception) {
+  try {
+    client.newCall(Request.Builder().url(url).get().build()).enqueue(object : Callback {
+      override fun onFailure(call: Call, e: IOException) {
+        outputFile.delete()
         onFailure(e)
       }
-    }
-  })
+
+      override fun onResponse(call: Call, response: Response) {
+        try {
+          DownloadResponseHandler(
+            response,
+            expectedMimeType,
+            outputFile,
+            progressCallback,
+          ).handle()
+          onSuccess()
+        } catch (e: Exception) {
+          onFailure(e)
+        }
+      }
+    })
+  } catch (e: Exception) {
+    outputFile.delete()
+    throw e
+  }
 }
 
 

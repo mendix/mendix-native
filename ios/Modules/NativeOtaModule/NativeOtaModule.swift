@@ -2,6 +2,29 @@ import Foundation
 import React
 import SSZipArchive
 
+
+@objcMembers
+public class OtaDeploymentConfiguration: NSObject {
+    let otaDeploymentID: String?
+    let otaPackage: String?
+    let extractionDir: String?
+    
+    public init(otaDeploymentID: String?, otaPackage: String?, extractionDir: String?) {
+        self.otaDeploymentID = otaDeploymentID
+        self.otaPackage = otaPackage
+        self.extractionDir = extractionDir
+    }
+}
+
+@objcMembers
+public class OtaDownloadConfiguration: NSObject {
+    let url: String?
+    
+    public init(url: String?) {
+        self.url = url
+    }
+}
+
 @objcMembers
 public class NativeOtaModule: NSObject {
     
@@ -36,7 +59,7 @@ public class NativeOtaModule: NSObject {
      *    otaPackage: string // zip file name
      * }
      */
-    public func download(_ config: [String: Any], promise: Promise) {
+    public func download(_ config: OtaDownloadConfiguration, promise: Promise) {
         
         let otaDir = OtaHelpers.getOtaDir()
         let fileManager = FileManager.default
@@ -50,7 +73,7 @@ public class NativeOtaModule: NSObject {
             }
         }
         
-        guard let url = config[DOWNLOAD_CONFIG_URL_KEY] as? String else {
+        guard let url = config.url else {
             promise.reject(INVALID_DOWNLOAD_CONFIG, "Key url is invalid.", nil)
             return
         }
@@ -70,7 +93,8 @@ public class NativeOtaModule: NSObject {
         let downloadPath = OtaHelpers.resolveAbsolutePathRelativeToOtaDir("/\(zipFilename)")
         
         let downloadHandler = NativeDownloadHandler(
-            [:],
+            connectionTimeout: nil,
+            mimeType: nil,
             doneCallback: {
                 promise.resolve(["otaPackage": zipFilename])
             },
@@ -99,19 +123,19 @@ public class NativeOtaModule: NSObject {
      * }
      */
     
-    public func deploy(_ config: [String: Any], promise: Promise) {
+    public func deploy(_ config: OtaDeploymentConfiguration, promise: Promise) {
         
-        guard let otaDeploymentID = config[MANIFEST_OTA_DEPLOYMENT_ID_KEY] as? String else {
+        guard let otaDeploymentID = config.otaDeploymentID else {
             promise.reject(INVALID_DOWNLOAD_CONFIG, "Key otaDeploymentID is invalid.", nil)
             return
         }
         
-        guard let zipFile = config[DEPLOY_CONFIG_OTA_PACKAGE_KEY] as? String else {
+        guard let zipFile = config.otaPackage else {
             promise.reject(INVALID_DOWNLOAD_CONFIG, "Key otaPackage is invalid.", nil)
             return
         }
         
-        guard let extractionDir = config[DEPLOY_CONFIG_EXTRACTION_DIR] as? String else {
+        guard let extractionDir = config.extractionDir else {
             promise.reject(INVALID_DOWNLOAD_CONFIG, "Key extractionDir is invalid.", nil)
             return
         }

@@ -1,3 +1,4 @@
+export * from './encryption';
 export * from './splash-screen';
 export * from './mx-configuration';
 export * from './cookie';
@@ -6,6 +7,6 @@ export * from './ota';
 export * from './download-handler';
 export * from './reload-handler';
 export * from './encrypted-storage';
-export * from './error-handler';
+export * from './error';
 export * from './file-system';
 export * from './navigation-mode';

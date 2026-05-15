@@ -5,7 +5,7 @@ import android.content.Context
 import android.util.Log
 import android.webkit.CookieManager
 import android.widget.Toast
-import com.facebook.react.ReactNativeHost
+import com.facebook.react.ReactHost
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.modules.network.NetworkingModule
 import com.mendix.mendixnative.encryption.MendixEncryptedStorage
@@ -34,9 +34,9 @@ fun clearData(applicationContext: Application) = clearCookies().also {
   fileBackend.deleteDirectory(applicationContext.filesDir)
 }
 
-fun clearDataWithReactContext(applicationContext: Application, reactNativeHost: ReactNativeHost, cb: (success: Boolean) -> Unit) {
+fun clearDataWithReactContext(applicationContext: Application, reactHost: ReactHost, cb: (success: Boolean) -> Unit) {
   clearCachedReactNativeDevBundle(applicationContext)
-  val reactContext = reactNativeHost.reactContext()
+  val reactContext = reactHost.currentReactContext
   val fileBackend = FileBackend(applicationContext)
   fileBackend.deleteDirectory(applicationContext.filesDir)
   val errorString = "Clearing %s failed. Please clear your data from the launch screen."
@@ -57,7 +57,7 @@ fun clearDataWithReactContext(applicationContext: Application, reactNativeHost: 
         reportError("database")
       }
 
-      if (!clearAsyncStorage(reactNativeHost)) {
+      if (!clearAsyncStorage(reactHost)) {
         reportError("async storage")
       }
 
@@ -88,30 +88,56 @@ fun clearDataWithReactContext(applicationContext: Application, reactNativeHost: 
 }
 
 fun deleteAppDatabaseAsync(reactContext: ReactContext?, cb: BooleanCallback) {
-  reactContext?.typeSafeNativeModule<OPSQLiteModule>()?.let {
-    it.deleteAllDBs()
-    cb(true)
-  } ?: cb(false)
+  val opSQLiteModule = reactContext?.nativeModule<OPSQLiteModule>(OPSQLiteModule.NAME)
+  if (opSQLiteModule != null) {
+    try {
+      opSQLiteModule.deleteAllDBs()
+      cb(true)
+    } catch (e: Exception) {
+      Log.e("ClearData", "Failed to delete databases: ${e.message}")
+      cb(false)
+    }
+  } else {
+    cb(false)
+  }
 }
 
-fun clearAsyncStorage(reactNativeHost: ReactNativeHost): Boolean {
-  val module = reactNativeHost.typeSafeNativeModule<AsyncStorageModule>()
-  if (module != null) {
-    return true
-  } else {
-    return false
+fun clearAsyncStorage(reactHost: ReactHost): Boolean {
+  val asyncStorageModule = reactHost.nativeModule<AsyncStorageModule>(AsyncStorageModule.NAME)
+  if (asyncStorageModule != null) {
+    try {
+      asyncStorageModule.clear { error ->
+        if (error != null) {
+          Log.e("ClearData", "AsyncStorage clear error: $error")
+        }
+      }
+      return true
+    } catch (e: Exception) {
+      Log.e("ClearData", "Failed to clear AsyncStorage: ${e.message}")
+      return false
+    }
   }
+  return false
 }
 
 fun clearSecureStorage(context: Context?): Boolean =
   context?.let { MendixEncryptedStorage.getMendixEncryptedStorage(it).clear() } ?: false
 
-fun clearCookiesAsync(reactContext: ReactContext?, cb: (success: Boolean) -> Unit) =
-  reactContext?.typeSafeNativeModule<NetworkingModule>()?.let { module ->
-    module.clearCookies {
-      cb(it[0] as Boolean)
+fun clearCookiesAsync(reactContext: ReactContext?, cb: (success: Boolean) -> Unit) {
+  val networkingModule = reactContext?.nativeModule<NetworkingModule>(NetworkingModule.NAME)
+  if (networkingModule != null) {
+    try {
+      networkingModule.clearCookies { result ->
+        cb(result[0] as Boolean)
+      }
+    } catch (e: Exception) {
+      Log.e("ClearData", "Failed to clear cookies: ${e.message}")
+      cb(false)
     }
-  } ?: cb(false)
+  } else {
+    cb(false)
+  }
+}
 
 fun clearCachedReactNativeDevBundle(applicationContext: Application) {
   try {
