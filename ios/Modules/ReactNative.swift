@@ -1,7 +1,7 @@
 import UIKit
 import React
 
-public protocol ReactNativeDelegate: AnyObject {
+public protocol ReactNativeDelegateInternal: AnyObject {
     func onAppClosed()
 }
 
@@ -13,7 +13,7 @@ open class ReactNative: NSObject, RCTReloadListener {
     private var mendixOTAEnabled: Bool = false
     private var tapGestureHelper: TapGestureRecognizerHelper?
     
-    public weak var delegate: ReactNativeDelegate?
+    public weak var delegate: ReactNativeDelegateInternal?
     
     // MARK: - Singleton
     public static let shared = ReactNative()
@@ -48,7 +48,7 @@ open class ReactNative: NSObject, RCTReloadListener {
         
         ReactAppProvider.shared()?.setReactViewController(mendixApp.reactLoading?.instantiateInitialViewController() ?? UIViewController())
         
-        DevHelper.devSettings?.isShakeToShowDevMenuEnabled = false
+        DevHelper.setShakeToShowDevMenuEnabled(enabled: AppPreferences.devModeEnabled)
         DevHelper.setDebugMode(enabled: AppPreferences.devModeEnabled && AppPreferences.remoteDebuggingEnabled)
         
         showSplashScreen()
@@ -105,7 +105,7 @@ open class ReactNative: NSObject, RCTReloadListener {
     }
     
     public func reloadWithState() {
-        UnsafeMxFunction.reloadClientWithState.perform()
+        ReactHostHelper().reloadClientWithState()
     }
     
     // MARK: - RCTReloadListener

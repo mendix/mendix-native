@@ -10,6 +10,7 @@ import com.facebook.react.common.annotations.UnstableReactNativeAPI
 import com.facebook.react.defaults.DefaultComponentsRegistry
 import com.facebook.react.defaults.DefaultReactHostDelegate
 import com.facebook.react.defaults.DefaultTurboModuleManagerDelegate
+import com.facebook.react.devsupport.interfaces.DevBundleDownloadListener
 import com.facebook.react.devsupport.interfaces.RedBoxHandler
 import com.facebook.react.fabric.ComponentFactory
 import com.facebook.react.runtime.ReactHostImpl
@@ -20,6 +21,7 @@ import com.mendix.mendixnative.error.ErrorHandler
 import com.mendix.mendixnative.error.ErrorHandlerFactory
 import com.mendix.mendixnative.error.mapErrorHandlerToRedBox
 import com.mendix.mendixnative.handler.DummyErrorHandler
+import com.mendix.mendixnative.devsupport.MendixDevSupportManagerFactory
 import com.mendix.mendixnative.react.ota.OtaJSBundleUrlProvider
 import com.mendix.mendixnative.react.splash.MendixSplashScreenPresenter
 import com.mendixnative.MendixNativePackage
@@ -106,11 +108,12 @@ abstract class MendixReactApplication : Application(), MendixApplication, ErrorH
     val componentFactory = ComponentFactory()
     DefaultComponentsRegistry.register(componentFactory)
     ReactHostImpl(
-      applicationContext,
-      delegate,
-      componentFactory,
-      true /* allowPackagerServerAccess */,
-      useDeveloperSupport,
+      context = applicationContext,
+      reactHostDelegate = delegate,
+      componentFactory = componentFactory,
+      allowPackagerServerAccess = true,
+      useDevSupport = useDeveloperSupport,
+      devSupportManagerFactory = MendixDevSupportManagerFactory(devBundleDownloadListener),
     )
   }
 
@@ -157,5 +160,15 @@ abstract class MendixReactApplication : Application(), MendixApplication, ErrorH
   }
 
   open val jsBundleProvider: JSBundleFileProvider?
+    get() = null
+
+  /**
+   * Override this to provide a [DevBundleDownloadListener] that receives bundle download
+   * progress, success, and failure callbacks. This is used to drive custom loading UIs.
+   *
+   * The listener is injected at [ReactHost] creation time via [MendixDevSupportManagerFactory].
+   * Use a delegating holder pattern if the actual listener is created after app initialization.
+   */
+  open val devBundleDownloadListener: DevBundleDownloadListener?
     get() = null
 }

@@ -90,3 +90,6 @@ lib/
 
 # Fastlane.swift runner binary
 **/fastlane/FastlaneRunner
+
+# Harness logs/crash reports
+example/.harness

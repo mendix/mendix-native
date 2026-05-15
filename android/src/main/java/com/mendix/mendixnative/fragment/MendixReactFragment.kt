@@ -3,7 +3,6 @@ package com.mendix.mendixnative.fragment
 import android.content.Intent
 import android.os.Bundle
 import android.view.KeyEvent
-import android.view.MotionEvent
 import com.facebook.react.devsupport.interfaces.DevSupportManager
 import com.mendix.mendixnative.DevAppMenuHandler
 import com.mendix.mendixnative.MendixInitializer
@@ -67,8 +66,8 @@ open class MendixReactFragment : ReactFragment(), MendixReactFragmentView {
     val hasRNDeveloperSupport = requireArguments().getBoolean(ARG_USE_DEVELOPER_SUPPORT, false)
 
     mendixInitializer =
-      MendixInitializer(requireActivity(), reactHost!!, reactNativeHost, hasRNDeveloperSupport).also {
-        it.onCreate(mendixApp!!, this, clearData)
+      MendixInitializer(requireActivity(), reactHost!!, hasRNDeveloperSupport).also {
+        it.onCreate(mendixApp!!, clearData)
       }
 
     super.onCreate(savedInstanceState)
@@ -91,7 +90,9 @@ open class MendixReactFragment : ReactFragment(), MendixReactFragmentView {
         view
       )
     ) {
-      showDevAppMenu()
+      if (mendixApp?.showExtendedDevMenu == true) {
+        showDevAppMenu()
+      }
       return true
     }
     return super.onKeyUp(keyCode, event)
@@ -104,21 +105,11 @@ open class MendixReactFragment : ReactFragment(), MendixReactFragmentView {
   }
 
   open fun onCloseProjectSelected() {
-    // Closing shake detection to avoid dialog from triggering while closing
-    mendixInitializer.stopShakeDetector();
-  }
-
-  override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
-    return mendixInitializer.dispatchTouchEvent(ev)
   }
 }
 
-interface MendixReactFragmentView : DevAppMenuHandler, TouchEventDispatcher, BackButtonHandler {
+interface MendixReactFragmentView : DevAppMenuHandler, BackButtonHandler {
   fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean
-}
-
-interface TouchEventDispatcher {
-  fun dispatchTouchEvent(ev: MotionEvent?): Boolean
 }
 
 interface BackButtonHandler {
