@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'react-native-harness';
-import { MxSplashScreen as MendixSplashScreen } from 'mendix-native';
+import { MendixSplashScreen } from 'mendix-native';
 
 describe('MendixSplashScreen', () => {
   describe('API surface', () => {

@@ -1,6 +1,6 @@
 import NativeMxSplashScreen from './NativeMxSplashScreen';
 
-export const MxSplashScreen = {
+export const MendixSplashScreen = {
   show(): void {
     NativeMxSplashScreen.show();
   },
