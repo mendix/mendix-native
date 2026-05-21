@@ -4,8 +4,8 @@ buildscript {
   }
 
   repositories {
+    maven { url "https://nexus.rnd.mendix.com/repository/repo1-proxy/" }
     google()
-    mavenCentral()
   }
 
   dependencies {
@@ -65,7 +65,7 @@ android {
 }
 
 repositories {
-  mavenCentral()
+  maven { url "https://nexus.rnd.mendix.com/repository/repo1-proxy/" }
   google()
 }
 
