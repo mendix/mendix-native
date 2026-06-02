@@ -51,21 +51,25 @@ class NativeReloadHandler(val context: ReactApplicationContext) {
 
     private fun handleJSBundleLoading() {
         val bundle = (context.applicationContext as MendixApplication).jsBundleFile
-        val instanceManager =
-            (context.applicationContext as ReactApplication).reactNativeHost.reactInstanceManager
 
         val latestJSBundleLoader = if (bundle != null) {
             getAssetLoader(bundle)
         } else {
             getAssetLoader("assets://index.android.bundle")
-        }
+        } ?: return
 
-        ReflectionUtils.setField(instanceManager, "mBundleLoader", latestJSBundleLoader)
-        ReflectionUtils.setField(
-            instanceManager,
-            "mUseDeveloperSupport",
-            (context.applicationContext as MendixApplication).useDeveloperSupport
-        )
+        // New Architecture (Bridgeless): on reload, ReactHostImpl loads the bundle from
+        // its ReactHostDelegate.jsBundleLoader, which is captured once at host-creation
+        // time and never re-consults getJSBundleFile(). Without updating it here, a warm
+        // reload keeps loading the original bundle, so a freshly-deployed OTA bundle is
+        // never picked up and the app loops: download -> deploy -> reload -> same bundle.
+        val reactHost = (context.applicationContext as? ReactApplication)?.reactHost ?: return
+        try {
+            val delegate = ReflectionUtils.getField<Any>(reactHost, "mReactHostDelegate")
+            ReflectionUtils.setField(delegate, "jsBundleLoader", latestJSBundleLoader)
+        } catch (e: Exception) {
+            FLog.e(javaClass, "Failed to update JS bundle loader for OTA reload", e)
+        }
     }
 
     private fun getAssetLoader(bundle: String): JSBundleLoader? {
