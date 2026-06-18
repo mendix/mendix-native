@@ -80,4 +80,4 @@ jobs:
           branch: release/${{ steps.bump.outputs.version }}
           title: "Release ${{ steps.bump.outputs.version }}"
           body: "This PR updates CHANGELOG.md and package.json for release ${{ steps.bump.outputs.version }}."
-          base: main
+          base: ${{ github.ref_name }}
