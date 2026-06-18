@@ -81,12 +81,11 @@ open class ReactNative: NSObject, RCTReloadListener {
     // MARK: - Reload Methods
     public func reload() {
         guard let mendixApp = mendixApp else { return }
-        
-        let otaBundleUrl = OtaJSBundleFileProvider.getBundleUrl()
-        if !mendixApp.isDeveloperApp, let otaBundleUrl = otaBundleUrl {
-            RCTReloadCommandSetBundleURL(otaBundleUrl)
-        }
-        
+
+        // Note: under the New Architecture the bundle URL is resolved fresh in bundleURL(),
+        // which RCTHost re-invokes on reload. RCTReloadCommandSetBundleURL is a legacy-bridge
+        // mechanism that the bridgeless host ignores, so it is intentionally not used here.
+
         if mendixApp.isDeveloperApp {
             let runtimeInfoUrl = AppUrl.forRuntimeInfo(mendixApp.runtimeUrl.absoluteString)
             RuntimeInfoProvider.getRuntimeInfo(runtimeInfoUrl) { [weak self] response in
@@ -153,7 +152,19 @@ open class ReactNative: NSObject, RCTReloadListener {
     }
     
     public func bundleURL() -> URL? {
-        return bundleUrl
+        // New Architecture (Bridgeless): RCTHost re-invokes this provider block on every
+        // reload (via RCTRootViewFactory's bundleURLBlock) instead of consulting the URL set
+        // by RCTReloadCommandSetBundleURL. Resolve the OTA bundle fresh here so a freshly
+        // deployed OTA bundle is picked up after reload. Without this, every reload re-loads
+        // the bundle captured at host-creation time and the app loops:
+        // download -> deploy -> reload -> same bundle.
+        //
+        // For the developer app (and remote debugging) the cached packager URL must be used,
+        // so only the production path re-resolves through BundleHelper.
+        if mendixApp?.isDeveloperApp == true {
+            return bundleUrl
+        }
+        return BundleHelper.getJSBundleFile()
     }
 }
 
