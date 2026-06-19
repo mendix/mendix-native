@@ -26,7 +26,11 @@ RCT_EXPORT_MODULE()
         connectionTimeout = @(config.connectionTimeout().value());
     }    
     NSString *mimeType = config.mimeType();;
-    [[[NativeDownloadModule alloc] init] download:url downloadPath:downloadPath connectionTimeout:connectionTimeout mimeType:mimeType onProgress:nil promise:promise];
+    NativeDownloadModule *downloader = [[NativeDownloadModule alloc] init];
+    [downloader download:url downloadPath:downloadPath connectionTimeout:connectionTimeout mimeType:mimeType onProgress:^(NSDictionary* progress) {
+//        Uncomment the line below to track progress events.
+//        [self emitOnDownloadProgress: progress];
+    } promise:promise];
 }
 
 @end
