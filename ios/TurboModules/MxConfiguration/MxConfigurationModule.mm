@@ -13,8 +13,25 @@ RCT_EXPORT_MODULE(MxConfiguration)
     return std::make_shared<facebook::react::NativeMxConfigurationSpecJSI>(params);
 }
 
-- (nonnull NSDictionary *)getConfig {
-    return [[[MxConfiguration alloc] init] constants];
+- (nonnull facebook::react::ModuleConstants<JS::NativeMxConfiguration::Constants>)constantsToExport { 
+    return [self getConstants];
+}
+
+- (nonnull facebook::react::ModuleConstants<JS::NativeMxConfiguration::Constants>)getConstants {
+    MxConfigProxy *config = [MxConfigProxy prepare];
+    return facebook::react::typedConstants<JS::NativeMxConfiguration::Constants>({
+        .RUNTIME_URL = config.runtimeUrl,
+        .APP_NAME = config.appName,
+        .FILES_DIRECTORY_NAME = config.filesDirectoryName,
+        .DATABASE_NAME = config.databaseName,
+        .WARNINGS_FILTER_LEVEL = config.warningsFilter,
+        .OTA_MANIFEST_PATH = config.otaManifestPath,
+        .NATIVE_DEPENDENCIES = config.nativeDependencies,
+        .IS_DEVELOPER_APP = config.isDeveloperApp,
+        .CODE_PUSH_KEY= NULL,
+        .NATIVE_BINARY_VERSION = [config.nativeBinaryVersion doubleValue],
+        .APP_SESSION_ID = config.appSessionId
+    });
 }
 
 @end

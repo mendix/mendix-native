@@ -268,12 +268,6 @@ public class NativeFsModule: NSObject {
         }
     }
     
-    public let constants: NSDictionary = [
-        "DocumentDirectoryPath": NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first ?? "",
-        "SUPPORTS_DIRECTORY_MOVE": true,
-        "SUPPORTS_ENCRYPTION": true
-    ]
-    
     private func isWhiteListedPath(_ paths: String..., reject: RCTPromiseRejectBlock) -> Bool {
         do {
             try NativeFsModule.ensureWhiteListedPath(paths)
