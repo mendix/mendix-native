@@ -10,7 +10,6 @@ import androidx.fragment.app.Fragment
 import com.facebook.react.ReactApplication
 import com.facebook.react.ReactDelegate
 import com.facebook.react.ReactHost
-import com.facebook.react.ReactNativeHost
 import com.facebook.react.modules.core.PermissionAwareActivity
 import com.facebook.react.modules.core.PermissionListener
 import com.mendix.mendixnative.react.CopiedFrom
@@ -35,17 +34,15 @@ open class ReactFragment : Fragment(), PermissionAwareActivity {
       launchOptions = requireArguments().getBundle(ARG_LAUNCH_OPTIONS)
     }
     checkNotNull(mainComponentName) { "Cannot loadApp if component name is null" }
-    mReactDelegate = activity?.let { ReactDelegate(it, reactHost, mainComponentName, launchOptions) }
+    mReactDelegate = activity?.let { ReactDelegate(it, reactHost!!, mainComponentName, launchOptions) }
   }
 
   /**
-   * Get the [ReactNativeHost] used by this app. By default, assumes [ ][Activity.getApplication] is an instance of [ReactApplication] and calls [ ][ReactApplication.getReactNativeHost]. Override this method if your application class does not
-   * implement `ReactApplication` or you simply have a different mechanism for storing a
-   * `ReactNativeHost`, e.g. as a static field somewhere.
+   * Get the [ReactHost] used by this app. By default, assumes [ ][Activity.getApplication] is an
+   * instance of [ReactApplication] and calls [ ][ReactApplication.getReactHost]. Override this
+   * method if your application class does not implement `ReactApplication` or you simply have a
+   * different mechanism for storing a `ReactHost`, e.g. as a static field somewhere.
    */
-  protected val reactNativeHost: ReactNativeHost
-    get() = (requireActivity().application as ReactApplication).reactNativeHost
-
   protected val reactHost: ReactHost?
     get() = (requireActivity().application as ReactApplication).reactHost
 

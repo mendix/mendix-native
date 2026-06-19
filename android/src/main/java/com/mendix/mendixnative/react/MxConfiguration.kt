@@ -12,10 +12,9 @@ class MxConfiguration(val reactContext: ReactApplicationContext) {
     val application = (reactContext.applicationContext as MendixApplication)
     if (runtimeUrl == null) {
       if (warningsFilter != WarningsFilter.none) {
-        application.reactNativeHost
-          .reactInstanceManager
-          .devSupportManager
-          .showNewJavaError(
+        application.reactHost
+          ?.devSupportManager
+          ?.showNewJavaError(
             "Runtime URL not specified.",
             Throwable("Without the runtime URL, the app cannot retrieve any data.\n\nPlease redeploy the app.")
           )

@@ -2,7 +2,6 @@ package com.mendix.mendixnative
 
 import android.app.Application
 import com.facebook.react.ReactHost
-import com.facebook.react.ReactNativeHost
 import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.JSBundleLoader
 import com.facebook.react.bridge.JSBundleLoaderDelegate
@@ -28,8 +27,6 @@ import com.mendixnative.MendixNativePackage
 import java.util.*
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load
 
-import com.facebook.react.defaults.DefaultReactNativeHost
-
 abstract class MendixReactApplication : Application(), MendixApplication, ErrorHandlerFactory {
   private val appSessionId = "" + Math.random() * 1000 + Date().time
   override fun getAppSessionId(): String = appSessionId
@@ -44,33 +41,11 @@ abstract class MendixReactApplication : Application(), MendixApplication, ErrorH
 
   private var jsBundleFileProvider: JSBundleFileProvider? = jsBundleProvider
 
-  override var reactNativeHost: ReactNativeHost = object : DefaultReactNativeHost(this) {
-    override fun getUseDeveloperSupport(): Boolean = this@MendixReactApplication.useDeveloperSupport
-
-    override fun getPackages(): List<ReactPackage> {
-      val pkgs: MutableList<ReactPackage> = ArrayList()
-      // Use the packages provided by the concrete Application subclass.
-      pkgs.addAll(this@MendixReactApplication.packages)
-      // Inject splashScreenPresenter into any MendixNativePackage instances without creating duplicates.
-      applyInternalPackageAugmentations(pkgs)
-      return pkgs
-    }
-
-    override fun getJSBundleFile(): String? = this@MendixReactApplication.jsBundleFile
-    override fun getJSMainModuleName(): String = "index"
-    override fun getBundleAssetName(): String? = super.getBundleAssetName()
-    override fun getRedBoxHandler(): RedBoxHandler? = null
-
-    // Hermes & New Arch flags; Hermes executor will be picked automatically when isHermesEnabled is true.
-    override val isNewArchEnabled: Boolean = true
-    override val isHermesEnabled: Boolean = true
-  }
-
   /**
-   * Build the [ReactHost] ourselves instead of using [DefaultReactHost.getDefaultReactHost],
-   * because that factory evaluates [ReactNativeHost.getJSBundleFile] once at creation time and
-   * bakes the result into a fixed [JSBundleLoader]. After an OTA update deploys a new bundle,
-   * a subsequent [ReactHost.reload] would still load the stale bundle.
+   * Build the [ReactHost] with a custom [JSBundleLoader] instead of using a static bundle path.
+   * The default approach evaluates the bundle file path once at creation time and bakes it into
+   * a fixed [JSBundleLoader]. After an OTA update deploys a new bundle, a subsequent
+   * [ReactHost.reload] would still load the stale bundle.
    *
    * By providing a **dynamic** [JSBundleLoader] whose [JSBundleLoader.loadScript] calls
    * [getJSBundleFile] on every invocation, each reload picks up the latest bundle path —
@@ -133,10 +108,7 @@ abstract class MendixReactApplication : Application(), MendixApplication, ErrorH
   override fun onCreate() {
     super.onCreate()
     SoLoader.init(this, OpenSourceMergedSoMapping)
-    // Only load the New Architecture entry point when enabled (always true here, but guarded for safety).
-    if (reactNativeHost is DefaultReactNativeHost) {
-      load()
-    }
+    load()
   }
 
   override fun getJSBundleFile(): String? {
