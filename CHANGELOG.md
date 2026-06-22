@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.3.5] - 2026-06-22
+
 - We fixed an issue that could cause iOS apps to restart repeatedly after an OTA update.
 
 ## [v0.3.4] - 2026-06-22
