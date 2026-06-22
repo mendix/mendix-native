@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [v0.5.0] - 2026-05-15
+## [v0.3.4] - 2026-06-22
+
+- We fixed an issue that could cause iOS apps to restart repeatedly after an OTA update.
 
 - We updated to React Native v0.84.1 and replaced deprecated APIs with modern equivalents.
 
