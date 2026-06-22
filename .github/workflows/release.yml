@@ -31,7 +31,7 @@ jobs:
         run: |
           # Use npm version to calculate the next version without modifying files
           CURRENT_VERSION=$(node -p "require('./package.json').version")
-          NEW_VERSION=$(npm version ${{ github.event.inputs.version }} --no-git-tag-version)
+          NEW_VERSION=$(npx semver $CURRENT_VERSION -i ${{ github.event.inputs.version }})
 
           # Restore package.json to avoid dirty state
           git checkout package.json package-lock.json 2>/dev/null || true
@@ -106,6 +106,7 @@ jobs:
           name: ${{ steps.bump.outputs.version }}
           body: ${{ steps.changelog.outputs.notes }}
           files: ${{ steps.pack.outputs.tgz }}
+          target_commitish: ${{ github.sha }}
           fail_on_unmatched_files: true
           draft: false
           prerelease: false
