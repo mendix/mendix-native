@@ -26,6 +26,43 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Calculate next version
+        id: next_version
+        run: |
+          # Use npm version to calculate the next version without modifying files
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          NEW_VERSION=$(npx semver $CURRENT_VERSION -i ${{ github.event.inputs.version }})
+
+          # Restore package.json to avoid dirty state
+          git checkout package.json package-lock.json 2>/dev/null || true
+
+          echo "current=v$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "next=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "📦 Current version: v$CURRENT_VERSION"
+          echo "📦 Next version: $NEW_VERSION (bump: ${{ github.event.inputs.version }})"
+
+      - name: Check if release already exists
+        run: |
+          echo "🔍 Checking if ${{ steps.next_version.outputs.next }} already exists..."
+
+          # Check if tag exists in remote
+          if git ls-remote --tags origin | grep -q "refs/tags/${{ steps.next_version.outputs.next }}$"; then
+            echo "❌ Error: Git tag ${{ steps.next_version.outputs.next }} already exists on remote"
+            echo "Please check existing releases or use a different version bump type."
+            exit 1
+          fi
+
+          # Check if GitHub release exists (via API)
+          if gh release view "${{ steps.next_version.outputs.next }}" &>/dev/null; then
+            echo "❌ Error: GitHub release ${{ steps.next_version.outputs.next }} already exists"
+            echo "Please check existing releases or use a different version bump type."
+            exit 1
+          fi
+
+          echo "✅ Version ${{ steps.next_version.outputs.next }} is available"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
       - name: Setup Project
         uses: ./.github/actions/setup-node-yarn
 
@@ -34,7 +71,7 @@ jobs:
         run: |
           NOTES=$(awk '/## \[Unreleased\]/ {flag=1; next} /^## \[/ {flag=0} flag && NF {print}' CHANGELOG.md)
           if [ -z "$NOTES" ] || [ -z "$(echo "$NOTES" | tr -d '[:space:]')" ]; then
-            echo "Error: No release notes found in the [Unreleased] section of CHANGELOG.md"
+            echo "❌ Error: No release notes found in the [Unreleased] section of CHANGELOG.md"
             echo "Please add release notes before creating a release."
             exit 1
           fi
@@ -49,12 +86,9 @@ jobs:
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
           sed -i "s/## \[Unreleased\]/## [Unreleased]\n\n## [$NEW_VERSION] - $(date +%Y-%m-%d)/" CHANGELOG.md
 
-      - name: Check if release already exists
-        run: |
-          if git ls-remote --tags origin | grep -q "refs/tags/${{ steps.bump.outputs.version }}$"; then
-            echo "Error: Release tag ${{ steps.bump.outputs.version }} already exists"
-            echo "Please check existing releases or use a different version bump type."
-            exit 1
+          # Verify we got the expected version
+          if [ "$NEW_VERSION" != "${{ steps.next_version.outputs.next }}" ]; then
+            echo "⚠️  Warning: Calculated version (${{ steps.next_version.outputs.next }}) doesn't match npm version ($NEW_VERSION)"
           fi
 
       - name: Build and pack
@@ -72,6 +106,11 @@ jobs:
           name: ${{ steps.bump.outputs.version }}
           body: ${{ steps.changelog.outputs.notes }}
           files: ${{ steps.pack.outputs.tgz }}
+          target_commitish: ${{ github.sha }}
+          fail_on_unmatched_files: true
+          draft: false
+          prerelease: false
+          make_latest: true
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@84ae59a2cdc2258d6fa0732dd66352dddae2a412 # v7.0.9
@@ -80,4 +119,4 @@ jobs:
           branch: release/${{ steps.bump.outputs.version }}
           title: "Release ${{ steps.bump.outputs.version }}"
           body: "This PR updates CHANGELOG.md and package.json for release ${{ steps.bump.outputs.version }}."
-          base: main
+          base: ${{ github.ref_name }}
