@@ -82,6 +82,7 @@ jobs:
       - name: Bump version and update CHANGELOG
         id: bump
         run: |
+          NEW_VERSION=$(npm version ${{ github.event.inputs.version }} --no-git-tag-version)
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
           sed -i "s/## \[Unreleased\]/## [Unreleased]\n\n## [$NEW_VERSION] - $(date +%Y-%m-%d)/" CHANGELOG.md
 
