@@ -13,7 +13,7 @@ class MxConfigurationModule(reactContext: ReactApplicationContext) :
 
   override fun getName(): String = NAME
 
-  override fun getTypedExportedConstants(): Map<String, Any> {
+  override fun getTypedExportedConstants(): Map<String, Any?> {
     return configuration.getConstants()
   }
 

@@ -8,7 +8,7 @@ import com.mendix.mendixnative.react.ota.getOtaManifestFilepath
 
 class MxConfiguration(val reactContext: ReactApplicationContext) {
 
-  fun getConstants(): Map<String, Any> {
+  fun getConstants(): Map<String, Any?> {
     val application = (reactContext.applicationContext as MendixApplication)
     if (runtimeUrl == null) {
       if (warningsFilter != WarningsFilter.none) {
@@ -27,6 +27,7 @@ class MxConfiguration(val reactContext: ReactApplicationContext) {
 
     val constants = mutableMapOf(
       "RUNTIME_URL" to AppUrl.forRuntime(runtimeUrl),
+      "APP_NAME" to defaultAppName,
       "DATABASE_NAME" to defaultDatabaseName,
       "FILES_DIRECTORY_NAME" to defaultFilesDirectoryName,
       "WARNINGS_FILTER_LEVEL" to warningsFilter.toString(),
@@ -36,10 +37,6 @@ class MxConfiguration(val reactContext: ReactApplicationContext) {
       "APP_SESSION_ID" to application.getAppSessionId(),
       "NATIVE_DEPENDENCIES" to getNativeDependencies(reactContext)
     )
-    defaultAppName?.let {
-      constants.put("APP_NAME", it)
-    }
-
     return constants
   }
 
