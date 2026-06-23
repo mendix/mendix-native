@@ -21,7 +21,7 @@ RCT_EXPORT_MODULE(MxConfiguration)
     MxConfigProxy *config = [MxConfigProxy prepare];
     return facebook::react::typedConstants<JS::NativeMxConfiguration::Constants>({
         .RUNTIME_URL = config.runtimeUrl,
-        .APP_NAME = config.appName,
+        .APP_NAME = config.appName ?: [[NSNull alloc] init],
         .FILES_DIRECTORY_NAME = config.filesDirectoryName,
         .DATABASE_NAME = config.databaseName,
         .WARNINGS_FILTER_LEVEL = config.warningsFilter,
