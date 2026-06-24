@@ -1,6 +1,6 @@
 import Foundation
 
-class OtaHelpers: NSObject {
+struct OtaHelpers {
     
     private static func version() -> String {
         let info = Bundle.main.infoDictionary

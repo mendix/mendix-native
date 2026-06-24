@@ -1,6 +1,6 @@
 import Foundation
 
-public class AppPreferences: NSObject {
+public struct AppPreferences {
     @UserDefault(key: "ApplicationUrl", defaultValue: nil)
     static var _appUrl: String?
     

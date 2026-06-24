@@ -55,7 +55,13 @@ open class ReactAppProvider: UIResponder, UIApplicationDelegate {
     }
     
     public static func shared() -> ReactAppProvider? {
-        return UIApplication.shared.delegate as? ReactAppProvider
+        if Thread.isMainThread {
+            return UIApplication.shared.delegate as? ReactAppProvider
+        } else {
+            return DispatchQueue.main.sync {
+                return UIApplication.shared.delegate as? ReactAppProvider
+            }
+        }
     }
 
     public func changeRoot(to controller: UIViewController) {
@@ -68,7 +74,11 @@ open class ReactAppProvider: UIResponder, UIApplicationDelegate {
     }
 
     public static func isReactAppActive() -> Bool {
-        return ReactHostHelper().isReactAppActive()
+        return shared()?.reactHost() != nil
+    }
+    
+    public func reactHost() -> RCTHost? {
+        return reactNativeFactory?.rootViewFactory.reactHost
     }
 }
 

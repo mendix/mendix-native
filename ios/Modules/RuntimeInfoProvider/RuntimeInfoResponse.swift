@@ -1,17 +1,9 @@
 import Foundation
 
-public class RuntimeInfoResponse: NSObject {
-    
+public struct RuntimeInfoResponse {
     // MARK: - Properties
     public let status: String
     public let runtimeInfo: RuntimeInfo?
-    
-    // MARK: - Initialization
-    public init(status: String, runtimeInfo: RuntimeInfo?) {
-        self.status = status
-        self.runtimeInfo = runtimeInfo
-        super.init()
-    }
 }
 
 

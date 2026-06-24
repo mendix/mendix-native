@@ -1,6 +1,6 @@
 import UIKit
 
-public class MendixApp: NSObject {
+public struct MendixApp {
     public let bundleUrl: URL
     public let runtimeUrl: URL
     public let warningsFilter: WarningsFilter

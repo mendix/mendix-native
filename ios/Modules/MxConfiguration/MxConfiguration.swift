@@ -1,7 +1,6 @@
 import Foundation
 
-@objcMembers
-public class MxConfiguration: NSObject {
+public struct MxConfiguration {
     
     static let nativeBinaryVersion: Int = 32
     private static let defaultDatabaseName = "default"

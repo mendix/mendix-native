@@ -1,6 +1,6 @@
 import Foundation
 
-public class AppUrl: NSObject {
+public struct AppUrl {
     
     // MARK: - Constants
     public static let defaultPackagerPort = 8083
