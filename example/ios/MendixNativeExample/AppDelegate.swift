@@ -16,7 +16,7 @@ class AppDelegate: ReactAppProvider {
             bundleUrl: bundleUrl,
             runtimeUrl: URL(string: "http://localhost:8081")!,
             warningsFilter: .none,
-            isDeveloperApp: false,
+            isDeveloperApp: true,
             clearDataAtLaunch: false,
             splashScreenPresenter: nil,
             reactLoading: nil,
