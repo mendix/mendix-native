@@ -5,13 +5,10 @@ public protocol ReactNativeDelegateInternal: AnyObject {
     func onAppClosed()
 }
 
-@objcMembers
 open class ReactNative: NSObject, RCTReloadListener {
     // MARK: - Properties
     private var mendixApp: MendixApp?
     private var bundleUrl: URL?
-    private var mendixOTAEnabled: Bool = false
-    private var tapGestureHelper: TapGestureRecognizerHelper?
     
     public weak var delegate: ReactNativeDelegateInternal?
     
@@ -23,10 +20,9 @@ open class ReactNative: NSObject, RCTReloadListener {
     }
     
     // MARK: - Setup Methods
-    public func setup(_ mendixApp: MendixApp, launchOptions: [AnyHashable: Any]? = nil, mendixOTAEnabled: Bool = false) {
+    public func setup(_ mendixApp: MendixApp, launchOptions: [AnyHashable: Any]? = nil) {
         self.mendixApp = mendixApp
         self.bundleUrl = mendixApp.bundleUrl
-        self.mendixOTAEnabled = mendixOTAEnabled
         
         if let host = bundleUrl?.host, let port = bundleUrl?.port {
             let jsLocation = "\(host):\(port)"
@@ -68,9 +64,7 @@ open class ReactNative: NSObject, RCTReloadListener {
     
     // MARK: - Splash Screen Methods
     public func showSplashScreen() {
-        if MendixBackwardsCompatUtility.isHideSplashScreenInClientSupported() {
-            mendixApp?.splashScreenPresenter?.show(ReactAppProvider.shared()?.rootView)
-        }
+        mendixApp?.splashScreenPresenter?.show(ReactAppProvider.shared()?.rootView)
     }
     
     public func hideSplashScreen() {
@@ -80,31 +74,13 @@ open class ReactNative: NSObject, RCTReloadListener {
     
     // MARK: - Reload Methods
     public func reload() {
-        guard let mendixApp = mendixApp else { return }
+        guard mendixApp != nil else { return }
 
         // Note: under the New Architecture the bundle URL is resolved fresh in bundleURL(),
         // which RCTHost re-invokes on reload. RCTReloadCommandSetBundleURL is a legacy-bridge
         // mechanism that the bridgeless host ignores, so it is intentionally not used here.
 
-        if mendixApp.isDeveloperApp {
-            let runtimeInfoUrl = AppUrl.forRuntimeInfo(mendixApp.runtimeUrl.absoluteString)
-            RuntimeInfoProvider.getRuntimeInfo(runtimeInfoUrl) { [weak self] response in
-                if response.status == "SUCCESS", let version = response.runtimeInfo?.version {
-                    MendixBackwardsCompatUtility.update(version)
-                }
-                self?.reloadWithBridge()
-            }
-        } else {
-            reloadWithBridge()
-        }
-    }
-    
-    private func reloadWithBridge() {
         RCTTriggerReloadCommandListeners("Reload command from app")
-    }
-    
-    public func reloadWithState() {
-        ReactHostHelper().reloadClientWithState()
     }
     
     // MARK: - RCTReloadListener
@@ -127,28 +103,6 @@ open class ReactNative: NSObject, RCTReloadListener {
     public func setRemoteDebuggingPackagerPort(_ port: Int) {
         AppPreferences.remoteDebuggingPackagerPort = port
         remoteDebugging(true)
-    }
-    
-    // MARK: - Gesture Recognition
-    private func attachThreeFingerGestures(to window: UIWindow) {
-        tapGestureHelper?.attach()
-    }
-    
-    private func removeThreeFingerGestures(from window: UIWindow) {
-        tapGestureHelper?.remove()
-        window.motionBegan(.motionShake, with: nil)
-    }
-    
-    @objc private func appReloadAction(_ gestureRecognizer: UITapGestureRecognizer) {
-        if gestureRecognizer.state == .ended && ReactAppProvider.isReactAppActive() == true {
-            reloadWithState()
-        }
-    }
-    
-    // MARK: - Legacy Methods (for compatibility)
-    func useCodePush() -> Bool {
-        // Implementation depends on your specific CodePush setup
-        return false
     }
     
     public func bundleURL() -> URL? {

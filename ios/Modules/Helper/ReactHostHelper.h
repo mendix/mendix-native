@@ -12,7 +12,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ReactHostHelper : NSObject
 
 - (nullable id) moduleForClass: (Class) clazz;
-- (void) reloadClientWithState;
 - (BOOL) isReactAppActive;
 - (void) emitEvent: (nonnull NSString*) eventName payload: (nullable id) payload;
 
