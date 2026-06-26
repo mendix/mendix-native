@@ -37,5 +37,13 @@ target 'MendixNativeExample' do
       :mac_catalyst_enabled => false,
       # :ccache_enabled => true
     )
+    installer.pods_project.targets.each do |target|
+      if target.name == 'MendixNative'
+        target.build_configurations.each do |config|
+          config.build_settings['SWIFT_VERSION'] = '5.9'
+          config.build_settings['SWIFT_OBJC_INTEROP_MODE'] = 'objcxx'
+        end
+      end
+    end
   end
 end

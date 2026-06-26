@@ -1,6 +1,6 @@
 import Foundation
 
-public class RuntimeInfoProvider: NSObject {
+public struct RuntimeInfoProvider {
     
     // MARK: - Public Methods
     public static func getRuntimeInfo(_ runtimeURL: URL?, completionHandler: @escaping (RuntimeInfoResponse) -> Void) {
@@ -29,7 +29,7 @@ public class RuntimeInfoProvider: NSObject {
                     return onMainQueue(.failed, handler: completionHandler)
                 }
                 
-                let runtimeInfo = RuntimeInfo(jsonDictionary)
+                let runtimeInfo = RuntimeInfo.initWith(jsonDictionary)
                 return onMainQueue(.success(runtimeInfo), handler: completionHandler)
             } catch {
                 return onMainQueue(.failed, handler: completionHandler)

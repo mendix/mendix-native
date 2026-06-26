@@ -50,7 +50,7 @@ open class MendixReactActivity : ReactActivity(), DevAppMenuHandler, LaunchScree
   }
 
   private val currentReactContext: ReactContext?
-    get() = if (reactNativeHost.hasInstance()) reactInstanceManager.currentReactContext else null
+    get() = reactHost.currentReactContext
 
   val currentDevSupportManager: DevSupportManager?
     get() = reactHost.devSupportManager

@@ -1,7 +1,6 @@
 package com.mendixnative.configuration
 
 import com.facebook.react.bridge.ReactApplicationContext
-import com.facebook.react.bridge.WritableMap
 import com.facebook.react.module.annotations.ReactModule
 import com.mendix.mendixnative.react.MxConfiguration
 import com.mendixnative.NativeMxConfigurationSpec
@@ -14,7 +13,7 @@ class MxConfigurationModule(reactContext: ReactApplicationContext) :
 
   override fun getName(): String = NAME
 
-  override fun getConfig(): WritableMap? {
+  override fun getTypedExportedConstants(): Map<String, Any?> {
     return configuration.getConstants()
   }
 

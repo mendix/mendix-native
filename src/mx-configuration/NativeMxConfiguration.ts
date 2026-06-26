@@ -23,7 +23,7 @@ type Configuration = {
 };
 
 export interface Spec extends TurboModule {
-  getConfig(): Configuration;
+  readonly getConstants: () => Configuration;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('MxConfiguration');

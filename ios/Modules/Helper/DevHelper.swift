@@ -10,7 +10,7 @@ public class DevHelper {
         getModule(type: RCTDevSettings.self)?.isShakeToShowDevMenuEnabled = enabled
         
         // This event can be triggered to facilitate communication with the DevSettings JS module. Please refer to dev-settings.ts for further details.
-        // ReactHostHelper().emitEvent("mendixSetShakeToShowDevMenu", payload: enabled)
+        // getModule(type: RCTEventEmitter.self)?.sendEvent(withName: "mendixSetShakeToShowDevMenu", body: enabled)
     }
     
     public static func hideDevLoadingView() {
@@ -18,6 +18,6 @@ public class DevHelper {
     }
     
     public static func getModule<T: NSObject>(type: T.Type) -> T? {
-        return ReactHostHelper().module(for: T.self) as? T
+        return ReactAppProvider.shared()?.reactHost()?.moduleRegistry.module(for: type.self) as? T
     }
 }

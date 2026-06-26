@@ -6,14 +6,22 @@ type DownloadConfig = {
   mimeType?: string;
 };
 
+type DownloadProgress = {
+  receivedBytes: CodegenTypes.Double;
+  totalBytes: CodegenTypes.Double;
+};
+
 export interface Spec extends TurboModule {
   download(
     url: string,
     downloadPath: string,
     config: DownloadConfig
   ): Promise<void>;
+
+  // Event emitter for download progress
+  readonly onDownloadProgress: CodegenTypes.EventEmitter<DownloadProgress>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('MxDownload');
 
-export type { DownloadConfig };
+export type { DownloadConfig, DownloadProgress };

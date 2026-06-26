@@ -20,7 +20,7 @@ type FsConstants = {
 };
 
 export interface Spec extends TurboModule {
-  constants(): FsConstants;
+  readonly getConstants: () => FsConstants;
   save(blob: CodegenTypes.UnsafeObject, filePath: string): Promise<void>;
   read(filePath: string): Promise<BlobData>;
   move(filePath: string, newPath: string): Promise<void>;

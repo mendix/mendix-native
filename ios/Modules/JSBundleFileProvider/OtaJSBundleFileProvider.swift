@@ -1,6 +1,6 @@
 import Foundation
 
-public class OtaJSBundleFileProvider: NSObject {
+public class OtaJSBundleFileProvider {
     
     static func formatMessage(_ message: String) -> String {
         return "\(String(describing: OtaJSBundleFileProvider.self)): \(message)"
