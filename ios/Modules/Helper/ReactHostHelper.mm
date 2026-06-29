@@ -11,7 +11,6 @@
 #import "RCTDefaultReactNativeFactoryDelegate.h"
 #import "RCTReactNativeFactory.h"
 #import "MendixNative-Swift.h"
-#import "MxReload.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -42,12 +41,6 @@ NS_ASSUME_NONNULL_BEGIN
     RCTRootViewFactory *rootViewFactory = [reactNativeFactory rootViewFactory];
     RCTHost *reactHost = [rootViewFactory reactHost];
     return reactHost;
-}
-
-
-- (void) reloadClientWithState {
-    MxReload *mxReload = [self moduleForClass: MxReload.class];
-    [mxReload emitOnReloadWithState];
 }
 
 - (BOOL)isReactAppActive {

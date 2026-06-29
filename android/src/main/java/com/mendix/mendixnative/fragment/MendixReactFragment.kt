@@ -74,8 +74,8 @@ open class MendixReactFragment : ReactFragment(), MendixReactFragmentView {
   }
 
   fun onNewIntent(intent: Intent) {
-    if (reactNativeHost.hasInstance()) {
-      reactNativeHost.reactInstanceManager.onNewIntent(intent);
+    reactHost?.currentReactContext?.let {
+      it.onNewIntent(it.currentActivity, intent)
     }
   }
 
