@@ -20,12 +20,10 @@ describe('SessionCookieStore', () => {
 
   describe('small-blob round-trip (single-item format)', () => {
     test('persists and restores small cookies', async () => {
-      await NativeCookieTestHelpers.seedTestCookies(
+      await NativeCookieTestHelpers.persistTestCookies(
         SMALL_COUNT,
         SMALL_VALUE_SIZE
       );
-      await NativeCookieTestHelpers.persistSessionCookies();
-      await NativeCookieTestHelpers.clearHTTPCookies();
 
       const names = await NativeCookieTestHelpers.restoreSessionCookies();
 
@@ -36,11 +34,10 @@ describe('SessionCookieStore', () => {
     });
 
     test('single-item write does not create a chunk commit-marker', async () => {
-      await NativeCookieTestHelpers.seedTestCookies(
+      await NativeCookieTestHelpers.persistTestCookies(
         SMALL_COUNT,
         SMALL_VALUE_SIZE
       );
-      await NativeCookieTestHelpers.persistSessionCookies();
 
       const chunkCount = await NativeCookieTestHelpers.getKeychainChunkCount();
 
@@ -48,16 +45,13 @@ describe('SessionCookieStore', () => {
     });
 
     test('keychain is empty after restore (cleared on read)', async () => {
-      await NativeCookieTestHelpers.seedTestCookies(
+      await NativeCookieTestHelpers.persistTestCookies(
         SMALL_COUNT,
         SMALL_VALUE_SIZE
       );
-      await NativeCookieTestHelpers.persistSessionCookies();
-      await NativeCookieTestHelpers.clearHTTPCookies();
       await NativeCookieTestHelpers.restoreSessionCookies();
 
       // A second restore should find nothing.
-      await NativeCookieTestHelpers.clearHTTPCookies();
       const names = await NativeCookieTestHelpers.restoreSessionCookies();
 
       expect(names.length).toBe(0);
@@ -70,12 +64,10 @@ describe('SessionCookieStore', () => {
 
   describe('large-blob round-trip (chunked format)', () => {
     test('persists and restores large cookies', async () => {
-      await NativeCookieTestHelpers.seedTestCookies(
+      await NativeCookieTestHelpers.persistTestCookies(
         LARGE_COUNT,
         LARGE_VALUE_SIZE
       );
-      await NativeCookieTestHelpers.persistSessionCookies();
-      await NativeCookieTestHelpers.clearHTTPCookies();
 
       const names = await NativeCookieTestHelpers.restoreSessionCookies();
 
@@ -86,11 +78,10 @@ describe('SessionCookieStore', () => {
     });
 
     test('chunked write creates a commit-marker with count > 1', async () => {
-      await NativeCookieTestHelpers.seedTestCookies(
+      await NativeCookieTestHelpers.persistTestCookies(
         LARGE_COUNT,
         LARGE_VALUE_SIZE
       );
-      await NativeCookieTestHelpers.persistSessionCookies();
 
       const chunkCount = await NativeCookieTestHelpers.getKeychainChunkCount();
 
@@ -98,12 +89,10 @@ describe('SessionCookieStore', () => {
     });
 
     test('commit-marker is removed after restore (chunked keys cleared on read)', async () => {
-      await NativeCookieTestHelpers.seedTestCookies(
+      await NativeCookieTestHelpers.persistTestCookies(
         LARGE_COUNT,
         LARGE_VALUE_SIZE
       );
-      await NativeCookieTestHelpers.persistSessionCookies();
-      await NativeCookieTestHelpers.clearHTTPCookies();
       await NativeCookieTestHelpers.restoreSessionCookies();
 
       const chunkCount = await NativeCookieTestHelpers.getKeychainChunkCount();
@@ -112,15 +101,12 @@ describe('SessionCookieStore', () => {
     });
 
     test('keychain is empty after restore (no second restore possible)', async () => {
-      await NativeCookieTestHelpers.seedTestCookies(
+      await NativeCookieTestHelpers.persistTestCookies(
         LARGE_COUNT,
         LARGE_VALUE_SIZE
       );
-      await NativeCookieTestHelpers.persistSessionCookies();
-      await NativeCookieTestHelpers.clearHTTPCookies();
       await NativeCookieTestHelpers.restoreSessionCookies();
 
-      await NativeCookieTestHelpers.clearHTTPCookies();
       const names = await NativeCookieTestHelpers.restoreSessionCookies();
 
       expect(names.length).toBe(0);
@@ -133,45 +119,36 @@ describe('SessionCookieStore', () => {
 
   describe('format transitions', () => {
     test('overwriting large (chunked) with small (single-item) leaves no chunk marker', async () => {
-      await NativeCookieTestHelpers.seedTestCookies(
+      await NativeCookieTestHelpers.persistTestCookies(
         LARGE_COUNT,
         LARGE_VALUE_SIZE
       );
-      await NativeCookieTestHelpers.persistSessionCookies();
 
-      // Replace with a small set.
-      await NativeCookieTestHelpers.clearHTTPCookies();
-      await NativeCookieTestHelpers.seedTestCookies(
+      // Overwrite with a small set.
+      await NativeCookieTestHelpers.persistTestCookies(
         SMALL_COUNT,
         SMALL_VALUE_SIZE
       );
-      await NativeCookieTestHelpers.persistSessionCookies();
 
       const chunkCount = await NativeCookieTestHelpers.getKeychainChunkCount();
       expect(chunkCount).toBe(0);
 
-      // Data is still correct.
-      await NativeCookieTestHelpers.clearHTTPCookies();
       const names = await NativeCookieTestHelpers.restoreSessionCookies();
       expect(names.length).toBe(SMALL_COUNT);
     });
 
     test('overwriting small (single-item) with large (chunked) round-trips correctly', async () => {
-      await NativeCookieTestHelpers.seedTestCookies(
+      await NativeCookieTestHelpers.persistTestCookies(
         SMALL_COUNT,
         SMALL_VALUE_SIZE
       );
-      await NativeCookieTestHelpers.persistSessionCookies();
 
-      // Replace with a large set.
-      await NativeCookieTestHelpers.clearHTTPCookies();
-      await NativeCookieTestHelpers.seedTestCookies(
+      // Overwrite with a large set.
+      await NativeCookieTestHelpers.persistTestCookies(
         LARGE_COUNT,
         LARGE_VALUE_SIZE
       );
-      await NativeCookieTestHelpers.persistSessionCookies();
 
-      await NativeCookieTestHelpers.clearHTTPCookies();
       const names = await NativeCookieTestHelpers.restoreSessionCookies();
       expect(names.length).toBe(LARGE_COUNT);
     });
@@ -183,30 +160,26 @@ describe('SessionCookieStore', () => {
 
   describe('clearAll', () => {
     test('removes cookies after a small-blob persist', async () => {
-      await NativeCookieTestHelpers.seedTestCookies(
+      await NativeCookieTestHelpers.persistTestCookies(
         SMALL_COUNT,
         SMALL_VALUE_SIZE
       );
-      await NativeCookieTestHelpers.persistSessionCookies();
       await NativeCookie.clearAll();
 
-      await NativeCookieTestHelpers.clearHTTPCookies();
       const names = await NativeCookieTestHelpers.restoreSessionCookies();
       expect(names.length).toBe(0);
     });
 
     test('removes cookies and chunk marker after a large-blob persist', async () => {
-      await NativeCookieTestHelpers.seedTestCookies(
+      await NativeCookieTestHelpers.persistTestCookies(
         LARGE_COUNT,
         LARGE_VALUE_SIZE
       );
-      await NativeCookieTestHelpers.persistSessionCookies();
       await NativeCookie.clearAll();
 
       const chunkCount = await NativeCookieTestHelpers.getKeychainChunkCount();
       expect(chunkCount).toBe(0);
 
-      await NativeCookieTestHelpers.clearHTTPCookies();
       const names = await NativeCookieTestHelpers.restoreSessionCookies();
       expect(names.length).toBe(0);
     });

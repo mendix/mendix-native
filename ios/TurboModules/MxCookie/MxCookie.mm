@@ -20,25 +20,13 @@ RCT_EXPORT_MODULE()
 }
 
 #if DEBUG
-- (void)seedTestCookies:(double)count valueSize:(double)valueSize
-               resolve:(nonnull RCTPromiseResolveBlock)resolve
-                reject:(nonnull RCTPromiseRejectBlock)reject {
+- (void)persistTestCookies:(double)count valueSize:(double)valueSize
+                   resolve:(nonnull RCTPromiseResolveBlock)resolve
+                    reject:(nonnull RCTPromiseRejectBlock)reject {
     Promise *promise = [Promise instance:resolve reject:reject];
-    [[[NativeCookieModule alloc] init] seedTestCookiesWithCount:(NSInteger)count
-                                                      valueSize:(NSInteger)valueSize
-                                                        promise:promise];
-}
-
-- (void)persistSessionCookies:(nonnull RCTPromiseResolveBlock)resolve
-                        reject:(nonnull RCTPromiseRejectBlock)reject {
-    Promise *promise = [Promise instance:resolve reject:reject];
-    [[[NativeCookieModule alloc] init] persistSessionCookies:promise];
-}
-
-- (void)clearHTTPCookies:(nonnull RCTPromiseResolveBlock)resolve
-                   reject:(nonnull RCTPromiseRejectBlock)reject {
-    Promise *promise = [Promise instance:resolve reject:reject];
-    [[[NativeCookieModule alloc] init] clearHTTPCookies:promise];
+    [[[NativeCookieModule alloc] init] persistTestCookiesWithCount:(NSInteger)count
+                                                         valueSize:(NSInteger)valueSize
+                                                           promise:promise];
 }
 
 - (void)restoreSessionCookies:(nonnull RCTPromiseResolveBlock)resolve
