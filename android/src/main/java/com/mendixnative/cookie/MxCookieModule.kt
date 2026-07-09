@@ -22,15 +22,7 @@ class MxCookieModule(reactContext: ReactApplicationContext) :
   // The following methods are iOS-only (keychain / SessionCookieStore).
   // They are no-ops on Android so the TurboModule spec is satisfied.
 
-  override fun seedTestCookies(count: Double, valueSize: Double, promise: Promise) {
-    promise.resolve(null)
-  }
-
-  override fun persistSessionCookies(promise: Promise) {
-    promise.resolve(null)
-  }
-
-  override fun clearHTTPCookies(promise: Promise) {
+  override fun persistTestCookies(count: Double, valueSize: Double, promise: Promise) {
     promise.resolve(null)
   }
 

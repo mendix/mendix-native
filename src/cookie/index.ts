@@ -10,13 +10,9 @@ export const NativeCookie = {
  * from release binaries and calls will throw a TurboModule lookup error.
  */
 export const NativeCookieTestHelpers = {
-  /** Seeds session cookies into HTTPCookieStorage. */
-  seedTestCookies: NativeMxCookie.seedTestCookies,
-  /** Persists current session cookies to the keychain. Resolves when the write completes. */
-  persistSessionCookies: NativeMxCookie.persistSessionCookies,
-  /** Clears all cookies from HTTPCookieStorage without touching the keychain (simulates an app restart). */
-  clearHTTPCookies: NativeMxCookie.clearHTTPCookies,
-  /** Restores cookies from the keychain into HTTPCookieStorage and returns their names. */
+  /** Writes N synthetic session cookies directly to the keychain (bypasses HTTPCookieStorage). Resolves when the write completes. */
+  persistTestCookies: NativeMxCookie.persistTestCookies,
+  /** Reads cookies directly from the keychain, clears the entry, and returns their names (bypasses HTTPCookieStorage). */
   restoreSessionCookies: NativeMxCookie.restoreSessionCookies,
   /** Returns the _chunkcount commit-marker value (> 1 = chunked write; 0 = single-item or empty). */
   getKeychainChunkCount: NativeMxCookie.getKeychainChunkCount,

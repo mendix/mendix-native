@@ -37,20 +37,29 @@ public class SessionCookieStore {
     }
 
 #if DEBUG
-    /// Persist variant that calls `completion` once the keychain write finishes.
-    /// Only compiled in DEBUG builds; used by the harness test bridge to await completion.
-    public static func persist(completion: @escaping () -> Void) {
+    /// Writes `count` synthetic session cookies with `valueSize`-byte values directly
+    /// to the keychain, bypassing HTTPCookieStorage. Resolves via `completion` once
+    /// the async queue write finishes. Used by harness tests only.
+    public static func persistTestCookies(count: Int, valueSize: Int, completion: @escaping () -> Void) {
         queue.async {
-            let sessionCookies = HTTPCookieStorage.shared.cookies?.filter { isSessionCookie($0) } ?? []
-            guard !sessionCookies.isEmpty else {
-                clear()
-                NSLog("SessionCookieStore: Clear existing session cookies from storage")
-                completion()
-                return
+            let cookies = (0..<count).compactMap { i in
+                HTTPCookie(properties: [
+                    .name:   "testCookie\(i)",
+                    .value:  String(repeating: "X", count: valueSize),
+                    .domain: "test.mendix.com",
+                    .path:   "/",
+                ])
             }
-            set(key: storageKey, cookies: sessionCookies)
+            guard !cookies.isEmpty else { completion(); return }
+            set(key: storageKey, cookies: cookies)
             completion()
         }
+    }
+
+    public static func restoreTestCookieNames() -> [String] {
+        guard let cookies = get(key: storageKey) else { return [] }
+        clear()
+        return cookies.map(\.name)
     }
 #endif
 
