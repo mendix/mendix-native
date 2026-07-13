@@ -14,8 +14,4 @@ public class NativeCookieModule: NSObject {
         }
         SessionCookieStore.clear()
     }
-
-    // MARK: - Test / diagnostic helpers (DEBUG builds only)
-    // These methods are excluded from release builds to prevent cookie injection,
-    // session DoS, and keychain information disclosure from arbitrary JS callers.
 }
