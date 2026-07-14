@@ -68,20 +68,19 @@ public class SessionCookieStore {
         let status = SecItemCopyMatching(query as CFDictionary, &item)
 
         if status == errSecInteractionNotAllowed {
-            // Oversized/blocked item — remove so it never prompts again
-            NSLog("SessionCookieStore: Blocked legacy item detected, clearing")
-            clear(key: key)
+            NSLog("SessionCookieStore: Item inaccessible (device locked), skipping restore")
             return nil
         } else if status == errSecSuccess, let data = item as? Data {
-            do {
-                let cookies = try NSKeyedUnarchiver.unarchivedObject(ofClasses: [NSArray.self, HTTPCookie.self], from: data) as? [HTTPCookie]
-                return cookies
-            } catch {
-                // Unarchiving failed (corrupt/oversized blob) — self-heal by removing
-                NSLog("SessionCookieStore: Failed to deserialize legacy cookies, clearing: \(error.localizedDescription)")
+            let result = ObjCExceptionCatcher.catchException {
+                try? NSKeyedUnarchiver.unarchivedObject(ofClasses: [NSArray.self, HTTPCookie.self], from: data)
+            }
+
+            guard let cookies = result as? [HTTPCookie] else {
+                NSLog("SessionCookieStore: Failed to deserialize cookies, clearing")
                 clear(key: key)
                 return nil
             }
+            return cookies
         } else if status != errSecItemNotFound {
             // Any other unreadable state — delete to prevent repeated failures
             NSLog("SessionCookieStore: Unreadable legacy item (status: \(status)), clearing")
