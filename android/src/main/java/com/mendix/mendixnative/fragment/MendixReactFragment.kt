@@ -84,7 +84,7 @@ open class MendixReactFragment : ReactFragment(), MendixReactFragmentView {
     super.onDestroy()
   }
 
-  override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
+  override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
     if (keyCode == KeyEvent.KEYCODE_MENU || doubleTapReloadRecognizer.didDoubleTapBacktick(
         keyCode,
         view
@@ -109,7 +109,7 @@ open class MendixReactFragment : ReactFragment(), MendixReactFragmentView {
 }
 
 interface MendixReactFragmentView : DevAppMenuHandler, BackButtonHandler {
-  fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean
+  fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean
 }
 
 interface BackButtonHandler {
