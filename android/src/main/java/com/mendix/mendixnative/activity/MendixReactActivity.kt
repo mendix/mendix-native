@@ -11,7 +11,6 @@ import com.mendix.mendixnative.MendixApplication
 import com.mendix.mendixnative.MendixInitializer
 import com.mendix.mendixnative.react.MendixApp
 import com.mendix.mendixnative.react.splash.MendixSplashScreenPresenter
-import com.mendix.mendixnative.util.MendixBackwardsCompatUtility
 import java.io.Serializable
 
 open class MendixReactActivity : ReactActivity(), DevAppMenuHandler, LaunchScreenHandler {
@@ -81,9 +80,7 @@ open class MendixReactActivity : ReactActivity(), DevAppMenuHandler, LaunchScree
   }
 
   override fun showLaunchScreen() {
-    if (!MendixBackwardsCompatUtility.getInstance().unsupportedFeatures.hideSplashScreenInClient && splashScreenPresenter != null) {
-      splashScreenPresenter?.show(this)
-    }
+    splashScreenPresenter?.show(this)
   }
 
   override fun hideLaunchScreen() {
