@@ -145,6 +145,25 @@ public class NativeOtaModule: NSObject {
         
         let oldManifest = OtaHelpers.readManifestAsDictionary()
         
+        // Loop protection: refuse to redeploy a deployment that is already the active one.
+        // Redeploying and reloading into an already-active deployment restarts the app into
+        // the same bundle, causing an infinite download -> deploy -> reload loop. This happens
+        // when the served OTA bundle's embedded deploymentID never matches the server-advertised
+        // deploymentID (e.g. a bundle served as an OTA update but built for a different deployment).
+        // Rejecting here makes the JS OTA flow skip the reload, so the app keeps running the
+        // currently deployed bundle instead of looping.
+        if let oldManifest = oldManifest,
+           let deployedID = oldManifest[MANIFEST_OTA_DEPLOYMENT_ID_KEY] as? String,
+           deployedID == otaDeploymentID,
+           let deployedBundlePath = oldManifest[MANIFEST_RELATIVE_BUNDLE_PATH_KEY] as? String,
+           FileManager.default.fileExists(atPath: OtaHelpers.resolveAbsolutePathRelativeToOtaDir("/\(deployedBundlePath)")) {
+            let message = "[OTA] Deployment \(otaDeploymentID) is already active. Skipping redeploy to prevent a reload loop."
+            NSLog("%@", message)
+            removeZipFile(zipPath)
+            promise.reject(OTA_ALREADY_DEPLOYED, message, nil)
+            return
+        }
+        
         let fileExists = FileManager.default.fileExists(atPath: zipPath)
         if !fileExists {
             let errorMessage = "[OTA] OTA package does not exist."
@@ -161,9 +180,17 @@ public class NativeOtaModule: NSObject {
         
         let unzipped = SSZipArchive.unzipFile(atPath: zipPath, toDestination: unzipDir, overwrite: false, password: nil, progressHandler: nil)
         if !unzipped {
-            NSLog("[OTA] Unzipping OTA failed")
-            removeZipFile(unzipDir)
-            promise.reject(OTA_DEPLOYMENT_FAILED, "OTA deployment failed.", nil)
+            // Diagnostic: the "OTA package" is not a valid zip. This most often means the
+            // server returned a non-zip response (e.g. an HTML/JSON error body) that was
+            // saved as the download. Log the size and leading bytes so the real cause is visible.
+            let fileSize = (try? FileManager.default.attributesOfItem(atPath: zipPath)[.size] as? Int) ?? nil
+            var preview = ""
+            if let handle = FileManager.default.contents(atPath: zipPath) {
+                preview = String(data: handle.prefix(64), encoding: .utf8) ?? handle.prefix(4).map { String(format: "%02x", $0) }.joined()
+            }
+            NSLog("[OTA] Unzipping OTA failed. Downloaded file size: \(fileSize ?? -1) bytes. Leading bytes: \(preview)")
+            removeZipFile(zipPath)
+            promise.reject(OTA_DEPLOYMENT_FAILED, "OTA deployment failed: downloaded package is not a valid zip.", nil)
             return
         }
         

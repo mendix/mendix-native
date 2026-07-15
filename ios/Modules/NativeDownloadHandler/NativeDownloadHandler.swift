@@ -58,6 +58,22 @@ extension NativeDownloadHandler: URLSessionDownloadDelegate {
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
         let fileManager = FileManager.default
         
+        // Validate the HTTP status code. URLSession's download task writes the response body
+        // to `location` even for error responses (e.g. 404/500), so without this check an
+        // HTML/JSON error body would be saved as the "downloaded" file and later fail to unzip
+        // with a misleading error. Fail explicitly with the status code instead.
+        if let httpResponse = downloadTask.response as? HTTPURLResponse,
+           !(200...299).contains(httpResponse.statusCode) {
+            let error = NSError(
+                domain: NSURLErrorDomain,
+                code: httpResponse.statusCode,
+                userInfo: [NSLocalizedDescriptionKey: "Download failed with HTTP status \(httpResponse.statusCode)."]
+            )
+            NSLog("%@", formatMessage("Download failed with HTTP status \(httpResponse.statusCode)"))
+            failCallback?(error)
+            return
+        }
+        
         // Check MIME type if specified
         if let expectedMimeType = mimeType,
            let responseMimeType = downloadTask.response?.mimeType,
