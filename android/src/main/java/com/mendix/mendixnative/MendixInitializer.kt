@@ -2,7 +2,6 @@ package com.mendix.mendixnative
 
 import android.app.Activity
 import com.facebook.react.ReactHost
-import com.facebook.react.devsupport.DevSupportManagerBase
 import com.facebook.react.modules.network.OkHttpClientProvider
 import com.mendix.mendixnative.config.AppPreferences
 import com.mendix.mendixnative.react.*

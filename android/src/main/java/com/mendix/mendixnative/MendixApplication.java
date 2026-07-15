@@ -5,7 +5,6 @@ import com.facebook.react.ReactPackage;
 import com.mendix.mendixnative.react.splash.MendixSplashScreenPresenter;
 
 import java.util.List;
-import java.util.Map;
 
 public interface MendixApplication extends ReactApplication {
   boolean getUseDeveloperSupport();
