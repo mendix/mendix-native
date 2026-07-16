@@ -1,6 +1,7 @@
 package com.mendix.mendixnative.util
 
 import android.os.Handler
+import android.os.Looper
 import android.view.KeyEvent
 import android.view.View
 import android.widget.EditText
@@ -16,7 +17,7 @@ class MendixDoubleTapRecognizer {
                 return true
             } else {
                 mDoRefresh = true
-                Handler()
+                Handler(Looper.getMainLooper())
                         .postDelayed(
                                 { mDoRefresh = false },
                                 DOUBLE_TAP_DELAY)
