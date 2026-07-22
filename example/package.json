@@ -10,7 +10,7 @@
     "build:ios": "react-native build-ios --mode Debug",
     "pod": "bundle install && bundle exec pod install --project-directory=ios",
     "app:package:ios": "xcodebuild -workspace ios/MendixNativeExample.xcworkspace -scheme MendixNativeExample -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath ios/build build",
-    "app:install:ios": "xcrun simctl install booted ios/build/Build/Products/Debug-iphonesimulator/MendixNativeExample.app",
+    "app:install:ios": "xcrun simctl install \"${SIMULATOR_UDID:-booted}\" ios/build/Build/Products/Debug-iphonesimulator/MendixNativeExample.app",
     "app:package:android": "(cd android && ./gradlew assembleDebug --no-daemon)",
     "app:install:android": "adb install -r android/app/build/outputs/apk/debug/app-debug.apk",
     "harness": "react-native-harness --verbose",

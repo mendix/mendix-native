@@ -65,6 +65,18 @@ if pgrep -x "Simulator" > /dev/null; then
     sleep 2
 fi
 
+# `killall Simulator` only closes the UI app; simctl-booted devices keep running.
+# Any leftover booted device makes `xcrun simctl <cmd> booted` ambiguous, so shut
+# them all down before booting the one we actually want.
+BOOTED_DEVICES=$(xcrun simctl list devices --json | \
+    jq -r '.devices[] | .[] | select(.state == "Booted") | "\(.name) (\(.udid))"')
+if [ -n "$BOOTED_DEVICES" ]; then
+    log_warning "Found booted simulator(s), shutting down for a clean state:"
+    printf '  %s\n' "$BOOTED_DEVICES"
+    xcrun simctl shutdown all 2>/dev/null || true
+    sleep 2
+fi
+
 # Find the device UDID
 log_info "Finding device UDID for '$DEVICE_NAME' with iOS $OS_VERSION..."
 
