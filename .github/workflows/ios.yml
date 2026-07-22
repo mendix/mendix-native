@@ -47,6 +47,15 @@ jobs:
         working-directory: example
         run: yarn pod
 
+      - name: "Optimize simulator with simslim"
+        run: |
+          brew install mobai-app/tap/simslim
+          # Apply simslim optimization to all available simulators
+          simslim list --json | jq -r '.[].udid' | while read -r udid; do
+            echo "Optimizing simulator: $udid"
+            simslim on "$udid" || true
+          done
+
       # Build iOS app (only if not cached)
       - name: Build iOS app for simulator
         if: steps.cache-ios-app.outputs.cache-hit != 'true'
