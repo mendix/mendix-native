@@ -33,11 +33,15 @@ import Foundation
             kSecClass: kSecClassGenericPassword,
             kSecAttrAccount: key,
             kSecReturnData: kCFBooleanTrue as Any,
-            kSecMatchLimit: kSecMatchLimitOne
+            kSecMatchLimit: kSecMatchLimitOne,
+            kSecUseAuthenticationUI: kSecUseAuthenticationUIFail
         ] as CFDictionary
         var dataRef: CFTypeRef?
         let status = SecItemCopyMatching(query, &dataRef)
-        if status == errSecSuccess {
+        if status == errSecInteractionNotAllowed {
+            // Device locked or item requires auth — don't delete, resolve as absent
+            promise.resolve(NSNull())
+        } else if status == errSecSuccess {
             guard let data = dataRef as? Data, let value = String(data: data, encoding: .utf8) else {
                 promise.reject("An error occured while retrieving value", errorCode: Int(status))
                 return

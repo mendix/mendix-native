@@ -84,4 +84,6 @@ jobs:
       # Run tests
       - name: Run Harness E2E tests
         working-directory: example
-        run: yarn harness:ios
+        run: |
+          export NODE_OPTIONS="--max-old-space-size=6144"
+          yarn harness:ios

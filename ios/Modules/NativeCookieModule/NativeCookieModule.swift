@@ -6,7 +6,7 @@ public class NativeCookieModule: NSObject {
         NativeCookieModule.clearAll()
         promise.resolve(nil)
     }
-    
+
     static func clearAll() {
         let storage = HTTPCookieStorage.shared
         for cookie in (storage.cookies ?? []) {
