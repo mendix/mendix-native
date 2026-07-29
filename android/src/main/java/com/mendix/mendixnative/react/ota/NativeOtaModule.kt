@@ -19,6 +19,7 @@ const val OTA_ZIP_FILE_MISSING = "OTA_ZIP_FILE_MISSING"
 const val OTA_UNZIP_DIR_EXISTS = "OTA_UNZIP_DIR_EXISTS"
 const val OTA_DEPLOYMENT_FAILED = "OTA_DEPLOYMENT_FAILED"
 const val OTA_DOWNLOAD_FAILED = "OTA_DOWNLOAD_FAILED"
+const val OTA_ALREADY_DEPLOYED = "OTA_ALREADY_DEPLOYED"
 
 const val MANIFEST_OTA_DEPLOYMENT_ID_KEY = "otaDeploymentID"
 const val MANIFEST_RELATIVE_BUNDLE_PATH_KEY = "relativeBundlePath"
@@ -140,6 +141,30 @@ class NativeOtaModule(
     val oldManifest = readManifestJson(reactApplicationContext, fileBackend)
 
     Log.i(TAG, "Deploying ota with id: $otaDeploymentID")
+
+    // Loop protection: refuse to redeploy a deployment that is already the active one.
+    // Redeploying and reloading into an already-active deployment restarts the app into
+    // the same bundle, causing an infinite download -> deploy -> reload loop. This happens
+    // when the served OTA bundle's embedded deploymentID never matches the server-advertised
+    // deploymentID (e.g. a bundle served as an OTA update but built for a different deployment).
+    // Rejecting here makes the JS OTA flow skip the reload, so the app keeps running the
+    // currently deployed bundle instead of looping.
+    if (oldManifest != null &&
+      oldManifest.otaDeploymentID == otaDeploymentID &&
+      File(
+        resolveAbsolutePathRelativeToOtaDir(
+          reactApplicationContext,
+          oldManifest.relativeBundlePath
+        )
+      ).exists()
+    ) {
+      zipFile.delete()
+      return reject(
+        promise,
+        OTA_ALREADY_DEPLOYED,
+        "Deployment $otaDeploymentID is already active. Skipping redeploy to prevent a reload loop."
+      )
+    }
 
     if (!zipFile.exists()) {
       return reject(promise, OTA_ZIP_FILE_MISSING, "OTA package does not exist")

@@ -1,13 +1,15 @@
 package com.mendix.mendixnative.react.download
 
 import com.facebook.react.bridge.*
-import com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEmitter
 import okhttp3.OkHttpClient
 import java.io.IOException
 import java.net.ConnectException
 import java.util.concurrent.TimeUnit
 
-class NativeDownloadModule(val context: ReactApplicationContext) {
+class NativeDownloadModule(
+  val context: ReactApplicationContext,
+  private val eventEmitter: ((Double, Double) -> Unit)? = null
+) {
   val client = OkHttpClient()
 
   fun download(
@@ -66,30 +68,15 @@ class NativeDownloadModule(val context: ReactApplicationContext) {
         }
       }
     ) { receivedBytes, totalBytes ->
-      postProgressEvent(
-        receivedBytes,
-        totalBytes
-      )
+      eventEmitter?.invoke(receivedBytes, totalBytes)
     }
   }
 
-  private fun postProgressEvent(receivedBytes: Double, totalBytes: Double) {
-    val params = Arguments.createMap()
-    params.putDouble("receivedBytes", receivedBytes)
-    params.putDouble("totalBytes", totalBytes)
-    context
-      .getJSModule(RCTDeviceEventEmitter::class.java)
-      .emit(DOWNLOAD_PROGRESS_EVENT, params)
-  }
-
   companion object {
-    val supportedEvents: Array<String> = arrayOf(DOWNLOAD_PROGRESS_EVENT)
-
     const val TIMEOUT_KEY = "connectionTimeout"
     const val MIME_TYPE_KEY = "mimeType"
     const val TIMEOUT = 10000
 
-    const val DOWNLOAD_PROGRESS_EVENT = "NDM_DOWNLOAD_PROGRESS_EVENT"
     const val ERROR_DOWNLOAD_FAILED = "ERROR_DOWNLOAD_FAILED"
     const val FILE_ALREADY_EXISTS = "FILE_ALREADY_EXISTS"
     const val ERROR_CONNECTION_FAILED = "ERROR_CONNECTION_FAILED"

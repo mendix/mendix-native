@@ -1,17 +1,17 @@
 package com.mendix.mendixnative.activity
 
+import android.os.Build
 import android.os.Bundle
 import android.view.KeyEvent
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
-import com.facebook.react.bridge.ReactContext
 import com.facebook.react.devsupport.interfaces.DevSupportManager
 import com.mendix.mendixnative.DevAppMenuHandler
 import com.mendix.mendixnative.MendixApplication
 import com.mendix.mendixnative.MendixInitializer
 import com.mendix.mendixnative.react.MendixApp
 import com.mendix.mendixnative.react.splash.MendixSplashScreenPresenter
-import com.mendix.mendixnative.util.MendixBackwardsCompatUtility
+import java.io.Serializable
 
 open class MendixReactActivity : ReactActivity(), DevAppMenuHandler, LaunchScreenHandler {
 
@@ -24,7 +24,7 @@ open class MendixReactActivity : ReactActivity(), DevAppMenuHandler, LaunchScree
 
   override fun onCreate(savedInstanceState: Bundle?) {
     mendixApp = mendixApp
-      ?: intent.getSerializableExtra(MENDIX_APP_INTENT_KEY) as? MendixApp
+      ?: getSerializableData(MENDIX_APP_INTENT_KEY, MendixApp::class.java)
         ?: throw IllegalStateException("MendixApp configuration can't be null")
     val mendixApplication = application as? MendixApplication
       ?: throw ClassCastException("Application needs to implement MendixApplication")
@@ -34,6 +34,19 @@ open class MendixReactActivity : ReactActivity(), DevAppMenuHandler, LaunchScree
     mendixInitializer.onCreate(mendixApp!!, intent.getBooleanExtra(CLEAR_DATA, false))
 
     super.onCreate(null)
+  }
+
+  inline fun <reified T : Serializable> getSerializableData(key: String?, clazz: Class<T>): T? {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+      intent.getSerializableExtra<T?>(key, clazz)
+    } else {
+      @Suppress("DEPRECATION")
+      val data = intent.getSerializableExtra(key)
+      if (data is T) {
+        return data
+      }
+      return null
+    }
   }
 
   override fun onDestroy() {
@@ -46,11 +59,8 @@ open class MendixReactActivity : ReactActivity(), DevAppMenuHandler, LaunchScree
   }
 
   override fun showDevAppMenu() {
-    currentDevSupportManager?.showDevOptionsDialog();
+    currentDevSupportManager?.showDevOptionsDialog()
   }
-
-  private val currentReactContext: ReactContext?
-    get() = if (reactNativeHost.hasInstance()) reactInstanceManager.currentReactContext else null
 
   val currentDevSupportManager: DevSupportManager?
     get() = reactHost.devSupportManager
@@ -70,9 +80,7 @@ open class MendixReactActivity : ReactActivity(), DevAppMenuHandler, LaunchScree
   }
 
   override fun showLaunchScreen() {
-    if (!MendixBackwardsCompatUtility.getInstance().unsupportedFeatures.hideSplashScreenInClient && splashScreenPresenter != null) {
-      splashScreenPresenter?.show(this)
-    }
+    splashScreenPresenter?.show(this)
   }
 
   override fun hideLaunchScreen() {

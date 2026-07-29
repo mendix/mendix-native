@@ -13,8 +13,17 @@ RCT_EXPORT_MODULE()
     return std::make_shared<facebook::react::NativeMxFileSystemSpecJSI>(params);
 }
 
-- (nonnull NSDictionary *)constants {
-    return [[[NativeFsModule alloc] init] constants];
+- (facebook::react::ModuleConstants<JS::NativeMxFileSystem::Constants>)constantsToExport {
+    return [self getConstants];
+}
+
+- (facebook::react::ModuleConstants<JS::NativeMxFileSystem::Constants>)getConstants {
+    NSString *path = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
+    return facebook::react::typedConstants<JS::NativeMxFileSystem::Constants>({
+        .DocumentDirectoryPath = path ?: @"",
+        .SUPPORTS_DIRECTORY_MOVE = true,
+        .SUPPORTS_ENCRYPTION = true
+    });
 }
 
 - (void)save:(nonnull NSDictionary *)blob

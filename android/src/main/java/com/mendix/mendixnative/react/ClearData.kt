@@ -48,12 +48,12 @@ fun clearDataWithReactContext(applicationContext: Application, reactHost: ReactH
   deleteAppDatabaseAsync(reactContext, object : BooleanCallback {
     var fired = false
 
-    override fun invoke(success: Boolean) {
+    override fun invoke(res: Boolean) {
       if (fired) return
 
       fired = true
 
-      if (!success) {
+      if (!res) {
         reportError("database")
       }
 
@@ -62,7 +62,7 @@ fun clearDataWithReactContext(applicationContext: Application, reactHost: ReactH
       }
 
       clearSecureStorage(reactContext?.applicationContext)
-      if (!success) {
+      if (!res) {
         reportError("encrypted storage")
       }
 

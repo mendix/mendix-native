@@ -3,7 +3,7 @@ import Foundation
 @objcMembers
 public class MxConfiguration: NSObject {
     
-    private static let nativeBinaryVersion: Int = 32
+    static let nativeBinaryVersion: Int = 32
     private static let defaultDatabaseName = "default"
     private static let defaultFilesDirectoryName = "files/default"
     
@@ -50,31 +50,6 @@ public class MxConfiguration: NSObject {
     static var warningsFilter: WarningsFilter {
         get { return _warningsFilter }
         set { _warningsFilter = newValue }
-    }
-    
-    public func constants() -> [String: Any] {
-        guard let runtimeUrl = MxConfiguration.runtimeUrl else {
-            let exception = NSException(
-                name: NSExceptionName("RUNTIME_URL_MISSING"),
-                reason: "Runtime URL was not set prior to launch.",
-                userInfo: nil
-            )
-            exception.raise()
-            return [:]
-        }
-        
-        return [
-            "RUNTIME_URL": runtimeUrl.absoluteString,
-            "APP_NAME": MxConfiguration.appName ?? NSNull(),
-            "DATABASE_NAME": MxConfiguration.databaseName,
-            "FILES_DIRECTORY_NAME": MxConfiguration.filesDirectoryName,
-            "WARNINGS_FILTER_LEVEL": MxConfiguration.warningsFilter.stringValue,
-            "OTA_MANIFEST_PATH": OtaHelpers.getOtaManifestFilepath(),
-            "IS_DEVELOPER_APP": NSNumber(value: MxConfiguration.isDeveloperApp),
-            "NATIVE_DEPENDENCIES": OtaHelpers.getNativeDependencies(),
-            "NATIVE_BINARY_VERSION": NSNumber(value: MxConfiguration.nativeBinaryVersion),
-            "APP_SESSION_ID": MxConfiguration.appSessionId ?? NSNull()
-        ]
     }
     
     public static func update(from mendixApp: MendixApp) {

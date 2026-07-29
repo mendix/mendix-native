@@ -230,12 +230,12 @@ class NativeFsModule(private val reactContext: ReactApplicationContext) {
     }
   }
 
-  fun getConstants(): WritableMap {
-    val constants = WritableNativeMap()
-    constants.putString("DocumentDirectoryPath", filesDir)
-    constants.putBoolean("SUPPORTS_DIRECTORY_MOVE", true) // Client uses this const to identify if functionality is supported
-    constants.putBoolean("SUPPORTS_ENCRYPTION", true)
-    return constants
+  fun getConstants(): Map<String, Any> {
+    return mapOf(
+      "DocumentDirectoryPath" to filesDir,
+      "SUPPORTS_DIRECTORY_MOVE" to true, // Client uses this const to identify if functionality is supported
+      "SUPPORTS_ENCRYPTION" to true
+    )
   }
 
   @Throws(IOException::class)

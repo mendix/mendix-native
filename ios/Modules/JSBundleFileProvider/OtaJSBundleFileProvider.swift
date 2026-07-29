@@ -54,10 +54,6 @@ extension OtaJSBundleFileProvider: JSBundleFileProviderProtocol {
             return nil
         }
         
-        guard let encodedPath = bundlePath.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
-            return nil
-        }
-        
-        return URL(string: encodedPath)
+        return URL(fileURLWithPath: bundlePath)
     }
 }

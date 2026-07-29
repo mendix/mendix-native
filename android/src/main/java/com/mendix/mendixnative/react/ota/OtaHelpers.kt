@@ -1,7 +1,6 @@
 package com.mendix.mendixnative.react.ota
 
 import android.content.Context
-import android.os.Build
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.mendix.mendixnative.util.ResourceReader
@@ -22,14 +21,7 @@ fun resolveAppVersion(context: Context): String {
   return context.packageManager.getPackageInfo(
     context.packageName,
     0
-  ).let { info ->
-    info.versionName.let { versionName ->
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
-        "$versionName-${info.longVersionCode}"
-      else
-        "$versionName-${info.versionCode}"
-    }
-  }
+  ).let { info -> "${info.versionName}-${info.longVersionCode}" }
 }
 
 fun getNativeDependencies(context: Context): Map<String, String> {

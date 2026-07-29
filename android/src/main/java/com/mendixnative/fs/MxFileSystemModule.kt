@@ -3,7 +3,6 @@ package com.mendixnative.fs
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReadableMap
-import com.facebook.react.bridge.WritableMap
 import com.facebook.react.module.annotations.ReactModule
 import com.mendix.mendixnative.react.fs.NativeFsModule
 import com.mendixnative.NativeMxFileSystemSpec
@@ -16,7 +15,7 @@ class MxFileSystemModule(reactContext: ReactApplicationContext) :
 
   override fun getName(): String = NAME
 
-  override fun constants(): WritableMap? {
+  override fun getTypedExportedConstants(): Map<String, Any> {
     return fsModule.getConstants()
   }
 

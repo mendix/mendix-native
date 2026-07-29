@@ -1,6 +1,7 @@
 package com.mendix.mendixnative.fragment
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.view.KeyEvent
 import com.facebook.react.devsupport.interfaces.DevSupportManager
@@ -9,6 +10,7 @@ import com.mendix.mendixnative.MendixInitializer
 import com.mendix.mendixnative.activity.LaunchScreenHandler
 import com.mendix.mendixnative.react.MendixApp
 import com.mendix.mendixnative.util.MendixDoubleTapRecognizer
+import java.io.Serializable
 
 /**
  * Class used for Sample apps
@@ -54,7 +56,7 @@ open class MendixReactFragment : ReactFragment(), MendixReactFragmentView {
     }
 
     if (mendixApp == null) {
-      mendixApp = requireArguments().getSerializable(ARG_MENDIX_APP) as MendixApp?
+      mendixApp = getSerializableData(ARG_MENDIX_APP, MendixApp::class.java)
         ?: throw IllegalArgumentException("Mendix app is required")
     }
 
@@ -73,9 +75,22 @@ open class MendixReactFragment : ReactFragment(), MendixReactFragmentView {
     super.onCreate(savedInstanceState)
   }
 
+  inline fun <reified T : Serializable> getSerializableData(key: String?, clazz: Class<T>): T? {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+      requireArguments().getSerializable<T?>(key, clazz)
+    } else {
+      @Suppress("DEPRECATION")
+      val data = requireArguments().getSerializable(key)
+      if (data is T) {
+        return data
+      }
+      return null
+    }
+  }
+
   fun onNewIntent(intent: Intent) {
-    if (reactNativeHost.hasInstance()) {
-      reactNativeHost.reactInstanceManager.onNewIntent(intent);
+    reactHost?.currentReactContext?.let {
+      it.onNewIntent(it.currentActivity, intent)
     }
   }
 
@@ -84,7 +99,7 @@ open class MendixReactFragment : ReactFragment(), MendixReactFragmentView {
     super.onDestroy()
   }
 
-  override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
+  override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
     if (keyCode == KeyEvent.KEYCODE_MENU || doubleTapReloadRecognizer.didDoubleTapBacktick(
         keyCode,
         view
@@ -100,7 +115,7 @@ open class MendixReactFragment : ReactFragment(), MendixReactFragmentView {
 
   override fun showDevAppMenu() {
     activity?.let {
-      currentDevSupportManager?.showDevOptionsDialog();
+      currentDevSupportManager?.showDevOptionsDialog()
     }
   }
 
@@ -109,7 +124,7 @@ open class MendixReactFragment : ReactFragment(), MendixReactFragmentView {
 }
 
 interface MendixReactFragmentView : DevAppMenuHandler, BackButtonHandler {
-  fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean
+  fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean
 }
 
 interface BackButtonHandler {

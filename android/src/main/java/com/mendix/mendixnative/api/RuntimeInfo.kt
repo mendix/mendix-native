@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.mendix.mendixnative.config.AppUrl
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
@@ -22,10 +23,7 @@ fun getRuntimeInfo(runtimeUrl: String, cb: (info: RuntimeInfoResponse) -> Unit) 
   client.newCall(
     Request.Builder()
       .post(
-        RequestBody.create(
-          "application/json; charset=utf-8".toMediaTypeOrNull(),
-          "{\"action\":\"info\"}"
-        )
+        "{\"action\":\"info\"}".toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
       )
       .url(AppUrl.removeTrailingSlash(AppUrl.ensureProtocol(runtimeUrl)) + "/xas/")
       .build()

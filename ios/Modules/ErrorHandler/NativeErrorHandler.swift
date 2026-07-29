@@ -1,8 +1,9 @@
 import Foundation
+import React
 
 @objcMembers
 public class NativeErrorHandler: NSObject {
     public func handle(message: String, stackTrace: [[String: Any]]) {
-        RedBoxHelper.shared.redBox.showErrorMessage(message, withStack: stackTrace)
+        DevHelper.getModule(type: RCTExceptionsManager.self)?.reportFatalException(message, stack: stackTrace, exceptionId: -1)
     }
 }

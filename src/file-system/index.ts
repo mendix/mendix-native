@@ -5,7 +5,7 @@ const initFs = () => {
     DocumentDirectoryPath,
     SUPPORTS_DIRECTORY_MOVE,
     SUPPORTS_ENCRYPTION,
-  } = NativeMxFileSystem.constants();
+  } = NativeMxFileSystem.getConstants();
   const docDirPath = DocumentDirectoryPath as string;
   return {
     //Constants

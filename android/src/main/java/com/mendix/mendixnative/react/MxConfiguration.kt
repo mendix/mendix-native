@@ -1,8 +1,6 @@
 package com.mendix.mendixnative.react
 
 import com.facebook.react.bridge.ReactApplicationContext
-import com.facebook.react.bridge.WritableMap
-import com.facebook.react.bridge.WritableNativeMap
 import com.mendix.mendixnative.MendixApplication
 import com.mendix.mendixnative.config.AppUrl
 import com.mendix.mendixnative.react.ota.getNativeDependencies
@@ -10,44 +8,35 @@ import com.mendix.mendixnative.react.ota.getOtaManifestFilepath
 
 class MxConfiguration(val reactContext: ReactApplicationContext) {
 
-  fun getConstants(): WritableMap? {
+  fun getConstants(): Map<String, Any?> {
     val application = (reactContext.applicationContext as MendixApplication)
     if (runtimeUrl == null) {
       if (warningsFilter != WarningsFilter.none) {
-        application.reactNativeHost
-          .reactInstanceManager
-          .devSupportManager
-          .showNewJavaError(
+        application.reactHost
+          ?.devSupportManager
+          ?.showNewJavaError(
             "Runtime URL not specified.",
             Throwable("Without the runtime URL, the app cannot retrieve any data.\n\nPlease redeploy the app.")
           )
 
-        return WritableNativeMap()
+        return emptyMap()
       }
 
       throw IllegalStateException("Runtime URL not set in the MxConfiguration")
     }
 
-    val constants = WritableNativeMap()
-    constants.putString("RUNTIME_URL", AppUrl.forRuntime(runtimeUrl))
-    constants.putString("APP_NAME", defaultAppName)
-    constants.putString("DATABASE_NAME", defaultDatabaseName)
-    constants.putString(
-      "FILES_DIRECTORY_NAME",
-      defaultFilesDirectoryName
-    ) // Not to be removed as it is required for backwards compatibility.
-    constants.putString("WARNINGS_FILTER_LEVEL", warningsFilter.toString())
-    constants.putString("OTA_MANIFEST_PATH", getOtaManifestFilepath(reactContext))
-    constants.putBoolean("IS_DEVELOPER_APP", application.getUseDeveloperSupport())
-    constants.putInt("NATIVE_BINARY_VERSION", NATIVE_BINARY_VERSION)
-    constants.putString("APP_SESSION_ID", application.getAppSessionId())
-
-    val dependencies = WritableNativeMap()
-    getNativeDependencies(reactContext).forEach {
-      dependencies.putString(it.key, it.value)
-    }
-    constants.putMap("NATIVE_DEPENDENCIES", dependencies)
-
+    val constants = mutableMapOf(
+      "RUNTIME_URL" to AppUrl.forRuntime(runtimeUrl),
+      "APP_NAME" to defaultAppName,
+      "DATABASE_NAME" to defaultDatabaseName,
+      "FILES_DIRECTORY_NAME" to defaultFilesDirectoryName,
+      "WARNINGS_FILTER_LEVEL" to warningsFilter.toString(),
+      "OTA_MANIFEST_PATH" to getOtaManifestFilepath(reactContext),
+      "IS_DEVELOPER_APP" to application.getUseDeveloperSupport(),
+      "NATIVE_BINARY_VERSION" to NATIVE_BINARY_VERSION,
+      "APP_SESSION_ID" to application.getAppSessionId(),
+      "NATIVE_DEPENDENCIES" to getNativeDependencies(reactContext)
+    )
     return constants
   }
 

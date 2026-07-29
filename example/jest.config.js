@@ -1,5 +1,4 @@
 module.exports = {
-  forceExit: true,
   projects: [
     {
       displayName: 'react-native-harness',
