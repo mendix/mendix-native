@@ -10,3 +10,4 @@ export * from './encrypted-storage';
 export * from './error';
 export * from './file-system';
 export * from './navigation-mode';
+export * from './native-modules';

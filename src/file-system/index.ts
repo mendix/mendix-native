@@ -44,4 +44,19 @@ const cast = <T>(value: unknown): T | undefined => {
   return value as T;
 };
 
-export const NativeFileSystem = initFs();
+type Fs = ReturnType<typeof initFs>;
+let cachedFs: Fs | undefined;
+const getFs = (): Fs => {
+  if (!cachedFs) {
+    cachedFs = initFs();
+  }
+  return cachedFs;
+};
+
+// Deferred so importing this module never touches the native file system module
+// (e.g. on web, where it doesn't exist) until a consumer actually reads a property.
+export const NativeFileSystem = new Proxy({} as Fs, {
+  get(_target, prop) {
+    return getFs()[prop as keyof Fs];
+  },
+});
