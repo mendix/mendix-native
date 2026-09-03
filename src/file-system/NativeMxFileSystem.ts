@@ -1,9 +1,5 @@
+import { TurboModuleRegistry } from 'react-native';
 import type { TurboModule, CodegenTypes } from 'react-native';
-
-const TurboModuleRegistry =
-  require('react-native/Libraries/TurboModule/TurboModuleRegistry') as {
-    getEnforcing: <T extends object>(name: string) => T;
-  };
 
 type BlobData = {
   blobId: string;

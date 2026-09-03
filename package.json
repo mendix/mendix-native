@@ -14,18 +14,6 @@
       ],
       "navigation-mode": [
         "lib/typescript/src/navigation-mode/index.d.ts"
-      ],
-      "image-picker": [
-        "lib/typescript/src/image-picker/index.d.ts"
-      ],
-      "notifee": [
-        "lib/typescript/src/notifee/index.d.ts"
-      ],
-      "firebase-messaging": [
-        "lib/typescript/src/firebase-messaging/index.d.ts"
-      ],
-      "schedule-exact-alarm": [
-        "lib/typescript/src/schedule-exact-alarm/index.d.ts"
       ]
     }
   },
@@ -49,26 +37,6 @@
       "source": "./src/navigation-mode/index.ts",
       "types": "./lib/typescript/src/navigation-mode/index.d.ts",
       "default": "./lib/module/navigation-mode/index.js"
-    },
-    "./image-picker": {
-      "source": "./src/image-picker/index.ts",
-      "types": "./lib/typescript/src/image-picker/index.d.ts",
-      "default": "./lib/module/image-picker/index.js"
-    },
-    "./notifee": {
-      "source": "./src/notifee/index.ts",
-      "types": "./lib/typescript/src/notifee/index.d.ts",
-      "default": "./lib/module/notifee/index.js"
-    },
-    "./firebase-messaging": {
-      "source": "./src/firebase-messaging/index.ts",
-      "types": "./lib/typescript/src/firebase-messaging/index.d.ts",
-      "default": "./lib/module/firebase-messaging/index.js"
-    },
-    "./schedule-exact-alarm": {
-      "source": "./src/schedule-exact-alarm/index.ts",
-      "types": "./lib/typescript/src/schedule-exact-alarm/index.d.ts",
-      "default": "./lib/module/schedule-exact-alarm/index.js"
     },
     "./package.json": "./package.json"
   },
@@ -149,7 +117,7 @@
     "typescript": "5.9.3"
   },
   "peerDependencies": {
-    "@op-engineering/op-sqlite": "15.2.5",
+    "@op-engineering/op-sqlite": "*",
     "@react-native-async-storage/async-storage": "*",
     "react": "*",
     "react-native": "*",
