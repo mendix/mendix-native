@@ -10,8 +10,4 @@ export * from './encrypted-storage';
 export * from './error';
 export * from './file-system';
 export * from './navigation-mode';
-export * from './image-picker';
-export * from './notifee';
-export * from './firebase-messaging';
-export * from './schedule-exact-alarm';
 export * from './native-modules';

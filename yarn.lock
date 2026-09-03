@@ -9264,7 +9264,7 @@ __metadata:
     turbo: "npm:2.8.21"
     typescript: "npm:5.9.3"
   peerDependencies:
-    "@op-engineering/op-sqlite": 15.2.5
+    "@op-engineering/op-sqlite": "*"
     "@react-native-async-storage/async-storage": "*"
     react: "*"
     react-native: "*"
