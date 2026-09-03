@@ -1,8 +1,5 @@
-import {
-  TurboModuleRegistry,
-  type TurboModule,
-  type CodegenTypes,
-} from 'react-native';
+import { TurboModuleRegistry } from 'react-native';
+import type { TurboModule, CodegenTypes } from 'react-native';
 
 type BlobData = {
   blobId: string;
@@ -34,6 +31,22 @@ export interface Spec extends TurboModule {
   setEncryptionEnabled(enabled: boolean): void;
 }
 
-export default TurboModuleRegistry.getEnforcing<Spec>('MxFileSystem');
+let cachedModule: Spec | undefined;
+const getModule = (): Spec => {
+  if (!cachedModule) {
+    cachedModule = TurboModuleRegistry.getEnforcing<Spec>('MxFileSystem');
+  }
+  return cachedModule;
+};
+
+// Resolves the native module lazily (on first property access) instead of at import time,
+// so requiring this file on web, where TurboModuleRegistry is stubbed out, never crashes.
+const NativeMxFileSystem = new Proxy({} as Spec, {
+  get(_target, prop) {
+    return getModule()[prop as keyof Spec];
+  },
+});
+
+export default NativeMxFileSystem;
 
 export type { BlobData, FsConstants };

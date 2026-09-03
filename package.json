@@ -4,11 +4,39 @@
   "description": "Mendix native mobile package",
   "main": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "file-system": [
+        "lib/typescript/src/file-system/index.d.ts"
+      ],
+      "native-modules": [
+        "lib/typescript/src/native-modules/index.d.ts"
+      ],
+      "navigation-mode": [
+        "lib/typescript/src/navigation-mode/index.d.ts"
+      ]
+    }
+  },
   "exports": {
     ".": {
       "source": "./src/index.ts",
       "types": "./lib/typescript/src/index.d.ts",
       "default": "./lib/module/index.js"
+    },
+    "./file-system": {
+      "source": "./src/file-system/index.ts",
+      "types": "./lib/typescript/src/file-system/index.d.ts",
+      "default": "./lib/module/file-system/index.js"
+    },
+    "./native-modules": {
+      "source": "./src/native-modules/index.ts",
+      "types": "./lib/typescript/src/native-modules/index.d.ts",
+      "default": "./lib/module/native-modules/index.js"
+    },
+    "./navigation-mode": {
+      "source": "./src/navigation-mode/index.ts",
+      "types": "./lib/typescript/src/navigation-mode/index.d.ts",
+      "default": "./lib/module/navigation-mode/index.js"
     },
     "./package.json": "./package.json"
   },
