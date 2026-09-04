@@ -4,7 +4,7 @@ import React_RCTAppDelegate
 import ReactAppDependencyProvider
 
 @objcMembers
-open class ReactAppProvider: UIResponder, UIApplicationDelegate {
+open class ReactAppProvider: UIResponder, UIWindowSceneDelegate {
     
     public static let defaultName = "App"
 
@@ -15,26 +15,50 @@ open class ReactAppProvider: UIResponder, UIApplicationDelegate {
     
     var reactRootViewName: String = defaultName
     
+    private static weak var currentProvider: ReactAppProvider?
+    private var reactRootViewController: UIViewController?
+
+    public var hasStartedReact: Bool {
+        return reactRootViewController != nil
+    }
+
     public func setUpProvider(
         moduleName: String = ReactAppProvider.defaultName,
         reactRootViewName: String = ReactAppProvider.defaultName
     ) {
         self.moduleName = moduleName
         self.reactRootViewName = reactRootViewName
+        guard reactNativeFactory == nil else {
+            return
+        }
         let delegate = ReactNativeDelegate()
         let factory = RCTReactNativeFactory(delegate: delegate)
         delegate.dependencyProvider = RCTAppDependencyProvider()
         reactNativeDelegate = delegate
         reactNativeFactory = factory
-        window = UIWindow(frame: UIScreen.main.bounds)
     }
-    
-    open func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
-        return true
+
+    open func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
+        guard let windowScene = scene as? UIWindowScene else {
+            return
+        }
+        ReactAppProvider.currentProvider = self
+        window = UIWindow(windowScene: windowScene)
+
+        if let reactRootViewController = reactRootViewController {
+            changeRoot(to: reactRootViewController)
+        }
+    }
+
+    open func sceneDidDisconnect(_ scene: UIScene) {
+        if ReactAppProvider.currentProvider === self {
+            ReactAppProvider.currentProvider = nil
+        }
     }
 
     public func setReactViewController(_ controller: UIViewController) {
         controller.view = reactAppView()
+        reactRootViewController = controller
         changeRoot(to: controller)
     }
 
@@ -43,7 +67,7 @@ open class ReactAppProvider: UIResponder, UIApplicationDelegate {
             return nil
         }
         view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        view.frame = window?.rootViewController?.view.frame ?? .zero
+        view.frame = window?.bounds ?? .zero
         return view
     }
 
@@ -55,7 +79,7 @@ open class ReactAppProvider: UIResponder, UIApplicationDelegate {
     }
     
     public static func shared() -> ReactAppProvider? {
-        return UIApplication.shared.delegate as? ReactAppProvider
+        return currentProvider
     }
 
     public func changeRoot(to controller: UIViewController) {

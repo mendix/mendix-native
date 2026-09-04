@@ -37,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (RCTHost *) currentHost {
-    ReactAppProvider *reactAppProvider = (ReactAppProvider *) [[UIApplication sharedApplication] delegate];
+    ReactAppProvider *reactAppProvider = [ReactAppProvider shared];
     RCTReactNativeFactory *reactNativeFactory = [reactAppProvider reactNativeFactory];
     RCTRootViewFactory *rootViewFactory = [reactNativeFactory rootViewFactory];
     RCTHost *reactHost = [rootViewFactory reactHost];
