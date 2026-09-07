@@ -56,14 +56,83 @@ open class ReactAppProvider: UIResponder, UIWindowSceneDelegate {
         }
     }
 
+    open func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+        forwardURLContextsToReact(URLContexts)
+    }
+
+    public func handleURLContexts(
+        _ URLContexts: Set<UIOpenURLContext>,
+        whenReactInactive: ([AnyHashable: Any]) -> Void
+    ) {
+        if ReactAppProvider.isReactAppActive() {
+            forwardURLContextsToReact(URLContexts)
+        } else if let context = URLContexts.first {
+            whenReactInactive(ReactAppProvider.launchOptions(fromURLContext: context))
+        }
+    }
+
+    open func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
+        RCTLinkingManager.application(
+            UIApplication.shared,
+            continue: userActivity,
+            restorationHandler: { _ in }
+        )
+    }
+
+    public static func launchOptions(from connectionOptions: UIScene.ConnectionOptions) -> [AnyHashable: Any] {
+        var launchOptions: [AnyHashable: Any] = [:]
+        if let context = connectionOptions.urlContexts.first {
+            launchOptions.merge(ReactAppProvider.launchOptions(fromURLContext: context)) { _, new in new }
+        }
+        if let userActivity = connectionOptions.userActivities.first {
+            launchOptions[UIApplication.LaunchOptionsKey.userActivityDictionary] = [
+                UIApplication.LaunchOptionsKey.userActivityType: userActivity.activityType,
+                "UIApplicationLaunchOptionsUserActivityKey": userActivity
+            ] as [AnyHashable: Any]
+        }
+        return launchOptions
+    }
+
+    public static func launchOptions(fromURLContext context: UIOpenURLContext) -> [AnyHashable: Any] {
+        var launchOptions: [AnyHashable: Any] = [
+            UIApplication.LaunchOptionsKey.url: context.url
+        ]
+        launchOptions[UIApplication.LaunchOptionsKey.sourceApplication] = context.options.sourceApplication
+        launchOptions[UIApplication.LaunchOptionsKey.annotation] = context.options.annotation
+        return launchOptions
+    }
+
+    private func forwardURLContextsToReact(_ URLContexts: Set<UIOpenURLContext>) {
+        URLContexts.forEach { context in
+            var options: [UIApplication.OpenURLOptionsKey: Any] = [
+                .openInPlace: context.options.openInPlace
+            ]
+            options[.sourceApplication] = context.options.sourceApplication
+            options[.annotation] = context.options.annotation
+            RCTLinkingManager.application(UIApplication.shared, open: context.url, options: options)
+        }
+    }
+
     public func setReactViewController(_ controller: UIViewController) {
-        controller.view = reactAppView()
+        setReactViewController(controller, launchOptions: nil)
+    }
+
+    public func setReactViewController(_ controller: UIViewController, launchOptions: [AnyHashable: Any]?) {
+        controller.view = reactAppView(launchOptions: launchOptions)
         reactRootViewController = controller
         changeRoot(to: controller)
     }
 
     public func reactAppView() -> UIView? {
-        guard let view = reactNativeFactory?.rootViewFactory.view(withModuleName: reactRootViewName) else {
+        return reactAppView(launchOptions: nil)
+    }
+
+    public func reactAppView(launchOptions: [AnyHashable: Any]?) -> UIView? {
+        guard let view = reactNativeFactory?.rootViewFactory.view(
+            withModuleName: reactRootViewName,
+            initialProperties: nil,
+            launchOptions: launchOptions
+        ) else {
             return nil
         }
         view.autoresizingMask = [.flexibleWidth, .flexibleHeight]

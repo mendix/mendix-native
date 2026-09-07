@@ -25,7 +25,7 @@ class SceneDelegate: ReactAppProvider {
         )
         AppPreferences.devModeEnabled = true
         AppPreferences.remoteDebuggingEnabled = true
-        ReactNative.shared.setup(mendixApp)
+        ReactNative.shared.setup(mendixApp, launchOptions: ReactAppProvider.launchOptions(from: connectionOptions))
         ReactNative.shared.start()
     }
 
