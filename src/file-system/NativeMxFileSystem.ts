@@ -32,6 +32,12 @@ export interface Spec extends TurboModule {
   writeJson(data: CodegenTypes.UnsafeObject, filepath: string): Promise<void>;
   readJson(filepath: string): Promise<CodegenTypes.UnsafeObject | null>;
   setEncryptionEnabled(enabled: boolean): void;
+  getFileSize(filePath: string): Promise<number>;
+  writeChunk(
+    blob: CodegenTypes.UnsafeObject,
+    filePath: string,
+    offset: number
+  ): Promise<void>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('MxFileSystem');

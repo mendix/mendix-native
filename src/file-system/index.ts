@@ -31,6 +31,11 @@ const initFs = () => {
     readJson: <T>(filepath: string) =>
       NativeMxFileSystem.readJson(filepath) as Promise<T>,
 
+    //Methods - file operations required for resumable downloads
+    getFileSize: NativeMxFileSystem.getFileSize,
+    writeChunk: (blob: BlobData, filePath: string, offset: number) =>
+      NativeMxFileSystem.writeChunk(blob, filePath, offset),
+
     //Helpers
     relativeToDocumentsAbsolutePath: (path: string) =>
       path.startsWith(docDirPath) ? path : [docDirPath, path].join('/'),

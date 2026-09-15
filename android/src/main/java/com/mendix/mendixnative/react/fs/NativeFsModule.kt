@@ -230,6 +230,45 @@ class NativeFsModule(private val reactContext: ReactApplicationContext) {
     }
   }
 
+  fun getFileSize(filePath: String, promise: Promise) {
+    try {
+      val size = fileBackend.getFileSize(ensureWhiteListedPath(filePath))
+      promise.resolve(size.toDouble())
+    } catch (e: PathNotAccessibleException) {
+      e.printStackTrace()
+      promise.reject(INVALID_PATH, e)
+    }
+  }
+
+  fun writeChunk(blob: ReadableMap, filePath: String, offset: Double, promise: Promise) {
+    val blobModule = reactContext.nativeModule<BlobModule>(BlobModule.NAME)
+    val blobId: String = blob.getString("blobId") ?: run {
+      promise.reject(ERROR_INVALID_BLOB, "The specified blob is invalid")
+      return
+    }
+
+    val bytes = blobModule!!.resolve(blobId, blob.getInt("offset"), blob.getInt("size"))
+    if (bytes == null) {
+      promise.reject(ERROR_INVALID_BLOB, "The specified blob is invalid")
+      return
+    }
+
+    try {
+      fileBackend.writeChunk(bytes, ensureWhiteListedPath(filePath), offset.toLong())
+    } catch (e: IOException) {
+      e.printStackTrace()
+      promise.reject(ERROR_CACHE_FAILED, "Failed writing chunk to disk")
+      return
+    } catch (e: PathNotAccessibleException) {
+      e.printStackTrace()
+      promise.reject(INVALID_PATH, e)
+      return
+    }
+
+    blobModule.release(blobId)
+    promise.resolve(null)
+  }
+
   fun getConstants(): Map<String, Any> {
     return mapOf(
       "DocumentDirectoryPath" to filesDir,
