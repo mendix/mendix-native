@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.5.3] - 2026-09-15
+
 - We migrated iOS to the UIKit scene-based life cycle.
 
 ## [v0.5.2] - 2026-07-23
