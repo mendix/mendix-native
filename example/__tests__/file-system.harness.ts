@@ -257,6 +257,100 @@ describe('NativeFileSystem', () => {
     });
   });
 
+  describe('getFileSize', () => {
+    test('should return 0 for non-existent file', async () => {
+      const filePath = NativeFileSystem.relativeToDocumentsAbsolutePath(
+        'non-existent-size.bin'
+      );
+      const size = await NativeFileSystem.getFileSize(filePath);
+      expect(size).toBe(0);
+    });
+
+    test('should return correct size for existing file', async () => {
+      const filePath =
+        NativeFileSystem.relativeToDocumentsAbsolutePath('size-test.json');
+      const testData = { hello: 'world' };
+      await NativeFileSystem.writeJson(testData, filePath);
+
+      const size = await NativeFileSystem.getFileSize(filePath);
+      expect(size).toBeGreaterThan(0);
+
+      await NativeFileSystem.remove(filePath);
+    });
+
+    test('should throw for non white listed path', async () => {
+      try {
+        await NativeFileSystem.getFileSize('invalid-path.bin');
+        expect(true).toBe(false);
+      } catch (error: any) {
+        const errorMessage =
+          'Path needs to be an absolute path to the apps accessible space.';
+        expect(error.message).contains(errorMessage);
+      }
+    });
+  });
+
+  describe('writeChunk', () => {
+    test('should create file and write first chunk', async () => {
+      const filePath =
+        NativeFileSystem.relativeToDocumentsAbsolutePath('chunk-test.bin');
+
+      await NativeFileSystem.remove(filePath);
+
+      const data = new Uint8Array([1, 2, 3, 4, 5]);
+      const blob = new Blob([data as any]) as any;
+      await NativeFileSystem.writeChunk(blob.data, filePath, 0);
+
+      const size = await NativeFileSystem.getFileSize(filePath);
+      expect(size).toBe(5);
+
+      await NativeFileSystem.remove(filePath);
+    });
+
+    test('should append chunk at offset', async () => {
+      const filePath = NativeFileSystem.relativeToDocumentsAbsolutePath(
+        'chunk-append-test.bin'
+      );
+
+      await NativeFileSystem.remove(filePath);
+
+      const chunk1 = new Uint8Array([1, 2, 3, 4, 5]);
+      const chunk2 = new Uint8Array([6, 7, 8, 9, 10]);
+
+      await NativeFileSystem.writeChunk(
+        (new Blob([chunk1 as any]) as any).data,
+        filePath,
+        0
+      );
+      await NativeFileSystem.writeChunk(
+        (new Blob([chunk2 as any]) as any).data,
+        filePath,
+        5
+      );
+
+      const size = await NativeFileSystem.getFileSize(filePath);
+      expect(size).toBe(10);
+
+      await NativeFileSystem.remove(filePath);
+    });
+
+    test('should throw for non white listed path', async () => {
+      const data = new Uint8Array([1, 2, 3]);
+      try {
+        await NativeFileSystem.writeChunk(
+          (new Blob([data as any]) as any).data,
+          'invalid-path.bin',
+          0
+        );
+        expect(true).toBe(false);
+      } catch (error: any) {
+        const errorMessage =
+          'Path needs to be an absolute path to the apps accessible space.';
+        expect(error.message).contains(errorMessage);
+      }
+    });
+  });
+
   describe('API methods exist', () => {
     test('should have read method', () => {
       expect(typeof NativeFileSystem.read).toBe('function');
@@ -272,6 +366,14 @@ describe('NativeFileSystem', () => {
 
     test('should have save method', () => {
       expect(typeof NativeFileSystem.save).toBe('function');
+    });
+
+    test('should have getFileSize method', () => {
+      expect(typeof NativeFileSystem.getFileSize).toBe('function');
+    });
+
+    test('should have writeChunk method', () => {
+      expect(typeof NativeFileSystem.writeChunk).toBe('function');
     });
   });
 });

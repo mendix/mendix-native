@@ -121,6 +121,22 @@ class FileBackend(val context: Context) {
     return directory.list() ?: emptyArray()
   }
 
+  fun getFileSize(filePath: String): Long {
+    val file = File(filePath)
+    return if (file.exists()) file.length() else 0L
+  }
+
+  @Throws(IOException::class)
+  fun writeChunk(data: ByteArray, filePath: String, offset: Long) {
+    val file = File(filePath)
+    file.parentFile?.mkdirs()
+
+    RandomAccessFile(file, "rw").use { raf ->
+      raf.seek(offset)
+      raf.write(data)
+    }
+  }
+
   fun exists(filePath: String): Boolean {
     return File(filePath).exists()
   }

@@ -63,6 +63,14 @@ class MxFileSystemModule(reactContext: ReactApplicationContext) :
     fsModule.setEncryptionEnabled(enabled)
   }
 
+  override fun getFileSize(filePath: String, promise: Promise) {
+    fsModule.getFileSize(filePath, promise)
+  }
+
+  override fun writeChunk(blob: ReadableMap, filePath: String, offset: Double, promise: Promise) {
+    fsModule.writeChunk(blob, filePath, offset, promise)
+  }
+
   companion object {
     const val NAME = "MxFileSystem"
   }

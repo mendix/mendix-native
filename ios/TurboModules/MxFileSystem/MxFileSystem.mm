@@ -93,4 +93,18 @@ RCT_EXPORT_MODULE()
     [[[NativeFsModule alloc] init] setEncryptionEnabled:enabled];
 }
 
+- (void)getFileSize:(nonnull NSString *)filePath
+            resolve:(nonnull RCTPromiseResolveBlock)resolve
+             reject:(nonnull RCTPromiseRejectBlock)reject {
+    [[[NativeFsModule alloc] init] getFileSize:filePath resolve:resolve reject:reject];
+}
+
+- (void)writeChunk:(nonnull NSDictionary *)blob
+          filePath:(nonnull NSString *)filePath
+            offset:(double)offset
+           resolve:(nonnull RCTPromiseResolveBlock)resolve
+            reject:(nonnull RCTPromiseRejectBlock)reject {
+    [[[NativeFsModule alloc] init] writeChunk:blob filePath:filePath offset:offset resolve:resolve reject:reject];
+}
+
 @end
