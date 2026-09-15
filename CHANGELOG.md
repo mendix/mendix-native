@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- We added two new File System APIs to get the size of a File and write chunks via offset (used in 'resume download' functionality).
+
 ## [v0.6.0] - 2026-07-29
 
 - We replaced deprecated React Native APIs with modern supported APIs.
