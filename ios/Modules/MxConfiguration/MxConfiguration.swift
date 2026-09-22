@@ -3,7 +3,7 @@ import Foundation
 @objcMembers
 public class MxConfiguration: NSObject {
     
-    static let nativeBinaryVersion: Int = 40
+    public static let nativeBinaryVersion: Int = 40
     private static let defaultDatabaseName = "default"
     private static let defaultFilesDirectoryName = "files/default"
     
