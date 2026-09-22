@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.6.1] - 2026-09-22
+
 - We made the MxConfiguration.nativeBinaryVersion property public.
 
 ## [v0.6.0] - 2026-07-29
