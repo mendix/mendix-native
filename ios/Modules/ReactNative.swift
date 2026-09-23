@@ -9,7 +9,8 @@ open class ReactNative: NSObject, RCTReloadListener {
     // MARK: - Properties
     private var mendixApp: MendixApp?
     private var bundleUrl: URL?
-    
+    private var launchOptions: [AnyHashable: Any]?
+
     public weak var delegate: ReactNativeDelegateInternal?
     
     // MARK: - Singleton
@@ -23,7 +24,8 @@ open class ReactNative: NSObject, RCTReloadListener {
     public func setup(_ mendixApp: MendixApp, launchOptions: [AnyHashable: Any]? = nil) {
         self.mendixApp = mendixApp
         self.bundleUrl = mendixApp.bundleUrl
-        
+        self.launchOptions = launchOptions
+
         if let host = bundleUrl?.host, let port = bundleUrl?.port {
             let jsLocation = "\(host):\(port)"
             RCTBundleURLProvider.sharedSettings().jsLocation = jsLocation
@@ -42,7 +44,13 @@ open class ReactNative: NSObject, RCTReloadListener {
             StorageHelper.clearAll()
         }
         
-        ReactAppProvider.shared()?.setReactViewController(mendixApp.reactLoading?.instantiateInitialViewController() ?? UIViewController())
+        if let reactAppProvider = ReactAppProvider.shared() {
+            reactAppProvider.setReactViewController(
+                mendixApp.reactLoading?.instantiateInitialViewController() ?? UIViewController(),
+                launchOptions: launchOptions
+            )
+            launchOptions = nil
+        }
         
         DevHelper.setShakeToShowDevMenuEnabled(enabled: AppPreferences.devModeEnabled)
         DevHelper.setDebugMode(enabled: AppPreferences.devModeEnabled && AppPreferences.remoteDebuggingEnabled)
