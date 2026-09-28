@@ -298,7 +298,8 @@ describe('NativeFileSystem', () => {
       await NativeFileSystem.remove(filePath);
 
       const data = new Uint8Array([1, 2, 3, 4, 5]);
-      const blob = new Blob([data as any]) as any;
+      const dataString = String.fromCharCode(...Array.from(data));
+      const blob = new Blob([dataString]) as any;
       await NativeFileSystem.writeChunk(blob.data, filePath, 0);
 
       const size = await NativeFileSystem.getFileSize(filePath);
@@ -317,13 +318,16 @@ describe('NativeFileSystem', () => {
       const chunk1 = new Uint8Array([1, 2, 3, 4, 5]);
       const chunk2 = new Uint8Array([6, 7, 8, 9, 10]);
 
+      const dataString1 = String.fromCharCode(...Array.from(chunk1));
+      const dataString2 = String.fromCharCode(...Array.from(chunk2));
+
       await NativeFileSystem.writeChunk(
-        (new Blob([chunk1 as any]) as any).data,
+        (new Blob([dataString1]) as any).data,
         filePath,
         0
       );
       await NativeFileSystem.writeChunk(
-        (new Blob([chunk2 as any]) as any).data,
+        (new Blob([dataString2]) as any).data,
         filePath,
         5
       );
@@ -336,9 +340,10 @@ describe('NativeFileSystem', () => {
 
     test('should throw for non white listed path', async () => {
       const data = new Uint8Array([1, 2, 3]);
+      const dataString = String.fromCharCode(...Array.from(data));
       try {
         await NativeFileSystem.writeChunk(
-          (new Blob([data as any]) as any).data,
+          (new Blob([dataString]) as any).data,
           'invalid-path.bin',
           0
         );
