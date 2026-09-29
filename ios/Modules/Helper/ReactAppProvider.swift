@@ -14,7 +14,13 @@ open class ReactAppProvider: UIResponder, UIApplicationDelegate {
     public var moduleName: String = defaultName
     
     var reactRootViewName: String = defaultName
-    
+
+    private var reactRootViewController: UIViewController?
+
+    public var hasStartedReact: Bool {
+        return reactRootViewController != nil
+    }
+
     public func setUpProvider(
         moduleName: String = ReactAppProvider.defaultName,
         reactRootViewName: String = ReactAppProvider.defaultName
@@ -34,17 +40,51 @@ open class ReactAppProvider: UIResponder, UIApplicationDelegate {
     }
 
     public func setReactViewController(_ controller: UIViewController) {
-        controller.view = reactAppView()
+        setReactViewController(controller, launchOptions: nil)
+    }
+
+    public func setReactViewController(_ controller: UIViewController, launchOptions: [AnyHashable: Any]?) {
+        controller.view = reactAppView(launchOptions: launchOptions)
+        reactRootViewController = controller
         changeRoot(to: controller)
     }
 
     public func reactAppView() -> UIView? {
-        guard let view = reactNativeFactory?.rootViewFactory.view(withModuleName: reactRootViewName) else {
+        return reactAppView(launchOptions: nil)
+    }
+
+    public func reactAppView(launchOptions: [AnyHashable: Any]?) -> UIView? {
+        guard let view = reactNativeFactory?.rootViewFactory.view(
+            withModuleName: reactRootViewName,
+            initialProperties: nil,
+            launchOptions: launchOptions
+        ) else {
             return nil
         }
         view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         view.frame = window?.rootViewController?.view.frame ?? .zero
         return view
+    }
+
+    public static func launchOptions(
+        from url: URL,
+        options: [UIApplication.OpenURLOptionsKey: Any] = [:]
+    ) -> [AnyHashable: Any] {
+        var launchOptions: [AnyHashable: Any] = [
+            UIApplication.LaunchOptionsKey.url: url
+        ]
+        launchOptions[UIApplication.LaunchOptionsKey.sourceApplication] = options[.sourceApplication]
+        launchOptions[UIApplication.LaunchOptionsKey.annotation] = options[.annotation]
+        return launchOptions
+    }
+
+    public static func launchOptions(from userActivity: NSUserActivity) -> [AnyHashable: Any] {
+        return [
+            UIApplication.LaunchOptionsKey.userActivityDictionary: [
+                UIApplication.LaunchOptionsKey.userActivityType: userActivity.activityType,
+                "UIApplicationLaunchOptionsUserActivityKey": userActivity
+            ] as [AnyHashable: Any]
+        ]
     }
 
     public func startReactApp() {
