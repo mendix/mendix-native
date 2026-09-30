@@ -268,6 +268,107 @@ public class NativeFsModule: NSObject {
         }
     }
     
+    public func getFileSize(_ filePath: String,
+                            resolve: @escaping RCTPromiseResolveBlock,
+                            reject: @escaping RCTPromiseRejectBlock) {
+
+        guard isWhiteListedPath(filePath, reject: reject) else { return }
+
+        let fileManager = FileManager.default
+        guard fileManager.fileExists(atPath: filePath) else {
+            resolve(NSNumber(value: 0))
+            return
+        }
+
+        do {
+            let attributes = try fileManager.attributesOfItem(atPath: filePath)
+            let size = attributes[.size] as? UInt64 ?? 0
+            resolve(NSNumber(value: size))
+        } catch {
+            reject(NativeFsModule.ERROR_READ_FAILED, NativeFsModule.formatError("Failed to get file size"), error)
+        }
+    }
+
+    public func writeChunk(_ blob: [String: Any],
+                           filePath: String,
+                           offset: Double,
+                           resolve: @escaping RCTPromiseResolveBlock,
+                           reject: @escaping RCTPromiseRejectBlock) {
+
+        guard isWhiteListedPath(filePath, reject: reject) else { return }
+
+        guard let data = readBlobRefAsData(blob) else {
+            reject(NativeFsModule.ERROR_READ_FAILED, NativeFsModule.formatError("Failed to read blob"), nil)
+            return
+        }
+
+        writeChunkData(data, filePath: filePath, offset: offset, resolve: resolve, reject: reject)
+    }
+
+    public func saveBase64(_ base64: String,
+                           filepath: String,
+                           resolve: @escaping RCTPromiseResolveBlock,
+                           reject: @escaping RCTPromiseRejectBlock) {
+
+        guard isWhiteListedPath(filepath, reject: reject) else { return }
+
+        guard let data = Data(base64Encoded: base64) else {
+            reject(NativeFsModule.ERROR_READ_FAILED, NativeFsModule.formatError("Invalid base64 string"), nil)
+            return
+        }
+
+        do {
+            try NativeFsModule.save(data, filepath: filepath)
+            resolve(nil)
+        } catch {
+            reject(NativeFsModule.ERROR_SAVE_FAILED, NativeFsModule.formatError("Save failed"), error)
+        }
+    }
+
+    public func writeChunkBase64(_ base64: String,
+                                 filePath: String,
+                                 offset: Double,
+                                 resolve: @escaping RCTPromiseResolveBlock,
+                                 reject: @escaping RCTPromiseRejectBlock) {
+
+        guard isWhiteListedPath(filePath, reject: reject) else { return }
+
+        guard let data = Data(base64Encoded: base64) else {
+            reject(NativeFsModule.ERROR_READ_FAILED, NativeFsModule.formatError("Invalid base64 string"), nil)
+            return
+        }
+
+        writeChunkData(data, filePath: filePath, offset: offset, resolve: resolve, reject: reject)
+    }
+
+    private func writeChunkData(_ data: Data,
+                                filePath: String,
+                                offset: Double,
+                                resolve: @escaping RCTPromiseResolveBlock,
+                                reject: @escaping RCTPromiseRejectBlock) {
+
+        let fileManager = FileManager.default
+        let byteOffset = UInt64(offset)
+
+        do {
+            if !fileManager.fileExists(atPath: filePath) {
+                let directoryURL = URL(fileURLWithPath: (filePath as NSString).deletingLastPathComponent)
+                try fileManager.createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
+                fileManager.createFile(atPath: filePath, contents: nil, attributes: nil)
+            }
+
+            let fileHandle = try FileHandle(forWritingTo: URL(fileURLWithPath: filePath))
+            defer { try? fileHandle.close() }
+
+            try fileHandle.seek(toOffset: byteOffset)
+            fileHandle.write(data)
+
+            resolve(nil)
+        } catch {
+            reject(NativeFsModule.ERROR_SAVE_FAILED, NativeFsModule.formatError("Failed to write chunk"), error)
+        }
+    }
+
     private func isWhiteListedPath(_ paths: String..., reject: RCTPromiseRejectBlock) -> Bool {
         do {
             try NativeFsModule.ensureWhiteListedPath(paths)

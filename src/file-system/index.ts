@@ -24,12 +24,21 @@ const initFs = () => {
     setEncryptionEnabled: NativeMxFileSystem.setEncryptionEnabled,
 
     //Methods - signature modified since specs does not recognize Record<string, any> and generics
-    save: (blob: BlobData, filePath: string) =>
-      NativeMxFileSystem.save(blob, filePath),
+    save: (data: BlobData | string, filePath: string) =>
+      typeof data === 'string'
+        ? NativeMxFileSystem.saveBase64(data, filePath)
+        : NativeMxFileSystem.save(data, filePath),
     writeJson: (data: Record<string, any>, filepath: string) =>
       NativeMxFileSystem.writeJson(data, filepath),
     readJson: <T>(filepath: string) =>
       NativeMxFileSystem.readJson(filepath) as Promise<T>,
+
+    //Methods - file operations required for resumable downloads
+    getFileSize: NativeMxFileSystem.getFileSize,
+    writeChunk: (data: BlobData | string, filePath: string, offset: number) =>
+      typeof data === 'string'
+        ? NativeMxFileSystem.writeChunkBase64(data, filePath, offset)
+        : NativeMxFileSystem.writeChunk(data, filePath, offset),
 
     //Helpers
     relativeToDocumentsAbsolutePath: (path: string) =>

@@ -14,6 +14,7 @@ import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.mendix.mendixnative.react.nativeModule
+import android.util.Base64
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -224,6 +225,85 @@ class NativeFsModule(private val reactContext: ReactApplicationContext) {
     } catch (e: IOException) {
       e.printStackTrace()
       promise.reject(ERROR_READ_FAILED, "Failed reading file from disk")
+    } catch (e: PathNotAccessibleException) {
+      e.printStackTrace()
+      promise.reject(INVALID_PATH, e)
+    }
+  }
+
+  fun getFileSize(filePath: String, promise: Promise) {
+    try {
+      val size = fileBackend.getFileSize(ensureWhiteListedPath(filePath))
+      promise.resolve(size.toDouble())
+    } catch (e: PathNotAccessibleException) {
+      e.printStackTrace()
+      promise.reject(INVALID_PATH, e)
+    }
+  }
+
+  fun writeChunk(blob: ReadableMap, filePath: String, offset: Double, promise: Promise) {
+    val blobModule = reactContext.nativeModule<BlobModule>(BlobModule.NAME)
+    val blobId: String = blob.getString("blobId") ?: run {
+      promise.reject(ERROR_INVALID_BLOB, "The specified blob is invalid")
+      return
+    }
+
+    val bytes = blobModule!!.resolve(blobId, blob.getInt("offset"), blob.getInt("size"))
+    if (bytes == null) {
+      promise.reject(ERROR_INVALID_BLOB, "The specified blob is invalid")
+      return
+    }
+
+    try {
+      fileBackend.writeChunk(bytes, ensureWhiteListedPath(filePath), offset.toLong())
+    } catch (e: IOException) {
+      e.printStackTrace()
+      promise.reject(ERROR_CACHE_FAILED, "Failed writing chunk to disk")
+      return
+    } catch (e: PathNotAccessibleException) {
+      e.printStackTrace()
+      promise.reject(INVALID_PATH, e)
+      return
+    }
+
+    blobModule.release(blobId)
+    promise.resolve(null)
+  }
+
+  fun saveBase64(base64: String, filePath: String, promise: Promise) {
+    val bytes = try {
+      Base64.decode(base64, Base64.DEFAULT)
+    } catch (e: IllegalArgumentException) {
+      promise.reject(ERROR_INVALID_BLOB, "Invalid base64 string")
+      return
+    }
+
+    try {
+      fileBackend.save(bytes, ensureWhiteListedPath(filePath))
+      promise.resolve(null)
+    } catch (e: IOException) {
+      e.printStackTrace()
+      promise.reject(ERROR_CACHE_FAILED, "Failed writing file to disk")
+    } catch (e: PathNotAccessibleException) {
+      e.printStackTrace()
+      promise.reject(INVALID_PATH, e)
+    }
+  }
+
+  fun writeChunkBase64(base64: String, filePath: String, offset: Double, promise: Promise) {
+    val bytes = try {
+      Base64.decode(base64, Base64.DEFAULT)
+    } catch (e: IllegalArgumentException) {
+      promise.reject(ERROR_INVALID_BLOB, "Invalid base64 string")
+      return
+    }
+
+    try {
+      fileBackend.writeChunk(bytes, ensureWhiteListedPath(filePath), offset.toLong())
+      promise.resolve(null)
+    } catch (e: IOException) {
+      e.printStackTrace()
+      promise.reject(ERROR_CACHE_FAILED, "Failed writing chunk to disk")
     } catch (e: PathNotAccessibleException) {
       e.printStackTrace()
       promise.reject(INVALID_PATH, e)
