@@ -71,6 +71,14 @@ class MxFileSystemModule(reactContext: ReactApplicationContext) :
     fsModule.writeChunk(blob, filePath, offset, promise)
   }
 
+  override fun saveBase64(base64: String, filePath: String, promise: Promise) {
+    fsModule.saveBase64(base64, filePath, promise)
+  }
+
+  override fun writeChunkBase64(base64: String, filePath: String, offset: Double, promise: Promise) {
+    fsModule.writeChunkBase64(base64, filePath, offset, promise)
+  }
+
   companion object {
     const val NAME = "MxFileSystem"
   }

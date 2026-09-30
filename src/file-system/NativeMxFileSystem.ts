@@ -38,6 +38,12 @@ export interface Spec extends TurboModule {
     filePath: string,
     offset: number
   ): Promise<void>;
+  saveBase64(base64: string, filePath: string): Promise<void>;
+  writeChunkBase64(
+    base64: string,
+    filePath: string,
+    offset: number
+  ): Promise<void>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('MxFileSystem');
