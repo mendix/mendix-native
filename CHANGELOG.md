@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - We added two new File System APIs to get the size of a File and write chunks via offset (used in 'resume download' functionality).
 
+## [v0.6.2] - 2026-09-29
+
+- We fixed an issue on iOS where a deep link that cold-started the app was not delivered to React Native, causing `Linking.getInitialURL()` to return `null`.
+
 ## [v0.6.1] - 2026-09-22
 
 - We made the MxConfiguration.nativeBinaryVersion property public.
