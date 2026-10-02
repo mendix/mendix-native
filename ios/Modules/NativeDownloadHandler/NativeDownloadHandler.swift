@@ -36,9 +36,6 @@ class NativeDownloadHandler: NSObject {
     func download(_ urlString: String, downloadPath: String) {
         self.downloadPath = downloadPath
         
-        let configuration = URLSessionConfiguration.default
-        let session = URLSession(configuration: configuration, delegate: self, delegateQueue: nil)
-        
         guard let encodedUrlString = urlString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
               let url = URL(string: encodedUrlString) else {
             let error = NSError(domain: NSURLErrorDomain, code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])
@@ -46,9 +43,13 @@ class NativeDownloadHandler: NSObject {
             return
         }
         
+        let configuration = URLSessionConfiguration.default
+        let session = URLSession(configuration: configuration, delegate: self, delegateQueue: nil)
         let request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: TimeInterval(connectionTimeout))
         let downloadTask = session.downloadTask(with: request)
         downloadTask.resume()
+        // The session retains its delegate (self) until invalidated; release both once the task is done.
+        session.finishTasksAndInvalidate()
     }
 }
 

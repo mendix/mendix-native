@@ -38,6 +38,24 @@ describe('NativeOta', () => {
       ).rejects.toMatchObject({ code: 'OTA_ZIP_FILE_MISSING' });
     });
 
+    test('rejects paths outside the OTA directory', async () => {
+      await expect(
+        NativeOta.deploy({
+          otaDeploymentID: 'harness-escape',
+          otaPackage: 'does-not-exist.zip',
+          extractionDir: '../escape',
+        })
+      ).rejects.toMatchObject({ code: 'INVALID_DEPLOY_CONFIG' });
+
+      await expect(
+        NativeOta.deploy({
+          otaDeploymentID: 'harness-escape',
+          otaPackage: '../does-not-exist.zip',
+          extractionDir: 'harness-escape',
+        })
+      ).rejects.toMatchObject({ code: 'INVALID_DEPLOY_CONFIG' });
+    });
+
     test('rejects a downloaded package that is not a valid zip', async () => {
       // Metro's status endpoint returns plain text, so the "package" can't be unzipped.
       const { otaPackage } = await NativeOta.download({

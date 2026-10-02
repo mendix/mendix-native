@@ -54,6 +54,28 @@ final class OtaDeployTests: XCTestCase {
         OtaHelpers.resolveAbsolutePathRelativeToOtaDir("/\(relative)")
     }
 
+    /// A directory next to the OTA dir that deploys must never touch.
+    private func makeSentinel() throws -> String {
+        let sentinel = ((otaDir as NSString).deletingLastPathComponent as NSString).appendingPathComponent("sentinel")
+        try? FileManager.default.removeItem(atPath: sentinel)
+        try FileManager.default.createDirectory(atPath: sentinel, withIntermediateDirectories: true)
+        try "keep".write(toFile: "\(sentinel)/keep.txt", atomically: true, encoding: .utf8)
+        addTeardownBlock { try? FileManager.default.removeItem(atPath: sentinel) }
+        return sentinel
+    }
+
+    private func setManifestBundlePath(_ relativeBundlePath: String) throws {
+        var manifest = try XCTUnwrap(OtaHelpers.readManifestAsDictionary())
+        manifest[MANIFEST_RELATIVE_BUNDLE_PATH_KEY] = relativeBundlePath
+        try JSONSerialization.data(withJSONObject: manifest).write(to: URL(fileURLWithPath: OtaHelpers.getOtaManifestFilepath()))
+    }
+
+    private func assertResolved(_ outcome: Outcome, file: StaticString = #filePath, line: UInt = #line) {
+        guard case .resolved = outcome else {
+            return XCTFail("Expected deploy to resolve, got \(outcome)", file: file, line: line)
+        }
+    }
+
     private func assertRejected(_ outcome: Outcome, _ expected: String, file: StaticString = #filePath, line: UInt = #line) {
         guard case .rejected(let code) = outcome else {
             return XCTFail("Expected rejection with \(expected), got resolve", file: file, line: line)
@@ -141,5 +163,61 @@ final class OtaDeployTests: XCTestCase {
 
     func testBundleUrlIsNilWithoutManifest() {
         XCTAssertNil(OtaJSBundleFileProvider.getBundleUrl())
+    }
+
+    func testExtractionDirOutsideOtaDirIsRejected() throws {
+        let sentinel = try makeSentinel()
+
+        for extractionDir in ["../sentinel", "deployment-1/../../sentinel", "", ".", "deployment-1/.."] {
+            let zip = try makeOtaPackage("first.zip")
+            assertRejected(deploy(id: "1", package: zip, extractionDir: extractionDir), INVALID_DEPLOY_CONFIG)
+            XCTAssertTrue(FileManager.default.fileExists(atPath: path(zip)), extractionDir)
+        }
+        XCTAssertTrue(FileManager.default.fileExists(atPath: otaDir))
+        XCTAssertNil(OtaHelpers.readManifestAsDictionary())
+        XCTAssertEqual(try String(contentsOfFile: "\(sentinel)/keep.txt", encoding: .utf8), "keep")
+    }
+
+    func testOtaPackageOutsideOtaDirIsRejected() throws {
+        let outsideZip = ((otaDir as NSString).deletingLastPathComponent as NSString).appendingPathComponent("outside.zip")
+        try FileManager.default.moveItem(atPath: path(try makeOtaPackage("outside.zip")), toPath: outsideZip)
+        defer { try? FileManager.default.removeItem(atPath: outsideZip) }
+
+        assertRejected(deploy(id: "1", package: "../outside.zip", extractionDir: "deployment-1"), INVALID_DEPLOY_CONFIG)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: outsideZip))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: path("deployment-1")))
+    }
+
+    func testExtractionDirInSubdirectoryIsAllowed() throws {
+        assertResolved(deploy(id: "1", package: try makeOtaPackage("first.zip"), extractionDir: "deployments/1"))
+
+        let manifest = try XCTUnwrap(OtaHelpers.readManifestAsDictionary())
+        XCTAssertEqual(manifest[MANIFEST_RELATIVE_BUNDLE_PATH_KEY] as? String, "deployments/1/index.ios.bundle")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: path("deployments/1/index.ios.bundle")))
+    }
+
+    func testOldBundleOutsideOtaDirIsNotRemoved() throws {
+        let sentinel = try makeSentinel()
+        assertResolved(deploy(id: "1", package: try makeOtaPackage("first.zip"), extractionDir: "deployment-1"))
+        try setManifestBundlePath("../sentinel/index.ios.bundle")
+
+        assertResolved(deploy(id: "2", package: try makeOtaPackage("second.zip"), extractionDir: "deployment-2"))
+        XCTAssertEqual(try String(contentsOfFile: "\(sentinel)/keep.txt", encoding: .utf8), "keep")
+    }
+
+    func testOldBundleInOtaDirRootDoesNotRemoveOtaDir() throws {
+        assertResolved(deploy(id: "1", package: try makeOtaPackage("first.zip"), extractionDir: "deployment-1"))
+        try setManifestBundlePath("index.ios.bundle")
+
+        assertResolved(deploy(id: "2", package: try makeOtaPackage("second.zip"), extractionDir: "deployment-2"))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: path("deployment-2/index.ios.bundle")))
+        XCTAssertNotNil(OtaHelpers.readManifestAsDictionary())
+    }
+
+    func testNewDeploymentIntoSameDirKeepsNewBundle() throws {
+        assertResolved(deploy(id: "1", package: try makeOtaPackage("first.zip", bundleContent: "first"), extractionDir: "deployment"))
+        assertResolved(deploy(id: "2", package: try makeOtaPackage("second.zip", bundleContent: "second"), extractionDir: "deployment"))
+
+        XCTAssertEqual(try String(contentsOfFile: path("deployment/index.ios.bundle"), encoding: .utf8), "second")
     }
 }

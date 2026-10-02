@@ -4,7 +4,6 @@ import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import java.io.*
 import java.net.ConnectException
-import kotlin.math.abs
 
 @Throws(
   IllegalArgumentException::class,
@@ -71,6 +70,9 @@ fun downloadFile(
 }
 
 
+private const val COPY_BUFFER_SIZE = 64 * 1024
+private const val UNKNOWN_LENGTH_PROGRESS_INTERVAL = 64.0 * 1024
+
 fun makeProgressCallbackInvoker(
   bytesInterval: Double,
   cb: (receivedBytes: Double, totalBytes: Double) -> Unit
@@ -110,19 +112,27 @@ class DownloadResponseHandler(
         BufferedOutputStream(FileOutputStream(outputFile))
 
       val totalBytes = response.body!!.contentLength().toDouble()
+      var reportedBytes = -1.0
       val progressCallbackInvoker = makeProgressCallbackInvoker(
-        totalBytes / 100,
-        progressCallback
-      )
+        // Without a content length (-1), report progress every 64 KB instead of every 1%.
+        if (totalBytes > 0) totalBytes / 100 else UNKNOWN_LENGTH_PROGRESS_INTERVAL,
+      ) { received, total ->
+        reportedBytes = received
+        progressCallback(received, total)
+      }
 
-      var receivedBytes: Double
-      var data = inputStream.read()
-      while (data != -1) {
-        outputStream.write(data)
-        data = inputStream.read()
-
-        receivedBytes = abs(inputStream.available().toDouble() - totalBytes)
+      var receivedBytes = 0.0
+      val buffer = ByteArray(COPY_BUFFER_SIZE)
+      var read = inputStream.read(buffer)
+      while (read != -1) {
+        outputStream.write(buffer, 0, read)
+        receivedBytes += read
         progressCallbackInvoker(receivedBytes, totalBytes)
+        read = inputStream.read(buffer)
+      }
+      // Always report completion, even when the last chunk didn't reach the next interval.
+      if (reportedBytes != receivedBytes) {
+        progressCallback(receivedBytes, totalBytes)
       }
       outputStream.flush()
     } catch (e: Exception) {

@@ -70,13 +70,32 @@ class NativeOtaModuleTest {
   }
 
   /** Writes a zip containing index.android.bundle into the OTA dir and returns its file name. */
-  private fun makeOtaPackage(name: String, bundleContent: String = "bundle"): String {
+  private fun makeOtaPackage(name: String, bundleContent: String = "bundle"): String =
+    makeZip(name, mapOf("index.android.bundle" to bundleContent))
+
+  /** Writes a zip with the given entries (a null content makes a directory entry) into the OTA dir. */
+  private fun makeZip(name: String, entries: Map<String, String?>): String {
     ZipOutputStream(File(otaDir, name).outputStream()).use { zip ->
-      zip.putNextEntry(ZipEntry("index.android.bundle"))
-      zip.write(bundleContent.toByteArray())
-      zip.closeEntry()
+      entries.forEach { (entryName, content) ->
+        zip.putNextEntry(ZipEntry(entryName))
+        content?.let { zip.write(it.toByteArray()) }
+        zip.closeEntry()
+      }
     }
     return name
+  }
+
+  /** A directory next to the OTA dir that deploys must never touch. */
+  private fun makeSentinel(): File =
+    File(otaDir.parentFile, "sentinel").apply {
+      deleteRecursively()
+      mkdirs()
+      File(this, "keep.txt").writeText("keep")
+    }
+
+  private fun assertSentinelIntact(sentinel: File) {
+    assertEquals("keep", File(sentinel, "keep.txt").readText())
+    sentinel.deleteRecursively()
   }
 
   private fun file(relative: String) = File(otaDir, relative)
@@ -161,5 +180,106 @@ class NativeOtaModuleTest {
     manifestFile.writeText(JSONObject(manifestFile.readText()).put(MANIFEST_APP_VERSION_KEY, "0.0.0-0").toString())
 
     assertNull(OtaJSBundleUrlProvider().getJSBundleFile(context))
+  }
+
+  @Test
+  fun zipWithEntryOutsideExtractionDirIsRejected() {
+    val zip = makeZip(
+      "slip.zip",
+      mapOf("index.android.bundle" to "bundle", "../escape.txt" to "escaped", "../../escape.txt" to "escaped")
+    )
+
+    assertEquals(Outcome.Rejected(OTA_DEPLOYMENT_FAILED), deploy("1", zip, "deployment-1"))
+    assertFalse(file("escape.txt").exists())
+    assertFalse(File(otaDir.parentFile, "escape.txt").exists())
+    assertFalse(file("deployment-1").exists())
+    assertFalse(File(getOtaManifestFilepath(context)).exists())
+  }
+
+  @Test
+  fun zipWithNestedAndEmptyDirectoriesIsExtracted() {
+    val zip = makeZip(
+      "nested.zip",
+      mapOf(
+        "index.android.bundle" to "bundle",
+        "assets/a/b/image.png" to "image",
+        "empty/" to null,
+        "./dot.txt" to "dot",
+      )
+    )
+
+    assertEquals(Outcome.Resolved, deploy("1", zip, "deployment-1"))
+    assertEquals("image", file("deployment-1/assets/a/b/image.png").readText())
+    assertEquals("dot", file("deployment-1/dot.txt").readText())
+    assertTrue(file("deployment-1/empty").isDirectory)
+  }
+
+  @Test
+  fun extractionDirOutsideOtaDirIsRejected() {
+    val sentinel = makeSentinel()
+
+    for (extractionDir in listOf("../sentinel", "deployment-1/../../sentinel", "", ".", "deployment-1/..")) {
+      val zip = makeOtaPackage("first.zip")
+      assertEquals(extractionDir, Outcome.Rejected(INVALID_DEPLOY_CONFIG), deploy("1", zip, extractionDir))
+      assertTrue(file(zip).exists())
+    }
+    assertTrue(otaDir.exists())
+    assertFalse(File(getOtaManifestFilepath(context)).exists())
+    assertSentinelIntact(sentinel)
+  }
+
+  @Test
+  fun otaPackageOutsideOtaDirIsRejected() {
+    val outsideZip = File(otaDir.parentFile, "outside.zip")
+    makeOtaPackage("outside.zip")
+    file("outside.zip").renameTo(outsideZip)
+
+    assertEquals(Outcome.Rejected(INVALID_DEPLOY_CONFIG), deploy("1", "../outside.zip", "deployment-1"))
+    assertTrue(outsideZip.exists())
+    assertFalse(file("deployment-1").exists())
+    outsideZip.delete()
+  }
+
+  @Test
+  fun extractionDirInSubdirectoryIsAllowed() {
+    assertEquals(Outcome.Resolved, deploy("1", makeOtaPackage("first.zip"), "deployments/1"))
+
+    val manifest = JSONObject(File(getOtaManifestFilepath(context)).readText())
+    assertEquals("deployments/1/index.android.bundle", manifest.getString(MANIFEST_RELATIVE_BUNDLE_PATH_KEY))
+  }
+
+  @Test
+  fun oldBundleOutsideOtaDirIsNotRemoved() {
+    val sentinel = makeSentinel()
+    assertEquals(Outcome.Resolved, deploy("1", makeOtaPackage("first.zip"), "deployment-1"))
+    val manifestFile = File(getOtaManifestFilepath(context))
+    manifestFile.writeText(
+      JSONObject(manifestFile.readText())
+        .put(MANIFEST_RELATIVE_BUNDLE_PATH_KEY, "../sentinel/index.android.bundle").toString()
+    )
+
+    assertEquals(Outcome.Resolved, deploy("2", makeOtaPackage("second.zip"), "deployment-2"))
+    assertSentinelIntact(sentinel)
+  }
+
+  @Test
+  fun oldBundleInOtaDirRootDoesNotRemoveOtaDir() {
+    assertEquals(Outcome.Resolved, deploy("1", makeOtaPackage("first.zip"), "deployment-1"))
+    val manifestFile = File(getOtaManifestFilepath(context))
+    manifestFile.writeText(
+      JSONObject(manifestFile.readText()).put(MANIFEST_RELATIVE_BUNDLE_PATH_KEY, "index.android.bundle").toString()
+    )
+
+    assertEquals(Outcome.Resolved, deploy("2", makeOtaPackage("second.zip"), "deployment-2"))
+    assertTrue(file("deployment-2/index.android.bundle").exists())
+    assertTrue(manifestFile.exists())
+  }
+
+  @Test
+  fun newDeploymentIntoSameDirKeepsNewBundle() {
+    assertEquals(Outcome.Resolved, deploy("1", makeOtaPackage("first.zip", "first"), "deployment"))
+    assertEquals(Outcome.Resolved, deploy("2", makeOtaPackage("second.zip", "second"), "deployment"))
+
+    assertEquals("second", file("deployment/index.android.bundle").readText())
   }
 }

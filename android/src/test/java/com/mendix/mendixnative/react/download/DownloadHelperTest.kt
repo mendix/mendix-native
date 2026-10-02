@@ -3,6 +3,7 @@ package com.mendix.mendixnative.react.download
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
+import okio.Buffer
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -14,6 +15,7 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.io.File
 import java.net.ConnectException
+import kotlin.random.Random
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
@@ -42,7 +44,11 @@ class DownloadHelperTest {
     fun await() = assertTrue("download did not finish", latch.await(5, TimeUnit.SECONDS))
   }
 
-  private fun download(file: File, mimeType: String? = null): Result {
+  private fun download(
+    file: File,
+    mimeType: String? = null,
+    progress: (receivedBytes: Double, totalBytes: Double) -> Unit = { _, _ -> },
+  ): Result {
     val result = Result()
     downloadFile(
       client = client,
@@ -51,6 +57,7 @@ class DownloadHelperTest {
       expectedMimeType = mimeType,
       onSuccess = { result.succeeded = true; result.latch.countDown() },
       onFailure = { result.error = it; result.latch.countDown() },
+      progressCallback = progress,
     )
     result.await()
     return result
@@ -138,5 +145,57 @@ class DownloadHelperTest {
     listOf(1.0, 9.0, 10.0, 15.0, 19.0, 20.0, 35.0, 40.0).forEach { invoke(it, 100.0) }
 
     assertEquals(listOf(10.0, 20.0, 35.0), calls)
+  }
+
+  private fun randomBytes(size: Int) = Random(42).nextBytes(size)
+
+  private fun assertMonotonic(events: List<Pair<Double, Double>>) {
+    events.zipWithNext().forEach { (a, b) -> assertTrue("$a then $b", b.first > a.first) }
+  }
+
+  @Test
+  fun largeBodyIsWrittenIntactWithBoundedProgress() {
+    val bytes = randomBytes(1024 * 1024)
+    // Throttling splits the body over many reads, like a real network.
+    server.enqueue(MockResponse().setBody(Buffer().write(bytes)).throttleBody(64 * 1024, 5, TimeUnit.MILLISECONDS))
+    val file = File(tempFolder.root, "large.bin")
+    val events = mutableListOf<Pair<Double, Double>>()
+
+    val result = download(file) { received, total -> events.add(received to total) }
+
+    assertNull(result.error)
+    assertTrue(bytes.contentEquals(file.readBytes()))
+    assertTrue("${events.size} events", events.size in 2..101)
+    assertMonotonic(events)
+    assertTrue(events.all { it.second == bytes.size.toDouble() && it.first <= it.second })
+    assertEquals(bytes.size.toDouble(), events.last().first, 0.0)
+  }
+
+  @Test
+  fun bodyWithoutContentLengthReportsProgressPerInterval() {
+    val bytes = randomBytes(300 * 1024 + 7)
+    server.enqueue(MockResponse().setChunkedBody(Buffer().write(bytes), 1024))
+    val file = File(tempFolder.root, "chunked.bin")
+    val events = mutableListOf<Pair<Double, Double>>()
+
+    val result = download(file) { received, total -> events.add(received to total) }
+
+    assertNull(result.error)
+    assertTrue(bytes.contentEquals(file.readBytes()))
+    // One event per 64 KB plus the final one.
+    assertTrue("${events.size} events", events.size in 2..6)
+    assertMonotonic(events)
+    assertTrue(events.all { it.second == -1.0 })
+    assertEquals(bytes.size.toDouble(), events.last().first, 0.0)
+  }
+
+  @Test
+  fun smallBodyReportsCompletion() {
+    server.enqueue(MockResponse().setBody("content"))
+    val events = mutableListOf<Pair<Double, Double>>()
+
+    download(File(tempFolder.root, "small.txt")) { received, total -> events.add(received to total) }
+
+    assertEquals(listOf(7.0 to 7.0), events)
   }
 }
