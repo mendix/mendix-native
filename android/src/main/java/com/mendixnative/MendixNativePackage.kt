@@ -6,7 +6,7 @@ import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.module.model.ReactModuleInfo
 import com.facebook.react.module.model.ReactModuleInfoProvider
 import com.mendix.mendixnative.react.splash.MendixSplashScreenPresenter
-import com.mendixnative.configuration.MxConfigurationModule
+import com.mendixnative.configuration.MxConfigModule
 import com.mendixnative.cookie.MxCookieModule
 import com.mendixnative.download.MxDownloadModule
 import com.mendixnative.encryption.MxEncryptionModule
@@ -34,7 +34,7 @@ class MendixNativePackage : BaseReactPackage() {
       MxOtaModule.NAME -> MxOtaModule(reactContext)
       MxDownloadModule.NAME -> MxDownloadModule(reactContext)
       MxReloadModule.NAME -> MxReloadModule(reactContext)
-      MxConfigurationModule.NAME -> MxConfigurationModule(reactContext)
+      MxConfigModule.NAME -> MxConfigModule(reactContext)
       MxCookieModule.NAME -> MxCookieModule(reactContext)
       MxErrorModule.NAME -> MxErrorModule(reactContext)
       MxNavigationModule.NAME -> MxNavigationModule(reactContext)
@@ -52,7 +52,7 @@ class MendixNativePackage : BaseReactPackage() {
         MxOtaModule.NAME,
         MxDownloadModule.NAME,
         MxReloadModule.NAME,
-        MxConfigurationModule.NAME,
+        MxConfigModule.NAME,
         MxCookieModule.NAME,
         MxErrorModule.NAME,
         MxNavigationModule.NAME

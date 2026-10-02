@@ -24,6 +24,8 @@ class NativeFsModule(private val reactContext: ReactApplicationContext) {
   private val fileBackend: FileBackend = FileBackend(reactContext)
   private val filesDir: String = reactContext.filesDir.absolutePath
   private val cacheDir: String = reactContext.cacheDir.absolutePath
+  private val allowedRoots: List<String> =
+    listOf(reactContext.filesDir.canonicalPath, reactContext.cacheDir.canonicalPath)
 
   fun setEncryptionEnabled(encryptionEnabled: Boolean) {
     this.fileBackend.setEncryptionEnabled(encryptionEnabled)
@@ -87,6 +89,7 @@ class NativeFsModule(private val reactContext: ReactApplicationContext) {
 
     if (!fileBackend.exists(fromPath)) {
       promise.reject(ERROR_READ_FAILED, "File does not exist")
+      return
     }
 
     try {
@@ -104,10 +107,11 @@ class NativeFsModule(private val reactContext: ReactApplicationContext) {
 
   fun remove(filePath: String, promise: Promise) {
     try {
-      if (fileBackend.isDirectory(filePath)) {
-        fileBackend.deleteDirectory(filePath)
+      val path = ensureWhiteListedPath(filePath)
+      if (fileBackend.isDirectory(path)) {
+        fileBackend.deleteDirectory(path)
       } else {
-        fileBackend.deleteFile(ensureWhiteListedPath(filePath))
+        fileBackend.deleteFile(path)
       }
       promise.resolve(null)
     } catch (e: PathNotAccessibleException) {
@@ -165,9 +169,12 @@ class NativeFsModule(private val reactContext: ReactApplicationContext) {
 
   fun readAsText(filePath: String, promise: Promise) {
     try {
-      promise.resolve(String(fileBackend.read(filePath), StandardCharsets.UTF_8))
+      promise.resolve(String(fileBackend.read(ensureWhiteListedPath(filePath)), StandardCharsets.UTF_8))
     } catch (e: IOException) {
       promise.reject("no text", e)
+    } catch (e: PathNotAccessibleException) {
+      e.printStackTrace()
+      promise.reject(INVALID_PATH, e)
     }
   }
 
@@ -214,7 +221,7 @@ class NativeFsModule(private val reactContext: ReactApplicationContext) {
       )
     } catch (e: FileNotFoundException) {
       e.printStackTrace()
-      promise.resolve("null")
+      promise.resolve(null)
     } catch (e: JsonParseException) {
       e.printStackTrace()
       promise.reject(ERROR_SERIALIZATION_FAILED, "Failed to deserialize JSON", e)
@@ -252,7 +259,17 @@ class NativeFsModule(private val reactContext: ReactApplicationContext) {
 
   @Throws(PathNotAccessibleException::class)
   private fun ensureWhiteListedPath(path: String): String {
-    if (!(path.startsWith(filesDir) || path.startsWith(cacheDir))) {
+    // Canonicalize first so "../" can't escape a root, and require a "/" boundary so a
+    // sibling like "<filesDir>Evil" doesn't match "<filesDir>".
+    val canonical = try {
+      File(path).canonicalPath
+    } catch (e: IOException) {
+      throw PathNotAccessibleException(path)
+    }
+    val isAllowed = path.startsWith("/") && allowedRoots.any { root ->
+      canonical == root || canonical.startsWith("$root/")
+    }
+    if (!isAllowed) {
       throw PathNotAccessibleException(path)
     }
     return path

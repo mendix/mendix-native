@@ -26,6 +26,9 @@ export interface Spec extends TurboModule {
   readonly onDownloadProgress: CodegenTypes.EventEmitter<DownloadProgress>;
 }
 
+// Codegen requires EventEmitter inline in Spec, so derive the alias from it.
+type OnDownloadProgress = Spec['onDownloadProgress'];
+
 export default TurboModuleRegistry.getEnforcing<Spec>('MxOta');
 
 export type {
@@ -33,4 +36,5 @@ export type {
   OtaDeployConfig,
   OtaDownloadResponse,
   DownloadProgress,
+  OnDownloadProgress,
 };

@@ -5,7 +5,12 @@
 
 @implementation MxError
 
-RCT_EXPORT_MODULE()
+// Injected by React Native. Lookups here don't need the main thread, unlike DevHelper.getModule.
+@synthesize moduleRegistry = _moduleRegistry;
+
++ (NSString *)moduleName {
+    return @"MxError";
+}
 
 - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
 (const facebook::react::ObjCTurboModule::InitParams &)params
@@ -15,7 +20,7 @@ RCT_EXPORT_MODULE()
 
 - (void)handle:(nonnull NSString *)message
     stackTrace:(nonnull NSArray *)stackTrace {
-    [[[NativeErrorHandler alloc] init] handleWithMessage:message stackTrace:stackTrace];
+    [[[NativeErrorHandler alloc] initWithExceptionsManager:[_moduleRegistry moduleForName:"ExceptionsManager"]] handleWithMessage:message stackTrace:stackTrace];
 }
 
 @end
