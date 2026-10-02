@@ -69,6 +69,25 @@ jobs:
           # Launch simulator with our custom script
           bash .github/scripts/launch-ios-simulator.sh "${{ env.DEVICE_MODEL }}" "${{ env.IOS_VERSION }}"
 
+      # XCTest unit tests in ios/Tests, installed by the MendixNative test spec in the Podfile.
+      # Shares the app build's derived data so the pods aren't compiled again.
+      - name: Run native unit tests
+        working-directory: example/ios
+        run: |
+          xcodebuild test \
+            -workspace MendixNativeExample.xcworkspace \
+            -scheme MendixNative-Unit-Tests \
+            -destination "platform=iOS Simulator,name=${{ env.DEVICE_MODEL }},OS=${{ env.IOS_VERSION }}" \
+            -derivedDataPath build \
+            -resultBundlePath build/unit-tests.xcresult
+
+      - name: Upload native unit test results
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ios-unit-test-results
+          path: example/ios/build/unit-tests.xcresult
+
       # Install app on simulator
       - name: Install app on simulator
         working-directory: example

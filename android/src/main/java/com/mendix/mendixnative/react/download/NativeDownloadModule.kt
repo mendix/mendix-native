@@ -59,8 +59,9 @@ class NativeDownloadModule(
 }
 
 /**
- * Maps a download failure to a rejection code and message.
- * Subclasses come before their parents: FileAlreadyExistsException and ConnectException are both IOExceptions.
+ * Maps a download failure to a rejection code and message, using the same codes as iOS.
+ * Subclasses come before their parents: FileAlreadyExistsException, DownloadFileException and ConnectException
+ * are all IOExceptions. Any other IOException comes from the network.
  */
 internal fun downloadErrorFor(e: Exception): Pair<String, String> = when (e) {
   is DownloadMimeTypeException -> NativeDownloadModule.ERROR_DOWNLOAD_FAILED to "Mime type check failed"
@@ -68,8 +69,9 @@ internal fun downloadErrorFor(e: Exception): Pair<String, String> = when (e) {
   is NoDataException -> NativeDownloadModule.ERROR_CONNECTION_FAILED to "No data found"
   is FileCorruptionException -> NativeDownloadModule.IO_EXCEPTION to "File corrupted"
   is HttpStatusException -> NativeDownloadModule.ERROR_DOWNLOAD_FAILED to "Download failed with HTTP status ${e.statusCode}"
+  is DownloadFileException -> NativeDownloadModule.IO_EXCEPTION to "Could not write file"
   is ConnectException -> NativeDownloadModule.ERROR_DOWNLOAD_FAILED to "Failed to connect to endpoint"
-  is IOException -> NativeDownloadModule.IO_EXCEPTION to "IO exception"
+  is IOException -> NativeDownloadModule.ERROR_DOWNLOAD_FAILED to "Download failed"
   is SecurityException -> NativeDownloadModule.FS_ACCESS_EXCEPTION to "Access to filesystem denied"
   else -> NativeDownloadModule.ERROR_DOWNLOAD_FAILED to "Failed to download file"
 }

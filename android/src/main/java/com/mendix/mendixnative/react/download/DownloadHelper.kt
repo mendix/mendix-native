@@ -39,8 +39,10 @@ fun downloadFile(
 ) {
   val outputFile = File(downloadPath)
   if (outputFile.exists()) throw FileAlreadyExistsException(outputFile)
-  outputFile.parentFile?.mkdirs()
-  outputFile.createNewFile()
+  writingFile {
+    outputFile.parentFile?.mkdirs()
+    outputFile.createNewFile()
+  }
 
   try {
     client.newCall(Request.Builder().url(url).get().build()).enqueue(object : Callback {
@@ -107,8 +109,7 @@ class DownloadResponseHandler(
 
       inputStream = BufferedInputStream(body!!.byteStream())
 
-      outputStream =
-        BufferedOutputStream(FileOutputStream(outputFile))
+      outputStream = writingFile { BufferedOutputStream(FileOutputStream(outputFile)) }
 
       val totalBytes = response.body!!.contentLength().toDouble()
       var reportedBytes = -1.0
@@ -124,7 +125,7 @@ class DownloadResponseHandler(
       val buffer = ByteArray(COPY_BUFFER_SIZE)
       var read = inputStream.read(buffer)
       while (read != -1) {
-        outputStream.write(buffer, 0, read)
+        writingFile { outputStream.write(buffer, 0, read) }
         receivedBytes += read
         progressCallbackInvoker(receivedBytes, totalBytes)
         read = inputStream.read(buffer)
@@ -133,7 +134,7 @@ class DownloadResponseHandler(
       if (reportedBytes != receivedBytes) {
         progressCallback(receivedBytes, totalBytes)
       }
-      outputStream.flush()
+      writingFile { outputStream.flush() }
     } catch (e: Exception) {
       outputFile.delete()
       throw e
@@ -154,6 +155,19 @@ internal fun mimeTypeMatches(actual: MediaType?, expected: String): Boolean {
     actual.type.equals(expectedType.type, ignoreCase = true) &&
     actual.subtype.equals(expectedType.subtype, ignoreCase = true)
 }
+
+/**
+ * Thrown when writing the destination file fails, to tell file errors apart from network errors,
+ * which are plain IOExceptions too. The original exception is the cause.
+ */
+class DownloadFileException(cause: IOException) : IOException(cause.message, cause)
+
+private inline fun <T> writingFile(block: () -> T): T =
+  try {
+    block()
+  } catch (e: IOException) {
+    throw DownloadFileException(e)
+  }
 
 /** Thrown for a non-2xx response. Extends ConnectException, which was thrown before, for compatibility. */
 class HttpStatusException(val statusCode: Int) : ConnectException("Download failed with HTTP status $statusCode")

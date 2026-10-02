@@ -6,6 +6,7 @@ import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.WritableMap
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
+import okhttp3.mockwebserver.SocketPolicy
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -20,6 +21,7 @@ import org.robolectric.RuntimeEnvironment
 import java.io.File
 import java.io.IOException
 import java.net.ConnectException
+import java.net.SocketTimeoutException
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
@@ -131,6 +133,42 @@ class NativeDownloadModuleTest {
   }
 
   @Test
+  fun disconnectBeforeResponseRejectsWithDownloadFailed() {
+    server.enqueue(MockResponse().setSocketPolicy(SocketPolicy.DISCONNECT_AT_START))
+
+    assertEquals(
+      Outcome.Rejected(NativeDownloadModule.ERROR_DOWNLOAD_FAILED),
+      download(server.url("/file").toString(), file("file.txt"))
+    )
+  }
+
+  @Test
+  fun disconnectDuringBodyRejectsWithDownloadFailedAndRemovesFile() {
+    server.enqueue(
+      MockResponse().setBody("x".repeat(256 * 1024)).setSocketPolicy(SocketPolicy.DISCONNECT_DURING_RESPONSE_BODY)
+    )
+    val destination = file("file.txt")
+
+    assertEquals(
+      Outcome.Rejected(NativeDownloadModule.ERROR_DOWNLOAD_FAILED),
+      download(server.url("/file").toString(), destination)
+    )
+    assertFalse(destination.exists())
+  }
+
+  @Test
+  fun unwritableDestinationRejectsWithIoException() {
+    // The parent is a file, so the destination can't be created.
+    val parent = tempFolder.newFile("not-a-dir")
+
+    assertEquals(
+      Outcome.Rejected(NativeDownloadModule.IO_EXCEPTION),
+      download(server.url("/file").toString(), File(parent, "file.txt"))
+    )
+    assertEquals(0, server.requestCount)
+  }
+
+  @Test
   fun mimeTypeWithCharsetResolves() {
     server.enqueue(MockResponse().setHeader("Content-Type", "text/plain; charset=utf-8").setBody("content"))
 
@@ -155,7 +193,10 @@ class NativeDownloadModuleTest {
     assertEquals(NativeDownloadModule.ERROR_DOWNLOAD_FAILED, downloadErrorFor(DownloadMimeTypeException()).first)
     assertEquals(NativeDownloadModule.ERROR_CONNECTION_FAILED, downloadErrorFor(NoDataException()).first)
     assertEquals(NativeDownloadModule.IO_EXCEPTION, downloadErrorFor(FileCorruptionException()).first)
-    assertEquals(NativeDownloadModule.IO_EXCEPTION, downloadErrorFor(IOException()).first)
+    assertEquals(NativeDownloadModule.IO_EXCEPTION, downloadErrorFor(DownloadFileException(IOException())).first)
+    // Any other IOException comes from the network, as on iOS.
+    assertEquals(NativeDownloadModule.ERROR_DOWNLOAD_FAILED, downloadErrorFor(IOException()).first)
+    assertEquals(NativeDownloadModule.ERROR_DOWNLOAD_FAILED, downloadErrorFor(SocketTimeoutException()).first)
     assertEquals(NativeDownloadModule.FS_ACCESS_EXCEPTION, downloadErrorFor(SecurityException()).first)
     assertEquals(NativeDownloadModule.ERROR_DOWNLOAD_FAILED, downloadErrorFor(IllegalArgumentException()).first)
   }
