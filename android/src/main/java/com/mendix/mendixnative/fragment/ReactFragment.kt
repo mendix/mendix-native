@@ -25,7 +25,7 @@ open class ReactFragment : com.facebook.react.ReactFragment() {
     return view
   }
 
-  @Suppress("DEPRECATION")
+  @Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
   override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
     super.onActivityResult(requestCode, resultCode, data)
     reactDelegate.onActivityResult(requestCode, resultCode, data, true)

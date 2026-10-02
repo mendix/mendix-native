@@ -120,23 +120,26 @@ class NativeOtaModule(
         INVALID_DEPLOY_CONFIG,
         "Key $DEPLOY_CONFIG_DEPLOYMENT_ID_KEY is invalid."
       )
-    val zipFile = File(
-      getOtaZipFilePath(
-        reactApplicationContext,
-        deployConfig.getStringOrNull(DEPLOY_CONFIG_OTA_PACKAGE_KEY)
-          ?: return promise.reject(
-            INVALID_DEPLOY_CONFIG,
-            "Key $DEPLOY_CONFIG_OTA_PACKAGE_KEY is invalid."
-          )
+    val otaPackage = deployConfig.getStringOrNull(DEPLOY_CONFIG_OTA_PACKAGE_KEY)
+      ?: return promise.reject(
+        INVALID_DEPLOY_CONFIG,
+        "Key $DEPLOY_CONFIG_OTA_PACKAGE_KEY is invalid."
       )
-    )
-    val extractionDir = File(
+    val zipFile = resolvePathInsideOtaDir(otaDir, otaPackage)
+      ?: return promise.reject(
+        INVALID_DEPLOY_CONFIG,
+        "Key $DEPLOY_CONFIG_OTA_PACKAGE_KEY points outside of the OTA directory."
+      )
+    val extractionDir = resolvePathInsideOtaDir(
       otaDir,
       deployConfig.getStringOrNull(DEPLOY_CONFIG_EXTRACTION_DIR_KEY)
         ?: return promise.reject(
           INVALID_DEPLOY_CONFIG,
           "Key $DEPLOY_CONFIG_EXTRACTION_DIR_KEY is invalid."
         )
+    ) ?: return promise.reject(
+      INVALID_DEPLOY_CONFIG,
+      "Key $DEPLOY_CONFIG_EXTRACTION_DIR_KEY points outside of the OTA directory."
     )
     val oldManifest = readManifestJson(reactApplicationContext, fileBackend)
 
@@ -194,16 +197,18 @@ class NativeOtaModule(
       val shouldRemoveOldBundle =
         oldManifest != null && oldManifest.otaDeploymentID != otaDeploymentID
       if (shouldRemoveOldBundle) {
-        File(
-          resolveAbsolutePathRelativeToOtaDir(
-            reactApplicationContext,
-            oldManifest.relativeBundlePath
-          )
-        ).parentFile?.deleteRecursively()
+        // The manifest is on disk, so only remove its bundle dir if it is inside the OTA dir,
+        // and never the dir that was just deployed.
+        File(oldManifest.relativeBundlePath).parent
+          ?.let { resolvePathInsideOtaDir(otaDir, it) }
+          ?.takeIf { it.canonicalFile != extractionDir.canonicalFile }
+          ?.deleteRecursively()
       }
       zipFile.delete()
     } catch (e: Exception) {
       extractionDir.deleteRecursively()
+      // A package that failed to deploy won't succeed on retry, so don't keep it (as on iOS).
+      zipFile.delete()
       return reject(promise, OTA_DEPLOYMENT_FAILED, "OTA deployment failed", e)
     }
     Log.i(TAG, "OTA deployed.")

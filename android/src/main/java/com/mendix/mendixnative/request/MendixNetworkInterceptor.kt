@@ -33,35 +33,42 @@ const val encryptedCookieKeyPrefix = "MxEnc" // Prefix for encrypted cookie keys
  * Request extension to decrypt possibly encrypted cookies
  */
 fun Request.withDecryptedCookies(): Request {
-  val cookiePairs = this.header("Cookie")?.split("; ")
+  // Skip empty segments, e.g. from a trailing "; ".
+  val cookiePairs = this.header("Cookie")?.split(";")?.map { it.trim() }?.filter { it.isNotEmpty() }
+    ?: return this
   val encryptedCookieExists =
-    cookiePairs?.any { cookie -> cookie.startsWith(encryptedCookieKeyPrefix) }
-  val decryptedCookies = cookiePairs?.map {
-    val (key, value) = it.split("=", limit = 2)
-
-    if (encryptedCookieExists!! && key.startsWith(encryptedCookieKeyPrefix)) {
-      try {
-        val params = cookieValueToDecryptionParams(value)
-        val decryptedValue = decryptValue(params.first, params.second)
-        return@map "${key.removePrefix(encryptedCookieKeyPrefix)}=$decryptedValue"
-      } catch (e: Exception) {
-        Log.w("MendixNetworkInterceptor", "Failed to decrypt cookie $key, dropping it", e)
-        return@map null
-      }
-    } else if (!encryptedCookieExists) {
-      return@map it;
+    cookiePairs.any { cookie -> cookie.startsWith(encryptedCookieKeyPrefix) }
+  val decryptedCookies = cookiePairs.mapNotNull {
+    if (!encryptedCookieExists) {
+      return@mapNotNull it
     }
 
-    return@map null
-  }?.filterNotNull()?.joinToString(separator = "; ")
+    // A cookie without "=" has no value, so it can't be an encrypted one.
+    val parts = it.split("=", limit = 2)
+    val key = parts[0]
+    val value = parts.getOrNull(1)
+    if (!key.startsWith(encryptedCookieKeyPrefix)) {
+      return@mapNotNull null
+    }
 
-  return when {
-    decryptedCookies != null && decryptedCookies.isNotBlank() -> this.newBuilder()
-      .removeHeader("Cookie")
-      .addHeader("Cookie", decryptedCookies).build()
+    try {
+      val params = cookieValueToDecryptionParams(
+        value ?: throw IllegalArgumentException("Cookie has no value")
+      )
+      val decryptedValue = decryptValue(params.first, params.second)
+      return@mapNotNull "${key.removePrefix(encryptedCookieKeyPrefix)}=$decryptedValue"
+    } catch (e: Exception) {
+      Log.w("MendixNetworkInterceptor", "Failed to decrypt cookie $key, dropping it", e)
+      return@mapNotNull null
+    }
+  }.joinToString(separator = "; ")
 
-    else -> this
+  val builder = this.newBuilder().removeHeader("Cookie")
+  // When no cookie is left (e.g. none could be decrypted), send none rather than the encrypted ones.
+  if (decryptedCookies.isNotBlank()) {
+    builder.addHeader("Cookie", decryptedCookies)
   }
+  return builder.build()
 }
 
 /**

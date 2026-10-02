@@ -20,6 +20,9 @@ ENV['RCT_USE_RN_DEP'] = '1'
 ENV['RCT_USE_PREBUILT_RNCORE'] = '1'
 
 target 'MendixNativeExample' do
+  # Declared before autolinking (which skips pods already declared) to install the native unit tests.
+  pod 'MendixNative', :path => '../..', :testspecs => ['Tests']
+
   config = use_native_modules!
 
   use_react_native!(
@@ -37,5 +40,14 @@ target 'MendixNativeExample' do
       :mac_catalyst_enabled => false,
       # :ccache_enabled => true
     )
+
+    # react_native_post_install only adds the prebuilt React Native headers to library xcconfigs,
+    # so the MendixNative test target can't import the MendixNative module without these.
+    Dir.glob(File.join(installer.sandbox.root, 'Target Support Files', 'MendixNative', 'MendixNative.unit-tests.*.xcconfig')).each do |xcconfig_path|
+      xcconfig = Xcodeproj::Config.new(xcconfig_path)
+      ReactNativeCoreUtils.add_prebuilt_header_search_paths(xcconfig.attributes, " \"$(PODS_ROOT)/React-Core-prebuilt/Headers\"")
+      ReactNativePodsUtils.add_flag_to_map_with_inheritance(xcconfig.attributes, 'HEADER_SEARCH_PATHS', " \"$(PODS_ROOT)/ReactNativeDependencies/Headers\"")
+      xcconfig.save_as(Pathname.new(xcconfig_path))
+    end
   end
 end

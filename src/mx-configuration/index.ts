@@ -1,3 +1,3 @@
-import NativeMxConfiguration from './NativeMxConfiguration';
+import NativeMxConfig from './NativeMxConfig';
 
-export const MxConfiguration = NativeMxConfiguration.getConstants();
+export const MxConfiguration = NativeMxConfig.getConstants();

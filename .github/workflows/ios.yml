@@ -47,13 +47,7 @@ jobs:
         working-directory: example
         run: yarn pod
 
-      # Build iOS app (only if not cached)
-      - name: Build iOS app for simulator
-        if: steps.cache-ios-app.outputs.cache-hit != 'true'
-        working-directory: example
-        run: yarn app:package:ios
-
-      # Setup simulator (after build)
+      # Setup simulator
       - name: Launch iOS Simulator
         run: |
           # Install jq if not available
@@ -68,6 +62,32 @@ jobs:
 
           # Launch simulator with our custom script
           bash .github/scripts/launch-ios-simulator.sh "${{ env.DEVICE_MODEL }}" "${{ env.IOS_VERSION }}"
+
+      # XCTest unit tests in ios/Tests, installed by the MendixNative test spec in the Podfile.
+      # They need no app or Metro, so run them before the app build to fail early.
+      # The app build shares this derived data, so the pods aren't compiled again.
+      - name: Run native unit tests
+        working-directory: example/ios
+        run: |
+          xcodebuild test \
+            -workspace MendixNativeExample.xcworkspace \
+            -scheme MendixNative-Unit-Tests \
+            -destination "platform=iOS Simulator,name=${{ env.DEVICE_MODEL }},OS=${{ env.IOS_VERSION }}" \
+            -derivedDataPath build \
+            -resultBundlePath build/unit-tests.xcresult
+
+      - name: Upload native unit test results
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ios-unit-test-results
+          path: example/ios/build/unit-tests.xcresult
+
+      # Build iOS app (only if not cached)
+      - name: Build iOS app for simulator
+        if: steps.cache-ios-app.outputs.cache-hit != 'true'
+        working-directory: example
+        run: yarn app:package:ios
 
       # Install app on simulator
       - name: Install app on simulator

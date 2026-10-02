@@ -1,8 +1,16 @@
 import { describe, test, expect } from 'react-native-harness';
 import { NativeFileSystem } from 'mendix-native';
 
+// React Native's Blob exposes its native reference, which the DOM Blob type lacks.
+type RNBlob = {
+  data: Parameters<typeof NativeFileSystem.save>[0];
+  close(): void;
+};
+
 describe('NativeFileSystem', () => {
   const testFile = 'test-file.txt';
+  const notWhiteListedMessage =
+    'Path needs to be an absolute path to the apps accessible space.';
 
   describe('Constants', () => {
     test('should have constants defined', () => {
@@ -36,6 +44,26 @@ describe('NativeFileSystem', () => {
           'Path needs to be an absolute path to the apps accessible space.';
         expect(error.message).contains(errorMessage);
       }
+    });
+
+    test('should throw for paths escaping the documents directory', async () => {
+      const documentDirectory = NativeFileSystem.DocumentDirectoryPath;
+      const escapingPaths = [
+        `${documentDirectory}/../escape.txt`,
+        `${documentDirectory}Evil/escape.txt`,
+      ];
+      for (const path of escapingPaths) {
+        await expect(NativeFileSystem.fileExists(path)).rejects.toThrow(
+          notWhiteListedMessage
+        );
+      }
+    });
+
+    test('should allow normalized paths inside the documents directory', async () => {
+      const exists = await NativeFileSystem.fileExists(
+        `${NativeFileSystem.DocumentDirectoryPath}/sub/../non-existent-file.txt`
+      );
+      expect(exists).toBe(false);
     });
 
     test('should return true for created file', async () => {
@@ -122,6 +150,14 @@ describe('NativeFileSystem', () => {
       // Cleanup
       await NativeFileSystem.remove(filePath);
     });
+
+    test('should resolve null for non-existent file', async () => {
+      const readData = await NativeFileSystem.readJson(
+        NativeFileSystem.relativeToDocumentsAbsolutePath('non-existent.json')
+      );
+      // iOS resolves undefined, Android resolves null.
+      expect(readData == null).toBe(true);
+    });
   });
 
   describe('remove', () => {
@@ -142,6 +178,15 @@ describe('NativeFileSystem', () => {
 
       // Should not throw error
       await expect(NativeFileSystem.remove(filePath)).resolves.not.toThrow();
+    });
+
+    test('should throw for non white listed path', async () => {
+      try {
+        await NativeFileSystem.remove(testFile);
+        expect(true).toBe(false); // This should not be reached
+      } catch (error: any) {
+        expect(error.message).contains(notWhiteListedMessage);
+      }
     });
   });
 
@@ -186,6 +231,64 @@ describe('NativeFileSystem', () => {
 
       // Cleanup
       await NativeFileSystem.remove(destPath);
+    });
+
+    test('should reject and not create destination for non-existent source', async () => {
+      const sourcePath = NativeFileSystem.relativeToDocumentsAbsolutePath(
+        'missing-source.json'
+      );
+      const destPath =
+        NativeFileSystem.relativeToDocumentsAbsolutePath('missing-dest.json');
+
+      await expect(
+        NativeFileSystem.move(sourcePath, destPath)
+      ).rejects.toBeDefined();
+      expect(await NativeFileSystem.fileExists(destPath)).toBe(false);
+    });
+  });
+
+  describe('save and read', () => {
+    test('should round-trip blob content through the blob manager', async () => {
+      const filePath =
+        NativeFileSystem.relativeToDocumentsAbsolutePath('test-blob.txt');
+      // Keep a reference so the blob isn't released before save resolves.
+      const blob = new Blob(['hello mendix']) as unknown as RNBlob;
+
+      await NativeFileSystem.save(blob.data, filePath);
+      const readBlob = await NativeFileSystem.read(filePath);
+      const dataUrl = await NativeFileSystem.readAsDataURL(filePath);
+
+      expect(typeof readBlob.blobId).toBe('string');
+      expect(dataUrl).toContain(btoa('hello mendix'));
+
+      // Cleanup
+      blob.close();
+      await NativeFileSystem.remove(filePath);
+    });
+  });
+
+  describe('readAsText', () => {
+    test('should throw for non white listed path', async () => {
+      try {
+        await NativeFileSystem.readAsText(testFile);
+        expect(true).toBe(false); // This should not be reached
+      } catch (error: any) {
+        expect(error.message).contains(notWhiteListedMessage);
+      }
+    });
+
+    test('should read file content as UTF-8 text', async () => {
+      const filePath =
+        NativeFileSystem.relativeToDocumentsAbsolutePath('test-text.json');
+      const testData = { greeting: 'héllo' };
+
+      await NativeFileSystem.writeJson(testData, filePath);
+      const text = await NativeFileSystem.readAsText(filePath);
+
+      expect(JSON.parse(text)).toEqual(testData);
+
+      // Cleanup
+      await NativeFileSystem.remove(filePath);
     });
   });
 

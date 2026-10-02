@@ -5,7 +5,9 @@
 
 @implementation MxCookie
 
-RCT_EXPORT_MODULE()
++ (NSString *)moduleName {
+    return @"MxCookie";
+}
 
 - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
 (const facebook::react::ObjCTurboModule::InitParams &)params
