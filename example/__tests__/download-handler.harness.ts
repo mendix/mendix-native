@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import { beforeEach, describe, expect, test } from 'react-native-harness';
 import {
   MxConfiguration,
@@ -7,7 +8,10 @@ import {
 
 // The example app's runtime URL points at Metro, which is always up while harness tests run.
 const runtimeUrl = MxConfiguration.RUNTIME_URL.replace(/\/$/, '');
+// Sent without a Content-Type.
 const statusUrl = `${runtimeUrl}/status`;
+// A small bundle, sent as "application/javascript; charset=UTF-8".
+const bundleUrl = `${runtimeUrl}/index.bundle?platform=${Platform.OS}&dev=true&minify=false&shallow=true&modulesOnly=true&runModule=false`;
 
 const invalidUrlPath = NativeFileSystem.relativeToDocumentsAbsolutePath(
   'downloads/invalid-url.txt'
@@ -39,7 +43,7 @@ describe('NativeDownloadHandler', () => {
         invalidUrlPath,
         config
       )
-    ).rejects.toBeDefined();
+    ).rejects.toMatchObject({ code: 'ERROR_DOWNLOAD_FAILED' });
 
     expect(await NativeFileSystem.fileExists(invalidUrlPath)).toBe(false);
   });
@@ -73,17 +77,35 @@ describe('NativeDownloadHandler', () => {
         downloadPath,
         {}
       )
-    ).rejects.toBeDefined();
+    ).rejects.toMatchObject({ code: 'ERROR_DOWNLOAD_FAILED' });
 
     expect(await NativeFileSystem.fileExists(downloadPath)).toBe(false);
   });
 
   test('rejects an unexpected mime type without leaving a file behind', async () => {
     await expect(
-      NativeDownloadHandler.download(statusUrl, downloadPath, {
+      NativeDownloadHandler.download(bundleUrl, downloadPath, {
         mimeType: 'application/zip',
       })
-    ).rejects.toBeDefined();
+    ).rejects.toMatchObject({ code: 'ERROR_DOWNLOAD_FAILED' });
+
+    expect(await NativeFileSystem.fileExists(downloadPath)).toBe(false);
+  });
+
+  test('accepts a mime type whose response has parameters', async () => {
+    await NativeDownloadHandler.download(bundleUrl, downloadPath, {
+      mimeType: 'application/javascript',
+    });
+
+    expect(await NativeFileSystem.fileExists(downloadPath)).toBe(true);
+  });
+
+  test('rejects a response without a content type when a mime type is expected', async () => {
+    await expect(
+      NativeDownloadHandler.download(statusUrl, downloadPath, {
+        mimeType: 'text/plain',
+      })
+    ).rejects.toMatchObject({ code: 'ERROR_DOWNLOAD_FAILED' });
 
     expect(await NativeFileSystem.fileExists(downloadPath)).toBe(false);
   });
@@ -93,7 +115,7 @@ describe('NativeDownloadHandler', () => {
 
     await expect(
       NativeDownloadHandler.download(statusUrl, downloadPath, {})
-    ).rejects.toBeDefined();
+    ).rejects.toMatchObject({ code: 'FILE_ALREADY_EXISTS' });
 
     expect(await NativeFileSystem.readJson(downloadPath)).toEqual({
       keep: true,

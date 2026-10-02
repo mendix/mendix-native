@@ -38,6 +38,15 @@ describe('NativeOta', () => {
       ).rejects.toMatchObject({ code: 'OTA_ZIP_FILE_MISSING' });
     });
 
+    test('rejects a config with a missing key', async () => {
+      await expect(
+        NativeOta.deploy({
+          otaPackage: 'does-not-exist.zip',
+          extractionDir: 'harness-missing-key',
+        } as unknown as Parameters<typeof NativeOta.deploy>[0])
+      ).rejects.toMatchObject({ code: 'INVALID_DEPLOY_CONFIG' });
+    });
+
     test('rejects paths outside the OTA directory', async () => {
       await expect(
         NativeOta.deploy({

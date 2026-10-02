@@ -126,17 +126,17 @@ public class NativeOtaModule: NSObject {
     public func deploy(_ config: OtaDeploymentConfiguration, promise: Promise) {
         
         guard let otaDeploymentID = config.otaDeploymentID else {
-            promise.reject(INVALID_DOWNLOAD_CONFIG, "Key otaDeploymentID is invalid.", nil)
+            promise.reject(INVALID_DEPLOY_CONFIG, "Key otaDeploymentID is invalid.", nil)
             return
         }
         
         guard let zipFile = config.otaPackage else {
-            promise.reject(INVALID_DOWNLOAD_CONFIG, "Key otaPackage is invalid.", nil)
+            promise.reject(INVALID_DEPLOY_CONFIG, "Key otaPackage is invalid.", nil)
             return
         }
         
         guard let extractionDir = config.extractionDir else {
-            promise.reject(INVALID_DOWNLOAD_CONFIG, "Key extractionDir is invalid.", nil)
+            promise.reject(INVALID_DEPLOY_CONFIG, "Key extractionDir is invalid.", nil)
             return
         }
         

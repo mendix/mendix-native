@@ -5,10 +5,53 @@ fileprivate func formatMessage(_ message: String) -> String {
     return "\(String(describing: NativeDownloadHandler.self)): \(message)"
 }
 
+/// A download failure with the rejection code passed to JS. The codes match Android's.
+struct NativeDownloadError: LocalizedError {
+    static let ERROR_DOWNLOAD_FAILED = "ERROR_DOWNLOAD_FAILED"
+    static let FILE_ALREADY_EXISTS = "FILE_ALREADY_EXISTS"
+    static let IO_EXCEPTION = "IO_EXCEPTION"
+    static let FS_ACCESS_EXCEPTION = "FS_ACCESS_EXCEPTION"
+
+    let code: String
+    let message: String
+    let underlyingError: Error?
+
+    init(code: String, message: String, underlyingError: Error? = nil) {
+        self.code = code
+        self.message = message
+        self.underlyingError = underlyingError
+    }
+
+    var errorDescription: String? { message }
+
+    /// Maps a file system error to FS_ACCESS_EXCEPTION for permission errors, IO_EXCEPTION otherwise.
+    static func fileSystem(_ error: Error, message: String) -> NativeDownloadError {
+        let permissionCodes: Set<Int> = [CocoaError.fileReadNoPermission.rawValue, CocoaError.fileWriteNoPermission.rawValue]
+        let nsError = error as NSError
+        let code = nsError.domain == NSCocoaErrorDomain && permissionCodes.contains(nsError.code) ? FS_ACCESS_EXCEPTION : IO_EXCEPTION
+        return NativeDownloadError(code: code, message: message, underlyingError: error)
+    }
+
+    /// The rejection code for any error passed to a download fail callback.
+    static func code(for error: Error) -> String {
+        (error as? NativeDownloadError)?.code ?? ERROR_DOWNLOAD_FAILED
+    }
+}
+
+/// Compares type and subtype only, so parameters such as `charset` are ignored.
+/// A response without a MIME type doesn't match.
+func mimeTypeMatches(_ actual: String?, expected: String) -> Bool {
+    func essence(_ mimeType: String) -> String {
+        mimeType.split(separator: ";", maxSplits: 1).first.map { $0.trimmingCharacters(in: .whitespaces).lowercased() } ?? ""
+    }
+    guard let actual else { return false }
+    return essence(actual) == essence(expected)
+}
+
 class NativeDownloadHandler: NSObject {
     
     let mimeType: String?
-    let connectionTimeout: Int
+    let connectionTimeout: TimeInterval
     let doneCallback: (() -> Void)?
     let progressCallback: ((Int64, Int64) -> Void)?
     let failCallback: ((Error) -> Void)?
@@ -22,7 +65,8 @@ class NativeDownloadHandler: NSObject {
         failCallback: @escaping (Error) -> Void
     ) {
         if let connectionTimeout {
-            self.connectionTimeout = connectionTimeout.intValue / 1000
+            // Milliseconds, as on Android; keep fractions so sub-second timeouts don't become 0.
+            self.connectionTimeout = connectionTimeout.doubleValue / 1000
         } else {
             self.connectionTimeout = 10
         }
@@ -38,14 +82,19 @@ class NativeDownloadHandler: NSObject {
         
         guard let encodedUrlString = urlString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
               let url = URL(string: encodedUrlString) else {
-            let error = NSError(domain: NSURLErrorDomain, code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])
-            failCallback?(error)
+            failCallback?(NativeDownloadError(code: NativeDownloadError.ERROR_DOWNLOAD_FAILED, message: "Invalid URL"))
+            return
+        }
+        
+        // Fail before downloading, as Android does, so no bandwidth is wasted. Checked again after the download.
+        if FileManager.default.fileExists(atPath: downloadPath) {
+            failCallback?(NativeDownloadError(code: NativeDownloadError.FILE_ALREADY_EXISTS, message: "File already exists in the same path."))
             return
         }
         
         let configuration = URLSessionConfiguration.default
         let session = URLSession(configuration: configuration, delegate: self, delegateQueue: nil)
-        let request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: TimeInterval(connectionTimeout))
+        let request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: connectionTimeout)
         let downloadTask = session.downloadTask(with: request)
         downloadTask.resume()
         // The session retains its delegate (self) until invalidated; release both once the task is done.
@@ -65,29 +114,28 @@ extension NativeDownloadHandler: URLSessionDownloadDelegate {
         // with a misleading error. Fail explicitly with the status code instead.
         if let httpResponse = downloadTask.response as? HTTPURLResponse,
            !(200...299).contains(httpResponse.statusCode) {
-            let error = NSError(
-                domain: NSURLErrorDomain,
-                code: httpResponse.statusCode,
-                userInfo: [NSLocalizedDescriptionKey: "Download failed with HTTP status \(httpResponse.statusCode)."]
+            let error = NativeDownloadError(
+                code: NativeDownloadError.ERROR_DOWNLOAD_FAILED,
+                message: "Download failed with HTTP status \(httpResponse.statusCode)."
             )
             NSLog("%@", formatMessage("Download failed with HTTP status \(httpResponse.statusCode)"))
             failCallback?(error)
             return
         }
         
-        // Check MIME type if specified
+        // Check MIME type if specified. For HTTP, use the Content-Type header, since URLResponse.mimeType
+        // is sniffed from the content when the header is missing; a missing header fails, as on Android.
+        let responseMimeType = (downloadTask.response as? HTTPURLResponse).map { $0.value(forHTTPHeaderField: "Content-Type") }
+            ?? downloadTask.response?.mimeType
         if let expectedMimeType = mimeType,
-           let responseMimeType = downloadTask.response?.mimeType,
-           responseMimeType != expectedMimeType {
-            let error = NSError(domain: UserDefaults.argumentDomain, code: -1, userInfo: [NSLocalizedDescriptionKey: "MIME type not expected."])
-            failCallback?(error)
+           !mimeTypeMatches(responseMimeType, expected: expectedMimeType) {
+            failCallback?(NativeDownloadError(code: NativeDownloadError.ERROR_DOWNLOAD_FAILED, message: "MIME type not expected."))
             return
         }
         
         // Check if file already exists
         if fileManager.fileExists(atPath: downloadPath) {
-            let error = NSError(domain: NSURLErrorDomain, code: -1, userInfo: [NSLocalizedDescriptionKey: "File already exists in the same path."])
-            failCallback?(error)
+            failCallback?(NativeDownloadError(code: NativeDownloadError.FILE_ALREADY_EXISTS, message: "File already exists in the same path."))
             return
         }
         
@@ -101,7 +149,7 @@ extension NativeDownloadHandler: URLSessionDownloadDelegate {
             )
         } catch {
             NSLog("%@", formatMessage("Could not create path: \(error)"))
-            failCallback?(error)
+            failCallback?(NativeDownloadError.fileSystem(error, message: "Could not create path: \(error.localizedDescription)"))
             return
         }
         
@@ -122,7 +170,7 @@ extension NativeDownloadHandler: URLSessionDownloadDelegate {
         } catch {
             try? fileManager.removeItem(at: destinationUrl)
             NSLog("%@", formatMessage("Could not copy path: \(error)"))
-            failCallback?(error)
+            failCallback?(NativeDownloadError.fileSystem(error, message: "Could not copy path: \(error.localizedDescription)"))
         }
     }
     
@@ -146,8 +194,6 @@ extension NativeDownloadHandler: URLSessionTaskDelegate {
 @objcMembers
 public class NativeDownloadModule: NSObject {
     
-    private static let ERROR_DOWNLOAD_FAILED = "ERROR_DOWNLOAD_FAILED"
-    
     public func download(
         _ url: String,
         downloadPath: String,
@@ -167,7 +213,7 @@ public class NativeDownloadModule: NSObject {
                 onProgress?(["receivedBytes": received, "totalBytes": total])
             },
             failCallback: { error in
-                promise.reject(NativeDownloadModule.ERROR_DOWNLOAD_FAILED, formatMessage(error.localizedDescription), error)
+                promise.reject(NativeDownloadError.code(for: error), formatMessage(error.localizedDescription), error)
             }
         )
         

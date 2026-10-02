@@ -76,4 +76,87 @@ final class NativeDownloadHandlerTests: XCTestCase {
 
         assertReleased(handler)
     }
+
+    // MARK: - Behaviour shared with Android
+
+    /// Downloads through NativeDownloadModule and returns the rejection code, or nil when it resolved.
+    private func rejectionCode(_ url: String, to destination: String, mimeType: String? = nil) -> String? {
+        let finished = expectation(description: "download settled")
+        var code: String?
+        let promise = Promise(
+            resolve: { _ in finished.fulfill() },
+            reject: { rejectCode, _, _ in code = rejectCode; finished.fulfill() }
+        )
+        NativeDownloadModule().download(url, downloadPath: destination, connectionTimeout: nil, mimeType: mimeType, onProgress: nil, promise: promise)
+        wait(for: [finished], timeout: 5)
+        return code
+    }
+
+    private func makeSource(_ content: String = "content") throws -> String {
+        let source = "\(workDir!)/source.txt"
+        try content.write(toFile: source, atomically: true, encoding: .utf8)
+        return URL(fileURLWithPath: source).absoluteString
+    }
+
+    func testExistingDestinationIsRejectedBeforeDownloading() throws {
+        let destination = "\(workDir!)/existing.txt"
+        try "keep".write(toFile: destination, atomically: true, encoding: .utf8)
+        // The source doesn't exist, so a started download would fail with a different code.
+        let missingSource = URL(fileURLWithPath: "\(workDir!)/missing.txt").absoluteString
+
+        XCTAssertEqual(rejectionCode(missingSource, to: destination), "FILE_ALREADY_EXISTS")
+        XCTAssertEqual(try String(contentsOfFile: destination, encoding: .utf8), "keep")
+    }
+
+    func testFailedDownloadIsRejectedWithDownloadFailed() {
+        let missingSource = URL(fileURLWithPath: "\(workDir!)/missing.txt").absoluteString
+
+        XCTAssertEqual(rejectionCode(missingSource, to: "\(workDir!)/destination.txt"), "ERROR_DOWNLOAD_FAILED")
+    }
+
+    func testInvalidUrlIsRejectedWithDownloadFailed() {
+        XCTAssertEqual(rejectionCode("://invalid url", to: "\(workDir!)/destination.txt"), "ERROR_DOWNLOAD_FAILED")
+    }
+
+    func testMimeTypeWithParametersIsAccepted() throws {
+        let source = try makeSource()
+        let destination = "\(workDir!)/destination.txt"
+
+        XCTAssertNil(rejectionCode(source, to: destination, mimeType: "text/plain; charset=utf-8"))
+        XCTAssertEqual(try String(contentsOfFile: destination, encoding: .utf8), "content")
+    }
+
+    func testMismatchingMimeTypeIsRejectedWithDownloadFailed() throws {
+        let destination = "\(workDir!)/destination.zip"
+
+        XCTAssertEqual(rejectionCode(try makeSource(), to: destination, mimeType: "application/zip"), "ERROR_DOWNLOAD_FAILED")
+        XCTAssertFalse(FileManager.default.fileExists(atPath: destination))
+    }
+
+    func testMimeTypeMatching() {
+        XCTAssertTrue(mimeTypeMatches("text/plain", expected: "text/plain"))
+        XCTAssertTrue(mimeTypeMatches("text/plain", expected: "Text/Plain; charset=utf-8"))
+        XCTAssertTrue(mimeTypeMatches("TEXT/PLAIN; charset=utf-8", expected: "text/plain"))
+        XCTAssertFalse(mimeTypeMatches("text/html", expected: "text/plain"))
+        XCTAssertFalse(mimeTypeMatches(nil, expected: "text/plain"))
+    }
+
+    func testConnectionTimeoutKeepsSubSecondValues() {
+        func handler(_ timeout: NSNumber?) -> NativeDownloadHandler {
+            NativeDownloadHandler(connectionTimeout: timeout, mimeType: nil, doneCallback: {}, progressCallback: nil, failCallback: { _ in })
+        }
+
+        XCTAssertEqual(handler(500).connectionTimeout, 0.5)
+        XCTAssertEqual(handler(2500).connectionTimeout, 2.5)
+        XCTAssertEqual(handler(nil).connectionTimeout, 10)
+    }
+
+    func testFileSystemErrorsMapToCodes() {
+        let permission = CocoaError(.fileWriteNoPermission)
+        let other = CocoaError(.fileWriteOutOfSpace)
+
+        XCTAssertEqual(NativeDownloadError.fileSystem(permission, message: "").code, "FS_ACCESS_EXCEPTION")
+        XCTAssertEqual(NativeDownloadError.fileSystem(other, message: "").code, "IO_EXCEPTION")
+        XCTAssertEqual(NativeDownloadError.code(for: URLError(.timedOut)), "ERROR_DOWNLOAD_FAILED")
+    }
 }

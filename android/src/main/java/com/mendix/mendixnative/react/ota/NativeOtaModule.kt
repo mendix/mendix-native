@@ -207,6 +207,8 @@ class NativeOtaModule(
       zipFile.delete()
     } catch (e: Exception) {
       extractionDir.deleteRecursively()
+      // A package that failed to deploy won't succeed on retry, so don't keep it (as on iOS).
+      zipFile.delete()
       return reject(promise, OTA_DEPLOYMENT_FAILED, "OTA deployment failed", e)
     }
     Log.i(TAG, "OTA deployed.")

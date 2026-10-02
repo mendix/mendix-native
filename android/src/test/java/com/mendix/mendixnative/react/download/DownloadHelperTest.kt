@@ -81,7 +81,9 @@ class DownloadHelperTest {
 
     val result = download(file)
 
+    // Still a ConnectException, as before, for callers that check for it.
     assertTrue(result.error is ConnectException)
+    assertEquals(404, (result.error as HttpStatusException).statusCode)
     assertFalse(file.exists())
   }
 
@@ -105,6 +107,53 @@ class DownloadHelperTest {
 
     assertNull(result.error)
     assertEquals("zip", file.readText())
+  }
+
+  @Test
+  fun mimeTypeWithParametersMatches() {
+    server.enqueue(MockResponse().setHeader("Content-Type", "Text/Plain; charset=utf-8").setBody("content"))
+    val file = File(tempFolder.root, "file.txt")
+
+    val result = download(file, mimeType = "text/plain")
+
+    assertNull(result.error)
+    assertEquals("content", file.readText())
+  }
+
+  @Test
+  fun expectedMimeTypeWithParametersMatches() {
+    server.enqueue(MockResponse().setHeader("Content-Type", "text/plain").setBody("content"))
+
+    val result = download(File(tempFolder.root, "file.txt"), mimeType = "text/plain; charset=utf-8")
+
+    assertNull(result.error)
+  }
+
+  @Test
+  fun missingContentTypeFailsWhenMimeTypeIsSet() {
+    server.enqueue(MockResponse().setBody("content"))
+    val file = File(tempFolder.root, "file.txt")
+
+    val result = download(file, mimeType = "text/plain")
+
+    assertTrue(result.error is DownloadMimeTypeException)
+    assertFalse(file.exists())
+  }
+
+  @Test
+  fun invalidExpectedMimeTypeFails() {
+    server.enqueue(MockResponse().setBody("content"))
+
+    val result = download(File(tempFolder.root, "file.txt"), mimeType = "not a mime type")
+
+    assertTrue(result.error is DownloadMimeTypeException)
+  }
+
+  @Test
+  fun missingContentTypeSucceedsWithoutMimeType() {
+    server.enqueue(MockResponse().setBody("content"))
+
+    assertNull(download(File(tempFolder.root, "file.txt")).error)
   }
 
   @Test

@@ -97,13 +97,12 @@ class DownloadResponseHandler(
     var inputStream: BufferedInputStream? = null
     var outputStream: BufferedOutputStream? = null
     try {
-      if (!response.isSuccessful) throw ConnectException()
+      if (!response.isSuccessful) throw HttpStatusException(response.code)
       if (response.body == null) throw NoDataException()
       val body = response.body
-      val mediaType = body?.contentType()
-      if (expectedMimeType != null && mediaType != expectedMimeType
-          .toMediaTypeOrNull()
-      ) throw DownloadMimeTypeException()
+      if (expectedMimeType != null && !mimeTypeMatches(body?.contentType(), expectedMimeType)) {
+        throw DownloadMimeTypeException()
+      }
 
 
       inputStream = BufferedInputStream(body!!.byteStream())
@@ -145,6 +144,19 @@ class DownloadResponseHandler(
   }
 }
 
+/**
+ * Compares type and subtype only, so parameters such as `charset` are ignored.
+ * A response without a content type doesn't match.
+ */
+internal fun mimeTypeMatches(actual: MediaType?, expected: String): Boolean {
+  val expectedType = expected.toMediaTypeOrNull() ?: return false
+  return actual != null &&
+    actual.type.equals(expectedType.type, ignoreCase = true) &&
+    actual.subtype.equals(expectedType.subtype, ignoreCase = true)
+}
+
+/** Thrown for a non-2xx response. Extends ConnectException, which was thrown before, for compatibility. */
+class HttpStatusException(val statusCode: Int) : ConnectException("Download failed with HTTP status $statusCode")
 class NoDataException : IllegalStateException()
 class FileCorruptionException : IllegalStateException()
 class DownloadMimeTypeException : RuntimeException()

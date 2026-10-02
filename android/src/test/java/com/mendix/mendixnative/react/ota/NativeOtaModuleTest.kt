@@ -163,6 +163,7 @@ class NativeOtaModuleTest {
     assertEquals(Outcome.Rejected(OTA_DEPLOYMENT_FAILED), deploy("1", "invalid.zip", "deployment-1"))
     assertFalse(file("deployment-1").exists())
     assertFalse(File(getOtaManifestFilepath(context)).exists())
+    assertFalse(file("invalid.zip").exists())
   }
 
   @Test

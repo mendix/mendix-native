@@ -137,6 +137,23 @@ final class OtaDeployTests: XCTestCase {
         XCTAssertTrue(FileManager.default.fileExists(atPath: path("deployment-1/index.ios.bundle")))
     }
 
+    func testMissingConfigKeysAreRejectedWithDeployConfigCode() {
+        let configs = [
+            OtaDeploymentConfiguration(otaDeploymentID: nil, otaPackage: "first.zip", extractionDir: "deployment-1"),
+            OtaDeploymentConfiguration(otaDeploymentID: "1", otaPackage: nil, extractionDir: "deployment-1"),
+            OtaDeploymentConfiguration(otaDeploymentID: "1", otaPackage: "first.zip", extractionDir: nil),
+        ]
+        for config in configs {
+            var outcome: Outcome?
+            let promise = Promise(
+                resolve: { _ in outcome = .resolved },
+                reject: { code, _, _ in outcome = .rejected(code: code) }
+            )
+            module.deploy(config, promise: promise)
+            assertRejected(try! XCTUnwrap(outcome), INVALID_DEPLOY_CONFIG)
+        }
+    }
+
     func testMissingPackageIsRejected() {
         assertRejected(deploy(id: "1", package: "missing.zip", extractionDir: "deployment-1"), OTA_ZIP_FILE_MISSING)
         XCTAssertNil(OtaJSBundleFileProvider.getBundleUrl())
