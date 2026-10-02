@@ -83,12 +83,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      # Build APK (only if not cached)
-      - name: Build APK with Gradle
-        working-directory: example
-        run: yarn app:package:android
-
-      # JVM unit tests (JUnit, Robolectric, MockWebServer) in android/src/test
+      # JVM unit tests (JUnit, Robolectric, MockWebServer) in android/src/test.
+      # They need no emulator or app, so run them before the APK build to fail early.
       - name: Run native unit tests
         working-directory: example/android
         run: ./gradlew :mendix-native:testDebugUnitTest
@@ -99,6 +95,11 @@ jobs:
         with:
           name: android-unit-test-reports
           path: android/build/reports/tests/testDebugUnitTest
+
+      # Build APK (only if not cached)
+      - name: Build APK with Gradle
+        working-directory: example
+        run: yarn app:package:android
 
       - name: AVD cache
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.2.0
