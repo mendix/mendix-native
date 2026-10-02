@@ -1,169 +1,56 @@
 import { describe, test, expect } from 'react-native-harness';
-import { NativeOta } from 'mendix-native';
+import { MxConfiguration, NativeOta } from 'mendix-native';
+
+// The example app's runtime URL points at Metro, which is always up while harness tests run.
+const runtimeUrl = MxConfiguration.RUNTIME_URL.replace(/\/$/, '');
 
 describe('NativeOta', () => {
-  describe('API surface', () => {
-    test('should expose download method', () => {
-      expect(typeof NativeOta.download).toBe('function');
-    });
-
-    test('should expose deploy method', () => {
-      expect(typeof NativeOta.deploy).toBe('function');
-    });
-  });
-
   describe('download', () => {
-    test('should accept OtaDownloadConfig parameter', () => {
-      const config = {
-        url: 'https://example.com/ota-package.zip',
-      };
-
-      // Should not throw when called with valid config
-      const result = NativeOta.download(config);
-      expect(result).toBeInstanceOf(Promise);
+    test('rejects URLs outside the runtime URL', async () => {
+      await expect(
+        NativeOta.download({ url: 'https://example.invalid/ota.zip' })
+      ).rejects.toMatchObject({ code: 'INVALID_RUNTIME_URL' });
     });
 
-    test('should return a Promise', () => {
-      const config = {
-        url: 'https://example.com/ota-package.zip',
-      };
-
-      const result = NativeOta.download(config);
-      expect(result).toBeInstanceOf(Promise);
-    });
-
-    test('should handle different URL formats', () => {
-      const configs = [
-        { url: 'https://example.com/package.zip' },
-        { url: 'http://localhost:8080/bundle.zip' },
-        { url: 'https://cdn.example.com/v1.0.0/update.zip' },
-      ];
-
-      configs.forEach((config) => {
-        const result = NativeOta.download(config);
-        expect(result).toBeInstanceOf(Promise);
+    test('downloads from the runtime URL and returns a zip file name', async () => {
+      const { otaPackage } = await NativeOta.download({
+        url: `${runtimeUrl}/status`,
       });
+
+      expect(otaPackage).toMatch(/\.zip$/);
+    });
+
+    test('rejects when the runtime URL returns an error status', async () => {
+      await expect(
+        NativeOta.download({ url: `${runtimeUrl}/does-not-exist.zip` })
+      ).rejects.toMatchObject({ code: 'OTA_DOWNLOAD_FAILED' });
     });
   });
 
   describe('deploy', () => {
-    test('should accept OtaDeployConfig parameter', () => {
-      const config = {
-        otaDeploymentID: 'deployment-123',
-        otaPackage: '/path/to/package.zip',
-        extractionDir: '/path/to/extraction/dir',
-      };
-
-      const result = NativeOta.deploy(config);
-      expect(result).toBeInstanceOf(Promise);
+    test('rejects when the OTA package does not exist', async () => {
+      await expect(
+        NativeOta.deploy({
+          otaDeploymentID: 'harness-missing-package',
+          otaPackage: 'does-not-exist.zip',
+          extractionDir: 'harness-missing-package',
+        })
+      ).rejects.toMatchObject({ code: 'OTA_ZIP_FILE_MISSING' });
     });
 
-    test('should return a Promise', () => {
-      const config = {
-        otaDeploymentID: 'deployment-123',
-        otaPackage: '/path/to/package.zip',
-        extractionDir: '/path/to/extraction/dir',
-      };
-
-      const result = NativeOta.deploy(config);
-      expect(result).toBeInstanceOf(Promise);
-    });
-
-    test('should handle different deployment IDs', () => {
-      const configs = [
-        {
-          otaDeploymentID: 'deployment-1',
-          otaPackage: '/path/to/package1.zip',
-          extractionDir: '/path/to/dir1',
-        },
-        {
-          otaDeploymentID: 'deployment-2',
-          otaPackage: '/path/to/package2.zip',
-          extractionDir: '/path/to/dir2',
-        },
-        {
-          otaDeploymentID: 'prod-deployment-v1.0.0',
-          otaPackage: '/path/to/prod.zip',
-          extractionDir: '/path/to/prod-dir',
-        },
-      ];
-
-      configs.forEach((config) => {
-        const result = NativeOta.deploy(config);
-        expect(result).toBeInstanceOf(Promise);
+    test('rejects a downloaded package that is not a valid zip', async () => {
+      // Metro's status endpoint returns plain text, so the "package" can't be unzipped.
+      const { otaPackage } = await NativeOta.download({
+        url: `${runtimeUrl}/status`,
       });
-    });
 
-    test('should handle various path formats', () => {
-      const configs = [
-        {
-          otaDeploymentID: 'test',
-          otaPackage: 'package.zip',
-          extractionDir: 'extraction',
-        },
-        {
-          otaDeploymentID: 'test',
-          otaPackage: '/absolute/path/package.zip',
-          extractionDir: '/absolute/path/extraction',
-        },
-        {
-          otaDeploymentID: 'test',
-          otaPackage: './relative/path/package.zip',
-          extractionDir: './relative/path/extraction',
-        },
-      ];
-
-      configs.forEach((config) => {
-        const result = NativeOta.deploy(config);
-        expect(result).toBeInstanceOf(Promise);
-      });
-    });
-  });
-
-  describe('type safety', () => {
-    test('download config should require url property', () => {
-      const config = {
-        url: 'https://example.com/package.zip',
-      };
-
-      // TypeScript should ensure url is present
-      expect(config.url).toBeDefined();
-      expect(typeof config.url).toBe('string');
-    });
-
-    test('deploy config should require all properties', () => {
-      const config = {
-        otaDeploymentID: 'deployment-123',
-        otaPackage: '/path/to/package.zip',
-        extractionDir: '/path/to/extraction/dir',
-      };
-
-      // TypeScript should ensure all required properties are present
-      expect(config.otaDeploymentID).toBeDefined();
-      expect(config.otaPackage).toBeDefined();
-      expect(config.extractionDir).toBeDefined();
-    });
-  });
-
-  describe('workflow scenarios', () => {
-    test('should support download then deploy workflow', async () => {
-      const downloadConfig = {
-        url: 'https://example.com/ota-package.zip',
-      };
-
-      // In a real scenario, download would complete and return package path
-      // For testing, we just verify the methods can be called in sequence
-      const downloadPromise = NativeOta.download(downloadConfig);
-      expect(downloadPromise).toBeInstanceOf(Promise);
-
-      const deployConfig = {
-        otaDeploymentID: 'deployment-123',
-        otaPackage: '/path/to/downloaded-package.zip',
-        extractionDir: '/path/to/extraction',
-      };
-
-      const deployPromise = NativeOta.deploy(deployConfig);
-      expect(deployPromise).toBeInstanceOf(Promise);
+      await expect(
+        NativeOta.deploy({
+          otaDeploymentID: 'harness-invalid-zip',
+          otaPackage,
+          extractionDir: 'harness-invalid-zip',
+        })
+      ).rejects.toMatchObject({ code: 'OTA_DEPLOYMENT_FAILED' });
     });
   });
 });

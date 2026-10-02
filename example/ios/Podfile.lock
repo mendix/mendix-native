@@ -40,6 +40,32 @@ PODS:
     - RNCAsyncStorage
     - SSZipArchive
     - Yoga
+  - MendixNative/Tests (0.6.2):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-bridging
+    - React-Core
+    - React-Core-prebuilt
+    - React-cxxstableapi
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactAppDependencyProvider
+    - ReactCodegen
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - RNCAsyncStorage
+    - SSZipArchive
+    - Yoga
   - op-sqlite (18.2.5):
     - hermes-engine
     - OpenSSL-Universal
@@ -1853,6 +1879,7 @@ DEPENDENCIES:
   - glog (from `build/rndeps-facades/glog`)
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
   - MendixNative (from `../..`)
+  - MendixNative/Tests (from `../..`)
   - "op-sqlite (from `../node_modules/@op-engineering/op-sqlite`)"
   - RCT-Folly (from `build/rndeps-facades/RCT-Folly`)
   - RCTDeprecation (from `build/rncore-facades/RCTDeprecation`)
@@ -2133,7 +2160,7 @@ SPEC CHECKSUMS:
   fmt: ba0886e864ebb21d14c98b2e12e164b8002f5b93
   glog: 3cf7cb46f743c4bc758ae3e6d9c15bd1b4cfd6d4
   hermes-engine: a1158910bb7e300b9e3d2f1e2d433f817ec1a4b5
-  MendixNative: 978e728a9a8766e743e073f344756648959df3c3
+  MendixNative: 6de5c0daa7124a30fcc7e73b88342caa3fb31eea
   op-sqlite: 35c49f420ecc7c3890ce85f00b97cd80e51ca043
   OpenSSL-Universal: 9110d21982bb7e8b22a962b6db56a8aa805afde7
   RCT-Folly: 82921e585c0400eda46fac1068297aa9dfb035e4
@@ -2219,6 +2246,6 @@ SPEC CHECKSUMS:
   SSZipArchive: fe6a26b2a54d5a0890f2567b5cc6de5caa600aef
   Yoga: d1c536142c5ff8ec8cd856ab2a7c227a1d875c8e
 
-PODFILE CHECKSUM: 115c3d28fbc33ec0a408f3aba951d5d16e47a401
+PODFILE CHECKSUM: 31d6da66488cd573eddc9abdf8509ba0bbe3e9bf
 
 COCOAPODS: 1.15.2
