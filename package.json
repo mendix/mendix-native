@@ -74,7 +74,7 @@
     "@react-native/jest-preset": "0.88.0-rc.3",
     "@release-it/conventional-changelog": "10.0.5",
     "@types/jest": "29.5.14",
-    "@types/react": "19.2.14",
+    "@types/react": "19.3.0",
     "commitlint": "20.4.3",
     "del-cli": "7.0.0",
     "eslint": "9.39.4",
