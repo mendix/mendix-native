@@ -273,7 +273,7 @@ describe('NativeFileSystem', () => {
     test('should return 0 for existing empty file', async () => {
       const filePath =
         NativeFileSystem.relativeToDocumentsAbsolutePath('empty-size.bin');
-      await NativeFileSystem.writeChunk('', filePath, 0);
+      await NativeFileSystem.writeChunkBase64('', filePath, 0);
 
       const size = await NativeFileSystem.getFileSize(filePath);
       expect(size).toBe(0);
@@ -305,8 +305,35 @@ describe('NativeFileSystem', () => {
     });
   });
 
-  describe('writeChunk', () => {
-    test('should create file and write first chunk with base64', async () => {
+  describe('saveBase64', () => {
+    test('should save decoded base64 data to file', async () => {
+      const filePath =
+        NativeFileSystem.relativeToDocumentsAbsolutePath('save-base64.bin');
+
+      const base64 = btoa(String.fromCharCode(1, 2, 3, 4));
+      await NativeFileSystem.saveBase64(base64, filePath);
+
+      const size = await NativeFileSystem.getFileSize(filePath);
+      expect(size).toBe(4);
+
+      await NativeFileSystem.remove(filePath);
+    });
+
+    test('should throw for non white listed path', async () => {
+      const base64 = btoa(String.fromCharCode(1, 2, 3));
+      try {
+        await NativeFileSystem.saveBase64(base64, 'invalid-path.bin');
+        expect(true).toBe(false);
+      } catch (error: any) {
+        const errorMessage =
+          'Path needs to be an absolute path to the apps accessible space.';
+        expect(error.message).contains(errorMessage);
+      }
+    });
+  });
+
+  describe('writeChunkBase64', () => {
+    test('should create file and write first chunk', async () => {
       const filePath =
         NativeFileSystem.relativeToDocumentsAbsolutePath('chunk-test.bin');
 
@@ -314,7 +341,7 @@ describe('NativeFileSystem', () => {
 
       const data = new Uint8Array([1, 2, 3, 4, 5]);
       const base64 = btoa(String.fromCharCode(...Array.from(data)));
-      await NativeFileSystem.writeChunk(base64, filePath, 0);
+      await NativeFileSystem.writeChunkBase64(base64, filePath, 0);
 
       const size = await NativeFileSystem.getFileSize(filePath);
       expect(size).toBe(5);
@@ -322,7 +349,7 @@ describe('NativeFileSystem', () => {
       await NativeFileSystem.remove(filePath);
     });
 
-    test('should append chunk at offset with base64', async () => {
+    test('should append chunk at offset', async () => {
       const filePath = NativeFileSystem.relativeToDocumentsAbsolutePath(
         'chunk-append-test.bin'
       );
@@ -335,8 +362,8 @@ describe('NativeFileSystem', () => {
       const base64Chunk1 = btoa(String.fromCharCode(...Array.from(chunk1)));
       const base64Chunk2 = btoa(String.fromCharCode(...Array.from(chunk2)));
 
-      await NativeFileSystem.writeChunk(base64Chunk1, filePath, 0);
-      await NativeFileSystem.writeChunk(base64Chunk2, filePath, 5);
+      await NativeFileSystem.writeChunkBase64(base64Chunk1, filePath, 0);
+      await NativeFileSystem.writeChunkBase64(base64Chunk2, filePath, 5);
 
       const size = await NativeFileSystem.getFileSize(filePath);
       expect(size).toBe(10);
@@ -347,7 +374,7 @@ describe('NativeFileSystem', () => {
     test('should throw for non white listed path', async () => {
       const base64 = btoa(String.fromCharCode(1, 2, 3));
       try {
-        await NativeFileSystem.writeChunk(base64, 'invalid-path.bin', 0);
+        await NativeFileSystem.writeChunkBase64(base64, 'invalid-path.bin', 0);
         expect(true).toBe(false);
       } catch (error: any) {
         const errorMessage =
@@ -378,8 +405,16 @@ describe('NativeFileSystem', () => {
       expect(typeof NativeFileSystem.getFileSize).toBe('function');
     });
 
+    test('should have saveBase64 method', () => {
+      expect(typeof NativeFileSystem.saveBase64).toBe('function');
+    });
+
     test('should have writeChunk method', () => {
       expect(typeof NativeFileSystem.writeChunk).toBe('function');
+    });
+
+    test('should have writeChunkBase64 method', () => {
+      expect(typeof NativeFileSystem.writeChunkBase64).toBe('function');
     });
   });
 });

@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- We added two new File System APIs to get the size of a File and write chunks via offset (used in 'resume download' functionality). `getFileSize` rejects when the file does not exist or its size cannot be determined.
+- We added new File System APIs to get the size of a File (`getFileSize`) and write chunks via offset (`writeChunk`), used in 'resume download' functionality. Base64 string variants of `save` and `writeChunk` are available as `saveBase64` and `writeChunkBase64`. `getFileSize` rejects when the file does not exist or its size cannot be determined.
 
 ## [v0.6.2] - 2026-09-29
 
