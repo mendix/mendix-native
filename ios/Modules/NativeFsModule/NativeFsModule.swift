@@ -276,13 +276,16 @@ public class NativeFsModule: NSObject {
 
         let fileManager = FileManager.default
         guard fileManager.fileExists(atPath: filePath) else {
-            resolve(NSNumber(value: 0))
+            reject(NativeFsModule.ERROR_READ_FAILED, NativeFsModule.formatError("File does not exist"), nil)
             return
         }
 
         do {
             let attributes = try fileManager.attributesOfItem(atPath: filePath)
-            let size = attributes[.size] as? UInt64 ?? 0
+            guard let size = (attributes[.size] as? NSNumber)?.uint64Value else {
+                reject(NativeFsModule.ERROR_READ_FAILED, NativeFsModule.formatError("Failed to get file size"), nil)
+                return
+            }
             resolve(NSNumber(value: size))
         } catch {
             reject(NativeFsModule.ERROR_READ_FAILED, NativeFsModule.formatError("Failed to get file size"), error)

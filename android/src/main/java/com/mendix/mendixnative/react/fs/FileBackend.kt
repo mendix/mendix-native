@@ -121,9 +121,16 @@ class FileBackend(val context: Context) {
     return directory.list() ?: emptyArray()
   }
 
+  @Throws(IOException::class)
   fun getFileSize(filePath: String): Long {
     val file = File(filePath)
-    return if (file.exists()) file.length() else 0L
+    if (!file.exists()) {
+      throw FileNotFoundException("File does not exist")
+    }
+    if (!file.isFile) {
+      throw IOException("Path is not a file")
+    }
+    return file.length()
   }
 
   @Throws(IOException::class)

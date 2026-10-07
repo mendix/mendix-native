@@ -258,12 +258,27 @@ describe('NativeFileSystem', () => {
   });
 
   describe('getFileSize', () => {
-    test('should return 0 for non-existent file', async () => {
+    test('should throw for non-existent file', async () => {
       const filePath = NativeFileSystem.relativeToDocumentsAbsolutePath(
         'non-existent-size.bin'
       );
+      try {
+        await NativeFileSystem.getFileSize(filePath);
+        expect(true).toBe(false);
+      } catch (error: any) {
+        expect(error.message).contains('File does not exist');
+      }
+    });
+
+    test('should return 0 for existing empty file', async () => {
+      const filePath =
+        NativeFileSystem.relativeToDocumentsAbsolutePath('empty-size.bin');
+      await NativeFileSystem.writeChunk('', filePath, 0);
+
       const size = await NativeFileSystem.getFileSize(filePath);
       expect(size).toBe(0);
+
+      await NativeFileSystem.remove(filePath);
     });
 
     test('should return correct size for existing file', async () => {

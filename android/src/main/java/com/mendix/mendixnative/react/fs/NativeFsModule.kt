@@ -235,6 +235,11 @@ class NativeFsModule(private val reactContext: ReactApplicationContext) {
     try {
       val size = fileBackend.getFileSize(ensureWhiteListedPath(filePath))
       promise.resolve(size.toDouble())
+    } catch (_: FileNotFoundException) {
+      promise.reject(ERROR_READ_FAILED, "File does not exist")
+    } catch (e: IOException) {
+      e.printStackTrace()
+      promise.reject(ERROR_READ_FAILED, "Failed to get file size")
     } catch (e: PathNotAccessibleException) {
       e.printStackTrace()
       promise.reject(INVALID_PATH, e)
