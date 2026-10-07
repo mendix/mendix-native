@@ -313,8 +313,11 @@ describe('NativeFileSystem', () => {
       const base64 = btoa(String.fromCharCode(1, 2, 3, 4));
       await NativeFileSystem.saveBase64(base64, filePath);
 
-      const size = await NativeFileSystem.getFileSize(filePath);
-      expect(size).toBe(4);
+      // Not asserting on getFileSize: saveBase64 goes through the regular save
+      // path, so with encryption enabled the on-disk size includes overhead.
+      // readAsDataURL decrypts, so it verifies the stored content.
+      const dataUrl = await NativeFileSystem.readAsDataURL(filePath);
+      expect(dataUrl).contains(base64);
 
       await NativeFileSystem.remove(filePath);
     });
