@@ -78,24 +78,30 @@ class NativeOtaModule(
     }
 
     val zipFileName = generateZipFilename()
-    downloadFile(
-      client = OkHttpClient(),
-      url = url,
-      downloadPath = getOtaZipFilePath(
-        reactApplicationContext,
-        zipFileName
-      ),
-      onSuccess = {
-        Log.i(TAG, "OTA downloaded.")
-        promise.resolve(WritableNativeMap().also {
-          it.putString(DOWNLOAD_RESULT_OTA_PACKAGE_KEY, zipFileName)
-        })
-      },
-      onFailure = {
-        Log.e(TAG, "OTA download failed.")
-        promise.reject(OTA_DOWNLOAD_FAILED, it)
-      }
-    )
+    val reject = { e: Exception ->
+      Log.e(TAG, "OTA download failed.")
+      promise.reject(OTA_DOWNLOAD_FAILED, e)
+    }
+    try {
+      downloadFile(
+        client = OkHttpClient(),
+        url = url,
+        downloadPath = getOtaZipFilePath(
+          reactApplicationContext,
+          zipFileName
+        ),
+        onSuccess = {
+          Log.i(TAG, "OTA downloaded.")
+          promise.resolve(WritableNativeMap().also {
+            it.putString(DOWNLOAD_RESULT_OTA_PACKAGE_KEY, zipFileName)
+          })
+        },
+        onFailure = reject
+      )
+    } catch (e: Exception) {
+      // Thrown before the request starts, e.g. for an existing destination or an invalid URL.
+      reject(e)
+    }
   }
 
   /**
