@@ -5,7 +5,9 @@
 
 @implementation MxOta
 
-RCT_EXPORT_MODULE()
++ (NSString *)moduleName {
+    return @"MxOta";
+}
 
 - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
 (const facebook::react::ObjCTurboModule::InitParams &)params

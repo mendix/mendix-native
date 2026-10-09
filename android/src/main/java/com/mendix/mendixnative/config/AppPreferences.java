@@ -2,7 +2,6 @@ package com.mendix.mendixnative.config;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 
 import com.facebook.react.modules.debug.interfaces.DeveloperSettings;
 import com.facebook.react.packagerconnection.PackagerConnectionSettings;
@@ -38,7 +37,8 @@ final public class AppPreferences {
     private final SharedPreferences preferences;
 
     public AppPreferences(Context applicationContext) {
-        preferences = PreferenceManager.getDefaultSharedPreferences(applicationContext);
+        // Same file PreferenceManager.getDefaultSharedPreferences() uses, which React Native's dev settings also read.
+        preferences = applicationContext.getSharedPreferences(applicationContext.getPackageName() + "_preferences", Context.MODE_PRIVATE);
     }
 
     public String getAppUrl() {

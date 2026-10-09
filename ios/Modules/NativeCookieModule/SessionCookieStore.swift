@@ -1,4 +1,5 @@
 import Foundation
+import LocalAuthentication
 
 public class SessionCookieStore {
 
@@ -57,12 +58,19 @@ public class SessionCookieStore {
         }
     }
 
+    // Fails with errSecInteractionNotAllowed instead of showing an authentication prompt.
+    private static func nonInteractiveContext() -> LAContext {
+        let context = LAContext()
+        context.interactionNotAllowed = true
+        return context
+    }
+
     private static func get(key: String) -> [HTTPCookie]? {
         let query: [CFString: Any] = [
             kSecClass: kSecClassGenericPassword,
             kSecAttrAccount: key,
             kSecReturnData: true,
-            kSecUseAuthenticationUI: kSecUseAuthenticationUIFail
+            kSecUseAuthenticationContext: nonInteractiveContext()
         ]
         var item: CFTypeRef?
         let status = SecItemCopyMatching(query as CFDictionary, &item)

@@ -16,6 +16,17 @@ public class NativeFsModule: NSObject {
     
     private static let NativeFsErrorDomain = "com.mendix.mendixnative.nativefsmodule"
     
+    private let blobManager: RCTBlobManager?
+    
+    public init(blobManager: RCTBlobManager?) {
+        self.blobManager = blobManager
+        super.init()
+    }
+    
+    public override convenience init() {
+        self.init(blobManager: nil)
+    }
+    
     public static func setEncryptionEnabled(_ enabled: Bool) {
         encryptionEnabled = enabled
     }
@@ -25,7 +36,7 @@ public class NativeFsModule: NSObject {
     }
     
     private func getBlobManager() -> RCTBlobManager? {
-        guard let blobManager: RCTBlobManager = DevHelper.getModule(type: RCTBlobManager.self) else {
+        guard let blobManager else {
             NSLog("NativeFsModule: Failed to get RCTBlobManager")
             return nil
         }
@@ -98,15 +109,25 @@ public class NativeFsModule: NSObject {
         try fileManager.removeItem(atPath: filepath)
     }
     
+    private static func standardizedPath(_ path: String) -> String {
+        return URL(fileURLWithPath: path).standardizedFileURL.path
+    }
+    
     static func ensureWhiteListedPath(_ paths: [String]) throws {
         let documentsPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first ?? ""
         let cachesPath = NSSearchPathForDirectoriesInDomains(.cachesDirectory, .userDomainMask, true).first ?? ""
         let tempPath = (NSTemporaryDirectory() as NSString).standardizingPath
         
+        let allowedRoots = [documentsPath, cachesPath, tempPath].filter { !$0.isEmpty }.map(standardizedPath)
+        
         for path in paths {
-            if !path.hasPrefix(documentsPath) &&
-                !path.hasPrefix(cachesPath) &&
-                !path.hasPrefix(tempPath) {
+            // Standardize first so "../" can't escape a root, and require a "/" boundary so a
+            // sibling like "<Documents>Evil" doesn't match "<Documents>".
+            let standardized = standardizedPath(path)
+            let isAllowed = path.hasPrefix("/") && allowedRoots.contains { root in
+                standardized == root || standardized.hasPrefix(root + "/")
+            }
+            if !isAllowed {
                 throw NSError(
                     domain: NativeFsErrorDomain,
                     code: 999,
@@ -220,6 +241,21 @@ public class NativeFsModule: NSObject {
         let base64String = data.base64EncodedString()
         let dataURL = "data:application/octet-stream;base64,\(base64String)"
         resolve(dataURL)
+    }
+    
+    public func readAsText(_ filePath: String,
+                           resolve: @escaping RCTPromiseResolveBlock,
+                           reject: @escaping RCTPromiseRejectBlock) {
+        
+        guard isWhiteListedPath(filePath, reject: reject) else { return }
+        
+        guard let data = NativeFsModule.readData(filePath),
+              let text = String(data: data, encoding: .utf8) else {
+            reject(NativeFsModule.ERROR_READ_FAILED, NativeFsModule.formatError("Failed to read file as text"), nil)
+            return
+        }
+        
+        resolve(text)
     }
     
     public func fileExists(_ filepath: String,

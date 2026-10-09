@@ -32,3 +32,13 @@ fun getNativeDependencies(context: Context): Map<String, String> {
   val typeRef = object : TypeReference<HashMap<String, String>>() {}
   return ObjectMapper().readValue(nativeDependencies, typeRef).toMap()
 }
+
+/**
+ * Resolves [path] against [otaDir] and returns it only if it stays strictly inside [otaDir],
+ * so paths received from JS or read from the manifest can't point elsewhere in the app's storage.
+ */
+fun resolvePathInsideOtaDir(otaDir: String, path: String): File? {
+  val root = File(otaDir).canonicalFile
+  val file = File(otaDir, path)
+  return if (file.canonicalPath.startsWith(root.path + File.separator)) file else null
+}
