@@ -25,7 +25,7 @@
     "@op-engineering/op-sqlite": "18.2.5",
     "@react-native-async-storage/async-storage": "2.2.0",
     "react": "19.3.0",
-    "react-native": "0.88.0-rc.3",
+    "react-native": "0.88.0",
     "react-native-gesture-handler": "2.33.0"
   },
   "devDependencies": {
@@ -38,9 +38,9 @@
     "@react-native-harness/jest": "1.1.0",
     "@react-native-harness/platform-android": "1.1.0",
     "@react-native-harness/platform-apple": "1.1.0",
-    "@react-native/babel-preset": "0.88.0-rc.3",
-    "@react-native/metro-config": "0.88.0-rc.3",
-    "@react-native/typescript-config": "0.88.0-rc.3",
+    "@react-native/babel-preset": "0.88.0",
+    "@react-native/metro-config": "0.88.0",
+    "@react-native/typescript-config": "0.88.0",
     "@types/react": "19.3.0",
     "react-native-builder-bob": "0.40.18",
     "react-native-harness": "1.1.0",
