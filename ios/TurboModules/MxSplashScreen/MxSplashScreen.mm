@@ -5,7 +5,9 @@
 
 @implementation MxSplashScreen
 
-RCT_EXPORT_MODULE()
++ (NSString *)moduleName {
+    return @"MxSplashScreen";
+}
 
 - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
 (const facebook::react::ObjCTurboModule::InitParams &)params

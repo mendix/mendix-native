@@ -33,6 +33,7 @@ open class ReactNative: NSObject, RCTReloadListener {
     }
     
     // MARK: - Lifecycle Methods
+    @MainActor
     public func start() {
         guard let mendixApp = self.mendixApp else {
             fatalError("MendixApp not passed before starting the app")
@@ -64,6 +65,7 @@ open class ReactNative: NSObject, RCTReloadListener {
         }
     }
     
+    @MainActor
     public func stop() {
         hideSplashScreen()
         delegate?.onAppClosed()
@@ -71,10 +73,12 @@ open class ReactNative: NSObject, RCTReloadListener {
     }
     
     // MARK: - Splash Screen Methods
+    @MainActor
     public func showSplashScreen() {
         mendixApp?.splashScreenPresenter?.show(ReactAppProvider.shared()?.rootView)
     }
     
+    @MainActor
     public func hideSplashScreen() {
         mendixApp?.splashScreenPresenter?.hide()
         DevHelper.hideDevLoadingView()
@@ -93,10 +97,13 @@ open class ReactNative: NSObject, RCTReloadListener {
     
     // MARK: - RCTReloadListener
     @objc public func didReceiveReloadCommand() {
-        showSplashScreen()
+        // Reload listeners run on the thread that triggered the reload (e.g. RCTExceptionsManager
+        // off the main thread), so hop to main.
+        DispatchQueue.main.async { self.showSplashScreen() }
     }
     
     // MARK: - Debugging Methods
+    @MainActor
     public func remoteDebugging(_ enable: Bool) {
         showSplashScreen()
         bundleUrl = AppUrl.forBundle(
@@ -108,6 +115,7 @@ open class ReactNative: NSObject, RCTReloadListener {
         DevHelper.setDebugMode(enabled: enable)
     }
     
+    @MainActor
     public func setRemoteDebuggingPackagerPort(_ port: Int) {
         AppPreferences.remoteDebuggingPackagerPort = port
         remoteDebugging(true)

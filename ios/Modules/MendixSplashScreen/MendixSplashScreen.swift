@@ -7,11 +7,16 @@ import Foundation
 
 @objcMembers public class MendixSplashScreen: NSObject {
     
+    // Called from the TurboModule's method queue; presenters touch UIKit, so hop to main.
     public func show() {
-        ReactNative.shared.showSplashScreen()
+        DispatchQueue.main.async {
+            ReactNative.shared.showSplashScreen()
+        }
     }
     
     public func hide() {
-        ReactNative.shared.hideSplashScreen()
+        DispatchQueue.main.async {
+            ReactNative.shared.hideSplashScreen()
+        }
     }
 }

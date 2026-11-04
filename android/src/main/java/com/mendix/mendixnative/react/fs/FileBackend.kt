@@ -11,7 +11,7 @@ import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import java.security.GeneralSecurityException
 import java.util.*
-import java.util.zip.ZipEntry
+import java.util.zip.ZipException
 import java.util.zip.ZipFile
 
 val FILE_ENCRYPTION_SCHEME = EncryptedFile.FileEncryptionScheme.AES256_GCM_HKDF_4KB
@@ -152,16 +152,26 @@ class FileBackend(val context: Context) {
   }
 
   fun unzip(zipPath: String, directory: String) {
+    val root = File(directory).canonicalFile
     ZipFile(zipPath).use { zip ->
-      zip.entries().asSequence().map { zipEntry ->
-        val file = File(directory, zipEntry.name)
+      // Resolve every entry before writing anything, so an archive with an entry escaping the
+      // target directory (Zip Slip) is rejected as a whole.
+      val entries = zip.entries().asSequence().map { zipEntry ->
+        val file = File(root, zipEntry.name).canonicalFile
+        if (file != root && !file.path.startsWith(root.path + File.separator)) {
+          throw ZipException("Zip entry ${zipEntry.name} is outside of the target directory")
+        }
+        zipEntry to file
+      }.toList()
+
+      entries.forEach { (zipEntry, file) ->
+        if (zipEntry.isDirectory) {
+          file.mkdirs()
+          return@forEach
+        }
         file.parentFile?.run { mkdirs() }
-        listOf(zipEntry, file)
-      }.filter {
-        !(it[0] as ZipEntry).isDirectory
-      }.forEach {
-        zip.getInputStream(it[0] as ZipEntry).use { input ->
-          (it[1] as File).outputStream().use { output ->
+        zip.getInputStream(zipEntry).use { input ->
+          file.outputStream().use { output ->
             input.copyTo(output)
           }
         }

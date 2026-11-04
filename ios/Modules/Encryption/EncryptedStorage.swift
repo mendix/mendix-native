@@ -1,5 +1,6 @@
 
 import Foundation
+import LocalAuthentication
 
 @objcMembers public class EncryptedStorage: NSObject {
     
@@ -34,7 +35,7 @@ import Foundation
             kSecAttrAccount: key,
             kSecReturnData: kCFBooleanTrue as Any,
             kSecMatchLimit: kSecMatchLimitOne,
-            kSecUseAuthenticationUI: kSecUseAuthenticationUIFail
+            kSecUseAuthenticationContext: EncryptedStorage.nonInteractiveContext()
         ] as CFDictionary
         var dataRef: CFTypeRef?
         let status = SecItemCopyMatching(query, &dataRef)
@@ -54,6 +55,13 @@ import Foundation
         }
     }
     
+    // Fails with errSecInteractionNotAllowed instead of showing an authentication prompt.
+    private static func nonInteractiveContext() -> LAContext {
+        let context = LAContext()
+        context.interactionNotAllowed = true
+        return context
+    }
+
     public func removeItem(key: String, promise: Promise) {
         
         let query = [

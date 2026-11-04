@@ -23,52 +23,25 @@ class NativeDownloadModule(
       if (config.hasKey(TIMEOUT_KEY)) config.getInt(TIMEOUT_KEY) else TIMEOUT
     val mimeType = if (config.hasKey(MIME_TYPE_KEY)) config.getString(MIME_TYPE_KEY) else null
 
-    downloadFile(
-      client.newBuilder()
-        .connectTimeout(timeout.toLong(), TimeUnit.MILLISECONDS).build(),
-      url,
-      downloadPath,
-      mimeType,
-      { promise.resolve(null) },
-      { e ->
-        when (e) {
-          is DownloadMimeTypeException -> promise.reject(
-            ERROR_DOWNLOAD_FAILED,
-            "Mime type check failed",
-            e
-          )
-
-          is FileAlreadyExistsException -> promise.reject(
-            FILE_ALREADY_EXISTS,
-            "File already exists",
-            e
-          )
-
-          is NoDataException -> promise.reject(
-            ERROR_CONNECTION_FAILED,
-            "No data found",
-            e
-          )
-
-          is FileCorruptionException -> promise.reject(IO_EXCEPTION, "File corrupted", e)
-          is IOException -> promise.reject(IO_EXCEPTION, "IO exception", e)
-          is SecurityException -> promise.reject(
-            FS_ACCESS_EXCEPTION,
-            "Access to filesystem denied",
-            e
-          )
-
-          is ConnectException -> promise.reject(
-            ERROR_DOWNLOAD_FAILED,
-            "Failed to connect to endpoint",
-            e
-          )
-
-          else -> promise.reject(ERROR_DOWNLOAD_FAILED, "Failed to download file", e)
-        }
+    val reject = { e: Exception ->
+      val (code, message) = downloadErrorFor(e)
+      promise.reject(code, message, e)
+    }
+    try {
+      downloadFile(
+        client.newBuilder()
+          .connectTimeout(timeout.toLong(), TimeUnit.MILLISECONDS).build(),
+        url,
+        downloadPath,
+        mimeType,
+        { promise.resolve(null) },
+        reject
+      ) { receivedBytes, totalBytes ->
+        eventEmitter?.invoke(receivedBytes, totalBytes)
       }
-    ) { receivedBytes, totalBytes ->
-      eventEmitter?.invoke(receivedBytes, totalBytes)
+    } catch (e: Exception) {
+      // Thrown before the request starts, e.g. for an existing destination or an invalid URL.
+      reject(e)
     }
   }
 
@@ -85,4 +58,20 @@ class NativeDownloadModule(
   }
 }
 
-
+/**
+ * Maps a download failure to a rejection code and message, using the same codes as iOS.
+ * Subclasses come before their parents: FileAlreadyExistsException, DownloadFileException and ConnectException
+ * are all IOExceptions. Any other IOException comes from the network.
+ */
+internal fun downloadErrorFor(e: Exception): Pair<String, String> = when (e) {
+  is DownloadMimeTypeException -> NativeDownloadModule.ERROR_DOWNLOAD_FAILED to "Mime type check failed"
+  is FileAlreadyExistsException -> NativeDownloadModule.FILE_ALREADY_EXISTS to "File already exists"
+  is NoDataException -> NativeDownloadModule.ERROR_CONNECTION_FAILED to "No data found"
+  is FileCorruptionException -> NativeDownloadModule.IO_EXCEPTION to "File corrupted"
+  is HttpStatusException -> NativeDownloadModule.ERROR_DOWNLOAD_FAILED to "Download failed with HTTP status ${e.statusCode}"
+  is DownloadFileException -> NativeDownloadModule.IO_EXCEPTION to "Could not write file"
+  is ConnectException -> NativeDownloadModule.ERROR_DOWNLOAD_FAILED to "Failed to connect to endpoint"
+  is IOException -> NativeDownloadModule.ERROR_DOWNLOAD_FAILED to "Download failed"
+  is SecurityException -> NativeDownloadModule.FS_ACCESS_EXCEPTION to "Access to filesystem denied"
+  else -> NativeDownloadModule.ERROR_DOWNLOAD_FAILED to "Failed to download file"
+}

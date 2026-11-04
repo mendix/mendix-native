@@ -3,6 +3,7 @@ import UIKit
 
 typealias TapAction = ((_ gestureRecognizer: UITapGestureRecognizer) -> Void)
 
+@MainActor
 class TapGestureRecognizerHelper {
     private let window: UIWindow
     private var numberOfTouchesRequired: Int

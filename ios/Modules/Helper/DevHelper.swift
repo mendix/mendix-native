@@ -6,18 +6,19 @@ public class DevHelper {
         AppPreferences.remoteDebuggingEnabled = enabled
     }
     
+    @MainActor
     public static func setShakeToShowDevMenuEnabled(enabled: Bool) {
         getModule(type: RCTDevSettings.self)?.isShakeToShowDevMenuEnabled = enabled
-        
-        // This event can be triggered to facilitate communication with the DevSettings JS module. Please refer to dev-settings.ts for further details.
-        // ReactHostHelper().emitEvent("mendixSetShakeToShowDevMenu", payload: enabled)
     }
     
+    @MainActor
     public static func hideDevLoadingView() {
         getModule(type: RCTDevLoadingView.self)?.hide()
     }
     
-    public static func getModule<T: NSObject>(type: T.Type) -> T? {
-        return ReactHostHelper().module(for: T.self) as? T
+    // Private so only main-thread callers in this file can use it. TurboModules must use their injected moduleRegistry.
+    @MainActor
+    private static func getModule<T: NSObject>(type: T.Type) -> T? {
+        return ReactHostHelper.module(for: T.self) as? T
     }
 }

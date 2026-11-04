@@ -1,5 +1,9 @@
-import NativeMxReload from './reload-handler/NativeMxReload';
-import NativeMxOta from './ota/NativeMxOta';
+import NativeMxReload, {
+  type OnReloadWithState,
+} from './reload-handler/NativeMxReload';
+import NativeMxOta, { type OnDownloadProgress } from './ota/NativeMxOta';
 
-export const onReloadWithStateEvent = NativeMxReload.onReloadWithState;
-export const onDownloadProgressEvent = NativeMxOta.onDownloadProgress;
+export const onReloadWithStateEvent: OnReloadWithState =
+  NativeMxReload.onReloadWithState;
+export const onDownloadProgressEvent: OnDownloadProgress =
+  NativeMxOta.onDownloadProgress;
