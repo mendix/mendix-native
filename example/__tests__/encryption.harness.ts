@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, test } from 'react-native-harness';
 import { MxEncryption, RNMendixEncryptedStorage } from 'mendix-native';
+import { Platform } from 'react-native';
+import { getKeychainTestSupport } from '../test-support/keychain';
 
 describe('MxEncryption', () => {
   beforeEach(async () => {
@@ -41,4 +43,38 @@ describe('MxEncryption', () => {
       RNMendixEncryptedStorage.IS_ENCRYPTED
     );
   });
+
+  test('strict reads return stored values and null for missing keys', async () => {
+    await expect(MxEncryption.getItemStrict('missing')).resolves.toBe(null);
+    await MxEncryption.setItem('strict-key', 'value');
+    await expect(MxEncryption.getItemStrict('strict-key')).resolves.toBe(
+      'value'
+    );
+  });
+
+  if (Platform.OS === 'ios') {
+    test('new writes use device-only after-first-unlock accessibility', async () => {
+      await MxEncryption.setItem('policy-key', 'value');
+      const attributes =
+        await getKeychainTestSupport().inspectItem('policy-key');
+      expect(attributes).not.toBe(null);
+      expect(attributes?.accessibility).toBe(attributes?.expectedAccessibility);
+    });
+
+    test('strict reads migrate legacy values without rotating them', async () => {
+      const support = getKeychainTestSupport();
+      await support.seedLegacyItem('legacy-strict-key', 'original-password');
+      const before = await support.inspectItem('legacy-strict-key');
+      expect(before?.accessibility).toBe(before?.legacyAccessibility);
+      await expect(
+        MxEncryption.getItemStrict('legacy-strict-key')
+      ).resolves.toBe('original-password');
+      const after = await support.inspectItem('legacy-strict-key');
+      expect(after).not.toBe(null);
+      expect(after?.accessibility).toBe(after?.expectedAccessibility);
+      await expect(MxEncryption.getItem('legacy-strict-key')).resolves.toBe(
+        'original-password'
+      );
+    });
+  }
 });

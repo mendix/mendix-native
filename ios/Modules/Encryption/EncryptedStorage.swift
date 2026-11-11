@@ -1,5 +1,6 @@
 
 import Foundation
+import Security
 
 @objcMembers public class EncryptedStorage: NSObject {
     
@@ -14,10 +15,19 @@ import Foundation
         let storeQuery = [
             kSecClass: kSecClassGenericPassword,
             kSecAttrAccount: key,
-            kSecValueData: dataFromValue
+            kSecValueData: dataFromValue,
+            kSecAttrAccessible: KeychainHelper.accessibility
         ] as CFDictionary
         
-        SecItemDelete(storeQuery)
+        let identity = [
+            kSecClass: kSecClassGenericPassword,
+            kSecAttrAccount: key
+        ] as CFDictionary
+        let deleteStatus = SecItemDelete(identity)
+        guard deleteStatus == errSecSuccess || deleteStatus == errSecItemNotFound else {
+            promise.reject("An error occured while saving value", errorCode: Int(deleteStatus))
+            return
+        }
         
         let status = SecItemAdd(storeQuery, nil)
         
@@ -29,6 +39,20 @@ import Foundation
     }
     
     public func getItem(key: String, promise: Promise) {
+        readItem(key: key, promise: promise, strict: false)
+    }
+
+    public func getItemStrict(key: String, promise: Promise) {
+        readItem(key: key, promise: promise, strict: true)
+    }
+
+    @nonobjc func readItem(
+        key: String,
+        promise: Promise,
+        strict: Bool,
+        copyMatching: (CFDictionary, UnsafeMutablePointer<CFTypeRef?>?) -> OSStatus = SecItemCopyMatching,
+        migrate: (String) -> Bool = { KeychainHelper.migrateAccessibility(key: $0) }
+    ) {
         let query = [
             kSecClass: kSecClassGenericPassword,
             kSecAttrAccount: key,
@@ -37,15 +61,16 @@ import Foundation
             kSecUseAuthenticationUI: kSecUseAuthenticationUIFail
         ] as CFDictionary
         var dataRef: CFTypeRef?
-        let status = SecItemCopyMatching(query, &dataRef)
-        if status == errSecInteractionNotAllowed {
+        let status = copyMatching(query, &dataRef)
+        if status == errSecInteractionNotAllowed && !strict {
             // Device locked or item requires auth — don't delete, resolve as absent
             promise.resolve(NSNull())
         } else if status == errSecSuccess {
             guard let data = dataRef as? Data, let value = String(data: data, encoding: .utf8) else {
-                promise.reject("An error occured while retrieving value", errorCode: Int(status))
+                promise.reject("An error occured while retrieving value", errorCode: Int(errSecDecode))
                 return
             }
+            _ = migrate(key)
             promise.resolve(value)
         } else if status == errSecItemNotFound {
             promise.resolve(NSNull())

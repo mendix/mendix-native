@@ -22,4 +22,9 @@ Pod::Spec.new do |s|
   s.dependency "ReactAppDependencyProvider"
 
   install_modules_dependencies(s)
+
+  s.test_spec 'KeychainTests' do |tests|
+    tests.source_files = 'tests/ios/**/*.swift'
+    tests.requires_app_host = true
+  end
 end

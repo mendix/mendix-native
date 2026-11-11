@@ -7,6 +7,9 @@ export const MxEncryption = {
   async getItem(key: string): Promise<string | null> {
     return NativeMxEncryption.getItem(key);
   },
+  async getItemStrict(key: string): Promise<string | null> {
+    return NativeMxEncryption.getItemStrict(key);
+  },
   async removeItem(key: string): Promise<void> {
     return NativeMxEncryption.removeItem(key);
   },
