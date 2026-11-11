@@ -22,6 +22,10 @@ class MxEncryptionModule(reactContext: ReactApplicationContext) :
     encryptedStorage.getItem(key, promise)
   }
 
+  override fun getItemStrict(key: String, promise: Promise) {
+    encryptedStorage.getItem(key, promise)
+  }
+
   override fun removeItem(key: String, promise: Promise) {
     encryptedStorage.removeItem(key, promise)
   }

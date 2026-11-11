@@ -35,6 +35,13 @@ RCT_EXPORT_MODULE()
     [[[EncryptedStorage alloc] init] removeItemWithKey:key promise:promise];
 }
 
+- (void)getItemStrict:(nonnull NSString *)key
+             resolve:(nonnull RCTPromiseResolveBlock)resolve
+              reject:(nonnull RCTPromiseRejectBlock)reject {
+    Promise *promise = [[Promise alloc] initWithResolve:resolve reject:reject];
+    [[[EncryptedStorage alloc] init] getItemStrictWithKey:key promise:promise];
+}
+
 - (void)clear:(nonnull RCTPromiseResolveBlock)resolve
        reject:(nonnull RCTPromiseRejectBlock)reject {
     Promise *promise = [[Promise alloc] initWithResolve:resolve reject:reject];

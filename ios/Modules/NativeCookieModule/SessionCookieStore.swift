@@ -1,4 +1,5 @@
 import Foundation
+import Security
 
 public class SessionCookieStore {
 
@@ -9,21 +10,38 @@ public class SessionCookieStore {
 
     // MARK: - Public API
     public static func restore() {
+        restore(
+            storage: HTTPCookieStorage.shared,
+            read: { get(key: storageKey) },
+            remove: { clear() }
+        )
+    }
 
-        guard let cookies = get(key: storageKey) else {
+    static func restore(
+        storage: HTTPCookieStorage,
+        read: () -> (cookies: [HTTPCookie], migrated: Bool)?,
+        remove: () -> Void
+    ) {
+        guard let restored = read() else {
             NSLog("SessionCookieStore: No cookies to restore")
             return
         }
 
-        let storage = HTTPCookieStorage.shared
         let existing = Set(storage.cookies ?? [])
-        cookies.filter { !existing.contains($0) }.forEach { storage.setCookie($0) }
+        restored.cookies.filter { !existing.contains($0) }.forEach { storage.setCookie($0) }
 
-        clear()
+        if restored.migrated {
+            remove()
+        }
     }
 
     public static func persist() {
+        persist(completion: {})
+    }
+
+    static func persist(completion: @escaping () -> Void) {
         queue.async {
+            defer { completion() }
             let sessionCookies = HTTPCookieStorage.shared.cookies?.filter { isSessionCookie($0) } ?? []
             guard !sessionCookies.isEmpty else {
                 clear()
@@ -47,7 +65,12 @@ public class SessionCookieStore {
         do {
             let data = try NSKeyedArchiver.archivedData(withRootObject: cookies, requiringSecureCoding: false)
             clear(key: key)
-            let storeQuery = [kSecClass: kSecClassGenericPassword, kSecAttrAccount: key, kSecValueData: data] as CFDictionary
+            let storeQuery = [
+                kSecClass: kSecClassGenericPassword,
+                kSecAttrAccount: key,
+                kSecValueData: data,
+                kSecAttrAccessible: KeychainHelper.accessibility
+            ] as CFDictionary
             let status = SecItemAdd(storeQuery, nil)
             if status != noErr {
                 NSLog("SessionCookieStore: Failed to persist session cookies with status: \(status)")
@@ -57,7 +80,12 @@ public class SessionCookieStore {
         }
     }
 
-    private static func get(key: String) -> [HTTPCookie]? {
+    static func get(
+        key: String,
+        copyMatching: (CFDictionary, UnsafeMutablePointer<CFTypeRef?>?) -> OSStatus = SecItemCopyMatching,
+        migrate: (String) -> Bool = { KeychainHelper.migrateAccessibility(key: $0) },
+        remove: (String) -> Void = { clear(key: $0) }
+    ) -> (cookies: [HTTPCookie], migrated: Bool)? {
         let query: [CFString: Any] = [
             kSecClass: kSecClassGenericPassword,
             kSecAttrAccount: key,
@@ -65,26 +93,38 @@ public class SessionCookieStore {
             kSecUseAuthenticationUI: kSecUseAuthenticationUIFail
         ]
         var item: CFTypeRef?
-        let status = SecItemCopyMatching(query as CFDictionary, &item)
+        let status = copyMatching(query as CFDictionary, &item)
 
         if status == errSecInteractionNotAllowed {
             NSLog("SessionCookieStore: Item inaccessible (device locked), skipping restore")
             return nil
         } else if status == errSecSuccess, let data = item as? Data {
             let result = ObjCExceptionCatcher.catchException {
-                try? NSKeyedUnarchiver.unarchivedObject(ofClasses: [NSArray.self, HTTPCookie.self], from: data)
+                do {
+                    let unarchiver = try NSKeyedUnarchiver(forReadingFrom: data)
+                    // HTTPCookie uses NSCoding, matching the existing non-secure archive format.
+                    unarchiver.requiresSecureCoding = false
+                    defer { unarchiver.finishDecoding() }
+                    return unarchiver.decodeObject(
+                        of: [NSArray.self, HTTPCookie.self],
+                        forKey: NSKeyedArchiveRootObjectKey
+                    )
+                } catch {
+                    NSLog("SessionCookieStore: Cookie decoding failed with code: \((error as NSError).code)")
+                    return nil
+                }
             }
 
             guard let cookies = result as? [HTTPCookie] else {
                 NSLog("SessionCookieStore: Failed to deserialize cookies, clearing")
-                clear(key: key)
+                remove(key)
                 return nil
             }
-            return cookies
+            return (cookies, migrate(key))
         } else if status != errSecItemNotFound {
             // Any other unreadable state — delete to prevent repeated failures
             NSLog("SessionCookieStore: Unreadable legacy item (status: \(status)), clearing")
-            clear(key: key)
+            remove(key)
             return nil
         } else {
             NSLog("SessionCookieStore: No session cookies found")
