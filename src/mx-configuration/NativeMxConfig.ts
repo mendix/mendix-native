@@ -26,6 +26,6 @@ export interface Spec extends TurboModule {
   readonly getConstants: () => Configuration;
 }
 
-export default TurboModuleRegistry.getEnforcing<Spec>('MxConfiguration');
+export default TurboModuleRegistry.getEnforcing<Spec>('MxConfig');
 
 export type { Configuration };

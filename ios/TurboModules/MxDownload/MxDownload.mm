@@ -5,7 +5,9 @@
 
 @implementation MxDownload
 
-RCT_EXPORT_MODULE()
++ (NSString *)moduleName {
+    return @"MxDownload";
+}
 
 - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
 (const facebook::react::ObjCTurboModule::InitParams &)params

@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - We added new File System APIs to get the size of a File (`getFileSize`) and write chunks via offset (`writeChunk`), used in 'resume download' functionality. Base64 string variants of `save` and `writeChunk` are available as `saveBase64` and `writeChunkBase64`. `getFileSize` rejects when the file does not exist or its size cannot be determined.
 
+## [v1.0.0] - 2026-11-04
+
+- We upgraded the react-native to version 0.88.0 and bumped related dependencies.
+
 ## [v0.6.2] - 2026-09-29
 
 - We fixed an issue on iOS where a deep link that cold-started the app was not delivered to React Native, causing `Linking.getInitialURL()` to return `null`.

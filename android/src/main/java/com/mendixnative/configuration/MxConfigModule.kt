@@ -3,11 +3,11 @@ package com.mendixnative.configuration
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.module.annotations.ReactModule
 import com.mendix.mendixnative.react.MxConfiguration
-import com.mendixnative.NativeMxConfigurationSpec
+import com.mendixnative.NativeMxConfigSpec
 
-@ReactModule(name = MxConfigurationModule.NAME)
-class MxConfigurationModule(reactContext: ReactApplicationContext) :
-    NativeMxConfigurationSpec(reactContext) {
+@ReactModule(name = MxConfigModule.NAME)
+class MxConfigModule(reactContext: ReactApplicationContext) :
+    NativeMxConfigSpec(reactContext) {
 
   private val configuration = MxConfiguration(reactContext)
 
@@ -18,6 +18,6 @@ class MxConfigurationModule(reactContext: ReactApplicationContext) :
   }
 
   companion object {
-    const val NAME = "MxConfiguration"
+    const val NAME = "MxConfig"
   }
 }

@@ -126,22 +126,29 @@ public class NativeOtaModule: NSObject {
     public func deploy(_ config: OtaDeploymentConfiguration, promise: Promise) {
         
         guard let otaDeploymentID = config.otaDeploymentID else {
-            promise.reject(INVALID_DOWNLOAD_CONFIG, "Key otaDeploymentID is invalid.", nil)
+            promise.reject(INVALID_DEPLOY_CONFIG, "Key otaDeploymentID is invalid.", nil)
             return
         }
         
         guard let zipFile = config.otaPackage else {
-            promise.reject(INVALID_DOWNLOAD_CONFIG, "Key otaPackage is invalid.", nil)
+            promise.reject(INVALID_DEPLOY_CONFIG, "Key otaPackage is invalid.", nil)
             return
         }
         
         guard let extractionDir = config.extractionDir else {
-            promise.reject(INVALID_DOWNLOAD_CONFIG, "Key extractionDir is invalid.", nil)
+            promise.reject(INVALID_DEPLOY_CONFIG, "Key extractionDir is invalid.", nil)
             return
         }
         
-        let zipPath = OtaHelpers.resolveAbsolutePathRelativeToOtaDir("/\(zipFile)")
-        let unzipDir = OtaHelpers.resolveAbsolutePathRelativeToOtaDir("/\(extractionDir)")
+        guard let zipPath = OtaHelpers.resolvePathInsideOtaDir(zipFile) else {
+            promise.reject(INVALID_DEPLOY_CONFIG, "Key otaPackage points outside of the OTA directory.", nil)
+            return
+        }
+        
+        guard let unzipDir = OtaHelpers.resolvePathInsideOtaDir(extractionDir) else {
+            promise.reject(INVALID_DEPLOY_CONFIG, "Key extractionDir points outside of the OTA directory.", nil)
+            return
+        }
         
         let oldManifest = OtaHelpers.readManifestAsDictionary()
         
@@ -219,8 +226,12 @@ public class NativeOtaModule: NSObject {
         if shouldRemoveOldBundle,
            let oldManifest = oldManifest,
            let relativeBundlePath = oldManifest[MANIFEST_RELATIVE_BUNDLE_PATH_KEY] as? String {
-            let oldBundleDir = OtaHelpers.resolveAbsolutePathRelativeToOtaDir("/\((relativeBundlePath as NSString).deletingLastPathComponent)")
-            removeOldBundle(oldBundleDir)
+            // The manifest is on disk, so only remove its bundle dir if it is inside the OTA dir,
+            // and never the dir that was just deployed.
+            if let oldBundleDir = OtaHelpers.resolvePathInsideOtaDir((relativeBundlePath as NSString).deletingLastPathComponent),
+               oldBundleDir != unzipDir {
+                removeOldBundle(oldBundleDir)
+            }
         }
         
         removeZipFile(zipPath)

@@ -4,7 +4,6 @@ import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import java.io.*
 import java.net.ConnectException
-import kotlin.math.abs
 
 @Throws(
   IllegalArgumentException::class,
@@ -40,8 +39,10 @@ fun downloadFile(
 ) {
   val outputFile = File(downloadPath)
   if (outputFile.exists()) throw FileAlreadyExistsException(outputFile)
-  outputFile.parentFile?.mkdirs()
-  outputFile.createNewFile()
+  writingFile {
+    outputFile.parentFile?.mkdirs()
+    outputFile.createNewFile()
+  }
 
   try {
     client.newCall(Request.Builder().url(url).get().build()).enqueue(object : Callback {
@@ -71,6 +72,9 @@ fun downloadFile(
 }
 
 
+private const val COPY_BUFFER_SIZE = 64 * 1024
+private const val UNKNOWN_LENGTH_PROGRESS_INTERVAL = 64.0 * 1024
+
 fun makeProgressCallbackInvoker(
   bytesInterval: Double,
   cb: (receivedBytes: Double, totalBytes: Double) -> Unit
@@ -95,36 +99,42 @@ class DownloadResponseHandler(
     var inputStream: BufferedInputStream? = null
     var outputStream: BufferedOutputStream? = null
     try {
-      if (!response.isSuccessful) throw ConnectException()
+      if (!response.isSuccessful) throw HttpStatusException(response.code)
       if (response.body == null) throw NoDataException()
       val body = response.body
-      val mediaType = body?.contentType()
-      if (expectedMimeType != null && mediaType != expectedMimeType
-          .toMediaTypeOrNull()
-      ) throw DownloadMimeTypeException()
+      if (expectedMimeType != null && !mimeTypeMatches(body?.contentType(), expectedMimeType)) {
+        throw DownloadMimeTypeException()
+      }
 
 
       inputStream = BufferedInputStream(body!!.byteStream())
 
-      outputStream =
-        BufferedOutputStream(FileOutputStream(outputFile))
+      outputStream = writingFile { BufferedOutputStream(FileOutputStream(outputFile)) }
 
       val totalBytes = response.body!!.contentLength().toDouble()
+      var reportedBytes = -1.0
       val progressCallbackInvoker = makeProgressCallbackInvoker(
-        totalBytes / 100,
-        progressCallback
-      )
-
-      var receivedBytes: Double
-      var data = inputStream.read()
-      while (data != -1) {
-        outputStream.write(data)
-        data = inputStream.read()
-
-        receivedBytes = abs(inputStream.available().toDouble() - totalBytes)
-        progressCallbackInvoker(receivedBytes, totalBytes)
+        // Without a content length (-1), report progress every 64 KB instead of every 1%.
+        if (totalBytes > 0) totalBytes / 100 else UNKNOWN_LENGTH_PROGRESS_INTERVAL,
+      ) { received, total ->
+        reportedBytes = received
+        progressCallback(received, total)
       }
-      outputStream.flush()
+
+      var receivedBytes = 0.0
+      val buffer = ByteArray(COPY_BUFFER_SIZE)
+      var read = inputStream.read(buffer)
+      while (read != -1) {
+        writingFile { outputStream.write(buffer, 0, read) }
+        receivedBytes += read
+        progressCallbackInvoker(receivedBytes, totalBytes)
+        read = inputStream.read(buffer)
+      }
+      // Always report completion, even when the last chunk didn't reach the next interval.
+      if (reportedBytes != receivedBytes) {
+        progressCallback(receivedBytes, totalBytes)
+      }
+      writingFile { outputStream.flush() }
     } catch (e: Exception) {
       outputFile.delete()
       throw e
@@ -135,6 +145,32 @@ class DownloadResponseHandler(
   }
 }
 
+/**
+ * Compares type and subtype only, so parameters such as `charset` are ignored.
+ * A response without a content type doesn't match.
+ */
+internal fun mimeTypeMatches(actual: MediaType?, expected: String): Boolean {
+  val expectedType = expected.toMediaTypeOrNull() ?: return false
+  return actual != null &&
+    actual.type.equals(expectedType.type, ignoreCase = true) &&
+    actual.subtype.equals(expectedType.subtype, ignoreCase = true)
+}
+
+/**
+ * Thrown when writing the destination file fails, to tell file errors apart from network errors,
+ * which are plain IOExceptions too. The original exception is the cause.
+ */
+class DownloadFileException(cause: IOException) : IOException(cause.message, cause)
+
+private inline fun <T> writingFile(block: () -> T): T =
+  try {
+    block()
+  } catch (e: IOException) {
+    throw DownloadFileException(e)
+  }
+
+/** Thrown for a non-2xx response. Extends ConnectException, which was thrown before, for compatibility. */
+class HttpStatusException(val statusCode: Int) : ConnectException("Download failed with HTTP status $statusCode")
 class NoDataException : IllegalStateException()
 class FileCorruptionException : IllegalStateException()
 class DownloadMimeTypeException : RuntimeException()

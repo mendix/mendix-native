@@ -7,4 +7,7 @@ export interface Spec extends TurboModule {
   readonly onReloadWithState: CodegenTypes.EventEmitter<void>;
 }
 
+// Codegen requires EventEmitter inline in Spec, so derive the alias from it.
+export type OnReloadWithState = Spec['onReloadWithState'];
+
 export default TurboModuleRegistry.getEnforcing<Spec>('MxReload');

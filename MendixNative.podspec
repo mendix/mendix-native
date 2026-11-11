@@ -14,6 +14,7 @@ Pod::Spec.new do |s|
   s.source       = { :git => "https://github.com/mendix/mendix-native.git", :tag => "#{s.version}" }
 
   s.source_files = "ios/**/*.{h,m,mm,cpp,swift}"
+  s.exclude_files = "ios/Tests/**"
   s.public_header_files = ["ios/Modules/Helper/ReactHostHelper.h", "ios/Modules/NativeCookieModule/ObjCExceptionCatcher.h"]
   s.private_header_files = "ios/TurboModules/**/*.h"
 
@@ -22,4 +23,8 @@ Pod::Spec.new do |s|
   s.dependency "ReactAppDependencyProvider"
 
   install_modules_dependencies(s)
+
+  s.test_spec "Tests" do |test_spec|
+    test_spec.source_files = "ios/Tests/**/*.swift"
+  end
 end

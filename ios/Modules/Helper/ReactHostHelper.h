@@ -6,14 +6,16 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <React/RCTBridgeModule.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
+// RCTHost.h includes C++ headers, so Swift cannot reach the host directly.
+// This exposes only its module registry, which is plain Objective-C.
 @interface ReactHostHelper : NSObject
 
-- (nullable id) moduleForClass: (Class) clazz;
-- (BOOL) isReactAppActive;
-- (void) emitEvent: (nonnull NSString*) eventName payload: (nullable id) payload;
+// Imported into Swift as @MainActor.
++ (nullable RCTModuleRegistry *) currentModuleRegistry NS_SWIFT_UI_ACTOR;
 
 @end
 

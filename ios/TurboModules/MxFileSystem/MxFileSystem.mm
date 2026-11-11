@@ -5,7 +5,12 @@
 
 @implementation MxFileSystem
 
-RCT_EXPORT_MODULE()
+// Injected by React Native. Lookups here don't need the main thread, unlike DevHelper.getModule.
+@synthesize moduleRegistry = _moduleRegistry;
+
++ (NSString *)moduleName {
+    return @"MxFileSystem";
+}
 
 - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
 (const facebook::react::ObjCTurboModule::InitParams &)params
@@ -30,13 +35,13 @@ RCT_EXPORT_MODULE()
     filePath:(nonnull NSString *)filePath
      resolve:(nonnull RCTPromiseResolveBlock)resolve
       reject:(nonnull RCTPromiseRejectBlock)reject {
-    [[[NativeFsModule alloc] init] save:blob filepath:filePath resolve:resolve reject:reject];
+    [[[NativeFsModule alloc] initWithBlobManager:[_moduleRegistry moduleForName:"BlobModule"]] save:blob filepath:filePath resolve:resolve reject:reject];
 }
 
 - (void)read:(nonnull NSString *)filePath
      resolve:(nonnull RCTPromiseResolveBlock)resolve
       reject:(nonnull RCTPromiseRejectBlock)reject {
-    [[[NativeFsModule alloc] init] read:filePath resolve:resolve reject:reject];
+    [[[NativeFsModule alloc] initWithBlobManager:[_moduleRegistry moduleForName:"BlobModule"]] read:filePath resolve:resolve reject:reject];
 }
 
 - (void)move:(nonnull NSString *)filePath
@@ -67,7 +72,7 @@ RCT_EXPORT_MODULE()
 - (void)readAsText:(nonnull NSString *)filePath
            resolve:(nonnull RCTPromiseResolveBlock)resolve
             reject:(nonnull RCTPromiseRejectBlock)reject {
-    reject(@"NOT_SUPPORTED", @"Read as text is not supported on iOS", nil);
+    [[[NativeFsModule alloc] init] readAsText:filePath resolve:resolve reject:reject];
 }
 
 - (void)fileExists:(nonnull NSString *)filePath

@@ -17,7 +17,7 @@ const initFs = () => {
     read: NativeMxFileSystem.read,
     list: NativeMxFileSystem.list,
     readAsDataURL: NativeMxFileSystem.readAsDataURL,
-    readAsText: NativeMxFileSystem.readAsText, //Android only
+    readAsText: NativeMxFileSystem.readAsText,
     fileExists: NativeMxFileSystem.fileExists,
     move: NativeMxFileSystem.move,
     remove: NativeMxFileSystem.remove,

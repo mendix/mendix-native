@@ -34,6 +34,14 @@ class OtaHelpers: NSObject {
         return "\(getOtaDir())\(path)"
     }
     
+    /// Resolves `path` against the OTA dir and returns it only if it stays strictly inside the OTA dir,
+    /// so paths received from JS or read from the manifest can't point elsewhere in the app's storage.
+    static func resolvePathInsideOtaDir(_ path: String) -> String? {
+        let otaDir = URL(fileURLWithPath: getOtaDir()).standardizedFileURL.path
+        let resolved = URL(fileURLWithPath: "\(otaDir)/\(path)").standardizedFileURL.path
+        return resolved.hasPrefix("\(otaDir)/") ? resolved : nil
+    }
+    
     static func readManifestAsDictionary() -> [String: Any]? {
         let manifestPath = getOtaManifestFilepath()
         
