@@ -1,11 +1,43 @@
 import { describe, test, expect, beforeEach } from 'react-native-harness';
 import { RNMendixEncryptedStorage } from 'mendix-native';
+import { Platform } from 'react-native';
+import { getKeychainTestSupport } from '../test-support/keychain';
 
 describe('RNMendixEncryptedStorage', () => {
   beforeEach(async () => {
     // Clear storage before each test
     await RNMendixEncryptedStorage.clear();
   });
+
+  if (Platform.OS === 'ios') {
+    test('writes and migrates values with device-only accessibility', async () => {
+      const support = getKeychainTestSupport();
+      await RNMendixEncryptedStorage.setItem('new-policy-key', 'new-value');
+      const created = await support.inspectItem('new-policy-key');
+      expect(created).not.toBe(null);
+      expect(created?.accessibility).toBe(created?.expectedAccessibility);
+
+      await support.seedLegacyItem('legacy-policy-key', 'unchanged-value');
+      await expect(
+        RNMendixEncryptedStorage.getItem('legacy-policy-key')
+      ).resolves.toBe('unchanged-value');
+      const migrated = await support.inspectItem('legacy-policy-key');
+      expect(migrated).not.toBe(null);
+      expect(migrated?.accessibility).toBe(migrated?.expectedAccessibility);
+    });
+
+    test('replaces legacy items without filtering deletion by accessibility', async () => {
+      const support = getKeychainTestSupport();
+      await support.seedLegacyItem('legacy-replacement', 'old');
+      await RNMendixEncryptedStorage.setItem('legacy-replacement', 'new');
+      await expect(
+        RNMendixEncryptedStorage.getItem('legacy-replacement')
+      ).resolves.toBe('new');
+      const attributes = await support.inspectItem('legacy-replacement');
+      expect(attributes).not.toBe(null);
+      expect(attributes?.accessibility).toBe(attributes?.expectedAccessibility);
+    });
+  }
 
   describe('setItem and getItem', () => {
     test('should store and retrieve a string value', async () => {

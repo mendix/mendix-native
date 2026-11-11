@@ -20,6 +20,7 @@ ENV['RCT_USE_RN_DEP'] = '1'
 ENV['RCT_USE_PREBUILT_RNCORE'] = '1'
 
 target 'MendixNativeExample' do
+  pod 'MendixNative', :path => '../..', :testspecs => ['KeychainTests']
   config = use_native_modules!
 
   use_react_native!(

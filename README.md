@@ -143,6 +143,29 @@ delete a database or generate a replacement key based on the legacy getter's
 `null` result. Recovery must clear the affected session, recreate the database,
 and require login/resync. Persistent authentication cookies are handled separately.
 
+### Keychain tests
+
+The example's Debug-only Keychain inspector supports the encryption harness
+attribute and legacy-migration checks. Rebuild before running
+`yarn example harness:ios:with:build`; these tests cannot run under ordinary Jest.
+
+The CocoaPods `KeychainTests` test spec includes native cookie lifecycle,
+migration-failure, and strict-read tests. Run `yarn example pod` to install its
+test target, then run that target's tests on an iOS simulator in Xcode. These
+tests use the test host's cookie store and Keychain accounts, not production
+app storage. Physical-device backup/restore and locked-background checks remain
+separate integration requirements.
+
+For example, from the repository root:
+
+```sh
+xcodebuild test \
+  -workspace example/ios/MendixNativeExample.xcworkspace \
+  -scheme MendixNative-Unit-KeychainTests \
+  -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.2' \
+  -parallel-testing-enabled NO
+```
+
 ### 6. Clean Build Artifacts
 
 If you encounter build issues:
