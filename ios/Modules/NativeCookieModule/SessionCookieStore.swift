@@ -18,8 +18,6 @@ public class SessionCookieStore {
         let storage = HTTPCookieStorage.shared
         let existing = Set(storage.cookies ?? [])
         cookies.filter { !existing.contains($0) }.forEach { storage.setCookie($0) }
-
-        clear()
     }
 
     public static func persist() {

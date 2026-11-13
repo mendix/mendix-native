@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- We fixed an issue where iOS apps could log the user out after being closed from the app switcher shortly after launch.
+
 ## [v0.5.3] - 2026-09-15
 
 - We migrated iOS to the UIKit scene-based life cycle.
