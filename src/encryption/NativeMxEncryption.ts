@@ -6,6 +6,7 @@ export interface Spec extends TurboModule {
   removeItem(key: string): Promise<void>;
   clear(): Promise<void>;
   isEncrypted(): boolean;
+  getRandomHex(byteLength: number): string;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('MxEncryption');
