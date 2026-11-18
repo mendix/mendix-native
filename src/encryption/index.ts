@@ -16,4 +16,13 @@ export const MxEncryption = {
   isEncrypted(): boolean {
     return NativeMxEncryption.isEncrypted();
   },
+  /**
+   * Returns `byteLength` bytes from the platform's cryptographically secure random generator
+   * (SecRandomCopyBytes on iOS, SecureRandom on Android), lowercase hex encoded
+   * (2 characters per byte). Throws if `byteLength` is not an integer between 1 and 1024,
+   * or if the secure generator fails. It never falls back to a weaker source.
+   */
+  getRandomHex(byteLength: number): string {
+    return NativeMxEncryption.getRandomHex(byteLength);
+  },
 };
