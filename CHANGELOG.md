@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- We added MxEncryption.getRandomHex(byteLength) to the encryption module, which returns secure random values.
+
 ## [v1.0.0] - 2026-11-04
 
 - We upgraded the react-native to version 0.88.0 and bumped related dependencies.
