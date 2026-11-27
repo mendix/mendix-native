@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- We fixed an intermittent issue where Make it Native could fail to load the app with an "Unable to load script" error, because the Metro bundler was checked at the emulator default address (`10.0.2.2:8081`) instead of the address of the Mendix app.
+
 ## [v1.0.0] - 2026-11-04
 
 - We upgraded the react-native to version 0.88.0 and bumped related dependencies.
