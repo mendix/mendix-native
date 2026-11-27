@@ -34,12 +34,15 @@ class MendixInitializer(
     MxConfiguration.runtimeUrl = runtimeUrl
     MxConfiguration.warningsFilter = mendixApp.warningsFilter
 
+    // The packager host must be stored BEFORE any reload: the Metro check made when the instance
+    // is recreated uses the stored host (see MendixBridgelessDevSupportManager.isPackagerRunning).
+    if (hasRNDeveloperSupport) setupDeveloperApp(runtimeUrl, mendixApp)
+
     // Reload only if there's already a running instance.
     if (reactHost.currentReactContext != null) {
       reactHost.reload("Clean start for new Mendix app")
     }
     if (clearData) clearData(context.application)
-    if (hasRNDeveloperSupport) setupDeveloperApp(runtimeUrl, mendixApp)
   }
 
   fun onDestroy() {
